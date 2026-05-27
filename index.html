@@ -29,8 +29,6 @@
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/react/17.0.2/umd/react.production.min.js" crossorigin></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/17.0.2/umd/react-dom.production.min.js" crossorigin></script>
-  
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/6.26.0/babel.min.js" crossorigin></script>
 
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -48,169 +46,14 @@
 <body>
   <div id="root"></div>
 
-  <script type="text/babel">
-    const { useState, useEffect, useRef, useCallback, useMemo } = React;
+  <script>
+    // Configuración limpia sin JSX ni Babel
+    const e = React.createElement;
+    const { useState, useEffect, useCallback, useMemo } = React;
 
     const CONFIG_FRONTEND = {
-      // Pega tu URL real completa de Google Apps Script dentro de las comillas de abajo:
       URL_API_BACKEND: "https://script.google.com/macros/s/AKfycbwNapYYzUOfV7UMCBv8xDiTOm5mN_veAiiuuFd94Ha6uExMnCxaCwiZmAvbpsjPyObo5w/exec"
     };
-
-    function KPI({ label, value, sub, iconClass }) {
-      return (
-        <div className="card p-5 flex flex-col gap-2">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">{label}</span>
-            {iconClass && <i className={`${iconClass} text-gray-400`}></i>}
-          </div>
-          <span className="text-2xl font-bold text-gray-800">{value}</span>
-          {sub && <span className="text-[11px] text-gray-400">{sub}</span>}
-        </div>
-      );
-    }
-
-    function Empty({ msg = 'Sin datos para mostrar' }) {
-      return (
-        <div className="text-center py-10 text-gray-400">
-          <i className="fa-solid fa-folder-open text-3xl mb-2 block"></i>
-          <p className="text-sm">{msg}</p>
-        </div>
-      );
-    }
-
-    function TabNPS({ data, mes }) {
-      const registros = useMemo(() => {
-        if (!data || !Array.isArray(data.nps)) return [];
-        return mes === 'Todos' ? data.nps : data.nps.filter(r => r.mes === mes);
-      }, [data, mes]);
-
-      return (
-        <div className="space-y-6">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <KPI label="Total Encuestas" value={registros.length} iconClass="fa-solid fa-users" />
-            <KPI label="Periodo Filtrado" value={mes} iconClass="fa-solid fa-calendar" />
-          </div>
-          <div className="card p-6">
-            <h3 className="text-sm font-bold text-gray-700 mb-4">Respuestas Recientes (NPS)</h3>
-            {registros.length === 0 ? <Empty /> : (
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm text-left">
-                  <thead>
-                    <tr className="border-b border-gray-100 text-gray-400 text-xs uppercase font-bold">
-                      <th className="pb-3">Cliente</th>
-                      <th className="pb-3">País</th>
-                      <th className="pb-3">Periodo</th>
-                      <th className="pb-3">Nota NPS</th>
-                      <th className="pb-3">Razón</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {registros.map((r, i) => (
-                      <tr key={i} className="border-b border-gray-50 last:border-0 text-gray-700">
-                        <td className="py-3 font-bold">{r.cliente}</td>
-                        <td className="py-3">{r.pais}</td>
-                        <td className="py-3"><span className="bg-blue-50 text-blue-600 text-xs px-2 py-1 rounded font-semibold">{r.periodoQ}</span></td>
-                        <td className="py-3"><span className={`font-bold px-2 py-1 rounded text-white ${r.puntuacion >= 9 ? 'bg-green-500' : r.puntuacion >= 7 ? 'bg-amber-500' : 'bg-red-500'}`}>{r.puntuacion}</span></td>
-                        <td className="py-3 text-xs text-gray-500 max-w-[200px] truncate" title={r.razon}>{r.razon || '—'}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
-          </div>
-        </div>
-      );
-    }
-
-    function TabCSAT({ data, mes }) {
-      const filteredReunion = useMemo(() => {
-        if (!data || !Array.isArray(data.csat_reunion)) return [];
-        return mes === 'Todos' ? data.csat_reunion : data.csat_reunion.filter(r => r.mes === mes);
-      }, [data, mes]);
-
-      const filteredAbono = useMemo(() => {
-        if (!data || !Array.isArray(data.csat_abono)) return [];
-        return mes === 'Todos' ? data.csat_abono : data.csat_abono.filter(r => r.mes === mes);
-      }, [data, mes]);
-
-      return (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="card p-6">
-            <h3 className="text-sm font-bold text-gray-700 mb-4"><i className="fa-solid fa-comments text-blue-500 mr-2"></i>Post Reuniones Comerciales</h3>
-            {filteredReunion.length === 0 ? <Empty /> : (
-              <div className="space-y-3 max-h-[350px] overflow-y-auto pr-2">
-                {filteredReunion.map((r, i) => (
-                  <div key={i} className="p-3 bg-gray-50 rounded-xl flex justify-between items-start gap-2">
-                    <div>
-                      <p className="font-bold text-gray-800 text-xs">{r.cliente} <span className="text-gray-400 font-normal">({r.pais})</span></p>
-                      <p className="text-[11px] text-gray-500 mt-1">KAM: {r.kam || 'Sin asignar'}</p>
-                      {r.comentario && <p className="text-[11px] text-gray-400 italic mt-1">"{r.comentario}"</p>}
-                    </div>
-                    <span className="text-xs font-bold text-green-600 bg-green-50 px-2 py-0.5 rounded">⭐ {r.puntuacion}</span>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-          <div className="card p-6">
-            <h3 className="text-sm font-bold text-gray-700 mb-4"><i className="fa-solid fa-money-bill-transfer text-purple-500 mr-2"></i>Post Abonos Trimestrales</h3>
-            {filteredAbono.length === 0 ? <Empty /> : (
-              <div className="space-y-3 max-h-[350px] overflow-y-auto pr-2">
-                {filteredAbono.map((r, i) => (
-                  <div key={i} className="p-3 bg-gray-50 rounded-xl flex justify-between items-center">
-                    <div>
-                      <p className="font-bold text-gray-800 text-xs">{r.cliente}</p>
-                      <p className="text-[10px] text-gray-400 mt-0.5">Región: {r.pais}</p>
-                    </div>
-                    <span className="text-[11px] font-semibold text-purple-600 bg-purple-50 px-2 py-1 rounded">Abonos: {r.abonos}</span>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        </div>
-      );
-    }
-
-    function TabSalidas({ data, mes }) {
-      const registros = useMemo(() => {
-        if (!data || !Array.isArray(data.salidas)) return [];
-        return mes === 'Todos' ? data.salidas : data.salidas.filter(r => r.mes === mes);
-      }, [data, mes]);
-
-      return (
-        <div className="card p-6">
-          <h3 className="text-sm font-bold text-gray-700 mb-4">Registro de Clientes Desactivados (Offboarding)</h3>
-          {registros.length === 0 ? <Empty msg="¡Excelente! No hay salidas registradas 🎉" /> : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm text-left">
-                <thead>
-                  <tr className="border-b border-gray-100 text-gray-400 text-xs uppercase font-bold">
-                    <th className="pb-3">Cliente</th>
-                    <th className="pb-3">País</th>
-                    <th className="pb-3">Principal Motivo</th>
-                    <th className="pb-3 text-center">Exp (1-10)</th>
-                    <th className="pb-3 text-center">Nota KAM</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {registros.map((s, i) => (
-                    <tr key={i} className="border-b border-gray-50 last:border-0 text-gray-700">
-                      <td className="py-3 font-bold">{s.cliente || 'Empresa'}</td>
-                      <td className="py-3">{s.pais}</td>
-                      <td className="py-3"><span className="bg-red-50 text-red-600 text-xs px-2 py-1 rounded-full font-semibold">{s.motivoBaja || 'No especifica'}</span></td>
-                      <td className="py-3 text-center font-bold text-gray-500">{s.experiencia || '—'}</td>
-                      <td className="py-3 text-center font-bold text-gray-500">{s.notaKam || '—'}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </div>
-      );
-    }
 
     function App() {
       const [data, setData] = useState(null);
@@ -250,76 +93,135 @@
         return ['Todos', ...Array.from(setMeses)];
       }, [data]);
 
-      return (
-        <div className="min-h-screen pb-10">
-          <header className="bg-white border-b border-gray-200 sticky top-0 z-20 shadow-sm px-6 py-4">
-            <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center text-white text-base shadow-md shadow-blue-200">
-                  <i className="fa-solid fa-heart-pulse"></i>
-                </div>
-                <div>
-                  <h1 className="text-base font-bold text-gray-800 leading-none">Experiencia del cliente</h1>
-                  <p className="text-xs text-gray-400 mt-1">Infraestructura GitHub Pages + Apps Script API</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-3 w-full sm:w-auto justify-end">
-                <select value={mes} onChange={e => setMes(e.target.value)} className="text-xs font-semibold text-gray-600 bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 outline-none cursor-pointer">
-                  {listaMeses.map(m => <option key={m} value={m}>{m}</option>)}
-                </select>
-                <button onClick={cargarData} disabled={loading} className="p-2 bg-gray-50 hover:bg-gray-100 rounded-xl text-gray-500 border border-gray-200">
-                  <i className={`fa-solid fa-arrow-rotate-right ${loading ? 'animate-spin' : ''}`}></i>
-                </button>
-              </div>
-            </div>
-            <div className="max-w-7xl mx-auto flex gap-6 -mb-4 mt-4 overflow-x-auto">
-              {[
-                ['NPS', 'fa-solid fa-chart-line', 0],
-                ['CSAT', 'fa-solid fa-star', 1],
-                ['Inactivos', 'fa-solid fa-user-clock', 2],
-                ['Salidas / Off', 'fa-solid fa-arrow-right-from-bracket', 3]
-              ].map(([label, icon, id]) => (
-                <button key={id} onClick={() => setTab(id)} className={`tab-btn pb-3 text-xs font-bold tracking-wider uppercase flex items-center gap-1.5 whitespace-nowrap ${tab === id ? 'active text-blue-600' : 'text-gray-400 hover:text-gray-600'}`}>
-                  <i className={icon}></i>{label}
-                </button>
-              ))}
-            </div>
-          </header>
+      const npsFiltrados = useMemo(() => {
+        if (!data || !Array.isArray(data.nps)) return [];
+        return mes === 'Todos' ? data.nps : data.nps.filter(r => r.mes === mes);
+      }, [data, mes]);
 
-          <main className="max-w-7xl mx-auto px-6 mt-6">
-            {loading && (
-              <div className="space-y-4">
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4"><div className="skeleton h-24"/><div className="skeleton h-24"/><div className="skeleton h-24"/><div className="skeleton h-24"/></div>
-                <div className="skeleton h-64 w-full"/>
-              </div>
-            )}
-            {!loading && error && (
-              <div className="card p-8 text-center max-w-md mx-auto space-y-3">
-                <i className="fa-solid fa-triangle-exclamation text-red-500 text-3xl"></i>
-                <p className="font-bold text-gray-800">Error de conexión</p>
-                <p className="text-xs text-gray-400">{error}</p>
-                <button onClick={cargarData} className="px-4 py-2 bg-blue-600 text-white text-xs font-bold rounded-xl">Reintentar</button>
-              </div>
-            )}
-            {!loading && !error && data && (
-              <>
-                {tab === 0 && <TabNPS data={data} mes={mes} />}
-                {tab === 1 && <TabCSAT data={data} mes={mes} />}
-                {tab === 2 && (
-                  <div className="card p-10 text-center text-gray-500 font-medium">
-                    <i className="fa-solid fa-gears text-4xl text-blue-400 mb-3 block animate-pulse"></i>
-                    {data.inactivos}
-                  </div>
-                )}
-                {tab === 3 && <TabSalidas data={data} mes={mes} />}
-              </>
-            )}
-          </main>
-        </div>
+      const csatReunionFiltrados = useMemo(() => {
+        if (!data || !Array.isArray(data.csat_reunion)) return [];
+        return mes === 'Todos' ? data.csat_reunion : data.csat_reunion.filter(r => r.mes === mes);
+      }, [data, mes]);
+
+      const csatAbonoFiltrados = useMemo(() => {
+        if (!data || !Array.isArray(data.csat_abono)) return [];
+        return mes === 'Todos' ? data.csat_abono : data.csat_abono.filter(r => r.mes === mes);
+      }, [data, mes]);
+
+      const salidasFiltradas = useMemo(() => {
+        if (!data || !Array.isArray(data.salidas)) return [];
+        return mes === 'Todos' ? data.salidas : data.salidas.filter(r => r.mes === mes);
+      }, [data, mes]);
+
+      if (loading) {
+        return e('div', { className: 'max-w-7xl mx-auto p-6 space-y-4' },
+          e('div', { className: 'grid grid-cols-2 md:grid-cols-4 gap-4' },
+            e('div', { className: 'skeleton h-24' }), e('div', { className: 'skeleton h-24' }), e('div', { className: 'skeleton h-24' }), e('div', { className: 'skeleton h-24' })
+          ),
+          e('div', { className: 'skeleton h-64 w-full' })
+        );
+      }
+
+      if (error) {
+        return e('div', { className: 'card p-8 text-center max-w-md mx-auto mt-10 space-y-3' },
+          e('i', { className: 'fa-solid fa-triangle-exclamation text-red-500 text-3xl' }),
+          e('p', { className: 'font-bold text-gray-800' }, 'Error de conexión'),
+          e('p', { className: 'text-xs text-gray-400' }, error),
+          e('button', { onClick: cargarData, className: 'px-4 py-2 bg-blue-600 text-white text-xs font-bold rounded-xl' }, 'Reintentar')
+        );
+      }
+
+      return e('div', { className: 'min-h-screen pb-10' },
+        e('header', { className: 'bg-white border-b border-gray-200 sticky top-0 z-20 shadow-sm px-6 py-4' },
+          e('div', { className: 'max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4' },
+            e('div', { className: 'flex items-center gap-3' },
+              e('div', { className: 'w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center text-white text-base shadow-md' },
+                e('i', { className: 'fa-solid fa-heart-pulse' })
+              ),
+              e('div', {},
+                e('h1', { className: 'text-base font-bold text-gray-800 leading-none' }, 'Experiencia del cliente'),
+                e('p', { className: 'text-xs text-gray-400 mt-1' }, 'GitHub Pages + Apps Script API')
+              )
+            ),
+            e('div', { className: 'flex items-center gap-3 w-full sm:w-auto justify-end' },
+              e('select', { value: mes, onChange: ev => setMes(ev.target.value), className: 'text-xs font-semibold text-gray-600 bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 outline-none' },
+                listaMeses.map(m => e('option', { key: m, value: m }, m))
+              ),
+              e('button', { onClick: cargarData, className: 'p-2 bg-gray-50 hover:bg-gray-100 rounded-xl text-gray-500 border border-gray-200' },
+                e('i', { className: 'fa-solid fa-arrow-rotate-right' })
+              )
+            )
+          ),
+          e('div', { className: 'max-w-7xl mx-auto flex gap-6 -mb-4 mt-4 overflow-x-auto' },
+            [['NPS', 0], ['CSAT', 1], ['Inactivos', 2], ['Salidas / Off', 3]].map(([lbl, id]) => 
+              e('button', {
+                key: id,
+                onClick: () => setTab(id),
+                className: `tab-btn pb-3 text-xs font-bold tracking-wider uppercase whitespace-nowrap ${tab === id ? 'active text-blue-600' : 'text-gray-400'}`
+              }, lbl)
+            )
+          )
+        ),
+        e('main', { className: 'max-w-7xl mx-auto px-6 mt-6' },
+          tab === 0 && e('div', { className: 'card p-6' },
+            e('h3', { className: 'text-sm font-bold text-gray-700 mb-4' }, 'Respuestas NPS Filtradas (' + npsFiltrados.length + ')'),
+            npsFiltrados.length === 0 ? e('p', { className: 'text-sm text-gray-400' }, 'Sin respuestas en este periodo.') :
+            e('div', { className: 'overflow-x-auto' },
+              e('table', { className: 'w-full text-sm text-left' },
+                e('thead', {},
+                  e('tr', { className: 'border-b border-gray-100 text-gray-400 text-xs font-bold' },
+                    e('th', { className: 'pb-2' }, 'Cliente'), e('th', { className: 'pb-2' }, 'País'), e('th', { className: 'pb-2' }, 'Q'), e('th', { className: 'pb-2' }, 'Nota'), e('th', { className: 'pb-2' }, 'Razón')
+                  )
+                ),
+                e('tbody', {},
+                  npsFiltrados.map((r, i) => e('tr', { key: i, className: 'border-b border-gray-50 text-gray-700 text-xs' },
+                    e('td', { className: 'py-2 font-bold' }, r.cliente),
+                    e('td', { className: 'py-2' }, r.pais),
+                    e('td', { className: 'py-2 text-blue-600' }, r.periodoQ),
+                    e('td', { className: 'py-2 font-bold' }, r.puntuacion),
+                    e('td', { className: 'py-2 text-gray-500' }, r.razon || '—')
+                  ))
+                )
+              )
+            )
+          ),
+          tab === 1 && e('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-6' },
+            e('div', { className: 'card p-6' },
+              e('h3', { className: 'text-sm font-bold text-gray-700 mb-3' }, 'Reuniones Comerciales'),
+              csatReunionFiltrados.length === 0 ? e('p', { className: 'text-xs text-gray-400' }, 'Sin datos.') :
+              csatReunionFiltrados.map((r, i) => e('div', { key: i, className: 'p-2 bg-gray-50 rounded mb-2 text-xs' },
+                e('p', { className: 'font-bold' }, r.cliente + ' (' + r.pais + ')'),
+                e('p', { className: 'text-gray-500' }, 'Métrica: ⭐ ' + r.puntuacion + ' | KAM: ' + r.kam),
+                r.comentario && e('p', { className: 'italic text-gray-400 mt-1' }, '"' + r.comentario + '"')
+              ))
+            ),
+            e('div', { className: 'card p-6' },
+              e('h3', { className: 'text-sm font-bold text-gray-700 mb-3' }, 'Abonos Trimestrales'),
+              csatAbonoFiltrados.length === 0 ? e('p', { className: 'text-xs text-gray-400' }, 'Sin datos.') :
+              csatAbonoFiltrados.map((r, i) => e('div', { key: i, className: 'p-2 bg-gray-50 rounded mb-2 text-xs flex justify-between' },
+                e('span', { className: 'font-bold' }, r.cliente),
+                e('span', { className: 'text-purple-600' }, 'Volumen: ' + r.abonos)
+              ))
+            )
+          ),
+          tab === 2 && e('div', { className: 'card p-10 text-center text-gray-500 font-medium' },
+            e('i', { className: 'fa-solid fa-gears text-4xl text-blue-400 mb-3 block' }),
+            data.inactivos
+          ),
+          tab === 3 && e('div', { className: 'card p-6' },
+            e('h3', { className: 'text-sm font-bold text-gray-700 mb-4' }, 'Clientes Desactivados'),
+            salidasFiltradas.length === 0 ? e('p', { className: 'text-sm text-gray-400' }, 'No hay bajas en este periodo 🎉') :
+            salidasFiltradas.map((s, i) => e('div', { key: i, className: 'p-3 border-b border-gray-100 last:border-0 text-xs text-gray-700' },
+              e('p', { className: 'font-bold' }, s.cliente || 'Empresa'),
+              e('p', { className: 'mt-1' }, 'Motivo: ' + s.motivoBaja),
+              e('p', { className: 'text-gray-400 mt-0.5' }, 'Experiencia Global: ' + s.experiencia + '/10 | Evaluación Ejecutivo: ' + s.notaKam + '/10')
+            ))
+          )
+        )
       );
     }
 
-    ReactDOM.render(<App />, document.getElementById('root'));
+    ReactDOM.render(e(App), document.getElementById('root'));
   </script>
 </body>
 </html>
