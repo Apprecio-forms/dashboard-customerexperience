@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard · Experiencia del cliente</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { sans: ['"DM Sans"', 'sans-serif'] },
+          colors: {
+            brand: { DEFAULT: '#4361EE', light: '#EEF1FD', dark: '#3451D1' },
+            success: '#22C55E', warn: '#F59E0B', danger: '#EF4444',
+            neutral: { 50: '#F8F9FC', 100: '#F0F2F7', 200: '#E5E8EF', 300: '#CDD1DC', 400: '#9AA0B4', 500: '#6B7280', 700: '#374151', 800: '#1F2937', 900: '#111827' }
+          }
+        }
+      }
+    };
+  </script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/17.0.2/umd/react.production.min.js" crossorigin></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/17.0.2/umd/react-dom.production.min.js" crossorigin></script>
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/6.26.0/babel.min.js" crossorigin></script>
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { font-family: 'DM Sans', sans-serif; background: #F0F2F7; min-height: 100vh; }
+    .card { background: #fff; border-radius: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.05); }
+    .tab-btn { position: relative; transition: color 0.2s; }
+    .tab-btn::after { content: ''; position: absolute; bottom: -1px; left: 0; right: 0; height: 2px; background: #4361EE; border-radius: 2px 2px 0 0; transform: scaleX(0); transition: transform 0.25s ease; }
+    .tab-btn.active { color: #4361EE; font-weight: 600; }
+    .tab-btn.active::after { transform: scaleX(1); }
+    .skeleton { background: linear-gradient(90deg, #f0f2f7 25%, #e5e8ef 50%, #f0f2f7 75%); background-size: 200% 100%; animation: shimmer 1.6s infinite; border-radius: 12px; }
+    @keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
+  </style>
+</head>
+
+<body>
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState, useEffect, useRef, useCallback, useMemo } = React;
+
+    const CONFIG_FRONTEND = {
+      // =================================================================
+      // Coloca aquí tu enlace de Apps Script generado en el Paso 2
+      // =================================================================
+      URL_API_BACKEND: "https://script.google.com/macros/s/AKfycbw6T6T66wLw6tGfU5-mZksv_WbV6IqLshF7i6I9MvA-Fxtq-CIs_C6lUq6O-Mh1X9U/exec" 
+    };
+
+    function KPI({ label, value, sub, iconClass }) {
+      return (
+        <div className="card p-5 flex flex-col gap-2">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">{label}</span>
+            {iconClass && <i className={`${iconClass} text-gray-400`}></i>}
+          </div>
+          <span className="text-2xl font-bold text-gray-800">{value}</span>
+          {sub && <span className="text-[11px] text-gray-400">{sub}</span>}
+        </div>
+      );
+    }
+
+    function Empty({ msg = 'Sin datos para mostrar' }) {
+      return (
+        <div className="text-center py-10 text-gray-400">
+          <i className="fa-solid fa-folder-open text-3xl mb-2 block"></i>
+          <p className="text-sm">{msg}</p>
+        </div>
+      );
+    }
+
+    function TabNPS({ data, mes }) {
+      const registros = useMemo(() => mes === 'Todos' ? data.nps : data.nps.filter(r => r.mes === mes), [data, mes]);
+      return (
+        <div className="space-y-6">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <KPI label="Total Encuestas" value={registros.length} iconClass="fa-solid fa-users" />
+            <KPI label="Periodo Filtrado" value={mes} iconClass="fa-solid fa-calendar" />
+          </div>
+          <div className="card p-6">
+            <h3 className="text-sm font-bold text-gray-700 mb-4">Respuestas Recientes (NPS)</h3>
+            {registros.length === 0 ? <Empty /> : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm text-left">
+                  <thead>
+                    <tr className="border-b border-gray-100 text-gray-400 text-xs uppercase font-bold">
+                      <th className="pb-3">Cliente</th>
+                      <th className="pb-3">País</th>
+                      <th className="pb-3">Periodo</th>
+                      <th className="pb-3">Nota NPS</th>
+                      <th className="pb-3">Razón</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {registros.map((r, i) => (
+                      <tr key={i} className="border-b border-gray-50 last:border-0 text-gray-700">
+                        <td className="py-3 font-bold">{r.cliente}</td>
+                        <td className="py-3">{r.pais}</td>
+                        <td className="py-3"><span className="bg-blue-50 text-blue-600 text-xs px-2 py-1 rounded font-semibold">{r.periodoQ}</span></td>
+                        <td className="py-3"><span className={`font-bold px-2 py-1 rounded text-white ${r.puntuacion >= 9 ? 'bg-green-500' : r.puntuacion >= 7 ? 'bg-amber-500' : 'bg-red-500'}`}>{r.puntuacion}</span></td>
+                        <td className="py-3 text-xs text-gray-500 max-w-[200px] truncate" title={r.razon}>{r.razon || '—'}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        </div>
+      );
+    }
+
+    function TabCSAT({ data, mes }) {
+      const filteredReunion = useMemo(() => mes === 'Todos' ? data.csat_reunion : data.csat_reunion.filter(r => r.mes === mes), [data, mes]);
+      const filteredAbono = useMemo(() => mes === 'Todos' ? data.csat_abono : data.csat_abono.filter(r => r.mes === mes), [data, mes]);
+      return (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="card p-6">
+            <h3 className="text-sm font-bold text-gray-700 mb-4"><i className="fa-solid fa-comments text-blue-500 mr-2"></i>Post Reuniones Comerciales</h3>
+            {filteredReunion.length === 0 ? <Empty /> : (
+              <div className="space-y-3 max-h-[350px] overflow-y-auto pr-2">
+                {filteredReunion.map((r, i) => (
+                  <div key={i} className="p-3 bg-gray-50 rounded-xl flex justify-between items-start gap-2">
+                    <div>
+                      <p className="font-bold text-gray-800 text-xs">{r.cliente} <span className="text-gray-400 font-normal">({r.pais})</span></p>
+                      <p className="text-[11px] text-gray-500 mt-1">KAM: {r.kam || 'Sin asignar'}</p>
+                      {r.comentario && <p className="text-[11px] text-gray-400 italic mt-1">"{r.comentario}"</p>}
+                    </div>
+                    <span className="text-xs font-bold text-green-600 bg-green-50 px-2 py-0.5 rounded">⭐ {r.puntuacion}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+          <div className="card p-6">
+            <h3 className="text-sm font-bold text-gray-700 mb-4"><i className="fa-solid fa-money-bill-transfer text-purple-500 mr-2"></i>Post Abonos Trimestrales</h3>
+            {filteredAbono.length === 0 ? <Empty /> : (
+              <div className="space-y-3 max-h-[350px] overflow-y-auto pr-2">
+                {filteredAbono.map((r, i) => (
+                  <div key={i} className="p-3 bg-gray-50 rounded-xl flex justify-between items-center">
+                    <div>
+                      <p className="font-bold text-gray-800 text-xs">{r.cliente}</p>
+                      <p className="text-[10px] text-gray-400 mt-0.5">Región: {r.pais}</p>
+                    </div>
+                    <span className="text-[11px] font-semibold text-purple-600 bg-purple-50 px-2 py-1 rounded">Abonos: {r.abonos}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      );
+    }
+
+    function TabSalidas({ data, mes }) {
+      const registros = useMemo(() => mes === 'Todos' ? data.salidas : data.salidas.filter(r => r.mes === mes), [data, mes]);
+      return (
+        <div className="card p-6">
+          <h3 className="text-sm font-bold text-gray-700 mb-4">Registro de Clientes Desactivados (Offboarding)</h3>
+          {registros.length === 0 ? <Empty msg="¡Excelente! No hay salidas registradas 🎉" /> : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm text-left">
+                <thead>
+                  <tr className="border-b border-gray-100 text-gray-400 text-xs uppercase font-bold">
+                    <th className="pb-3">Cliente</th>
+                    <th className="pb-3">País</th>
+                    <th className="pb-3">Principal Motivo</th>
+                    <th className="pb-3 text-center">Exp (1-10)</th>
+                    <th className="pb-3 text-center">Nota KAM</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {registros.map((s, i) => (
+                    <tr key={i} className="border-b border-gray-50 last:border-0 text-gray-700">
+                      <td className="py-3 font-bold">{s.cliente || 'Empresa'}</td>
+                      <td className="py-3">{s.pais}</td>
+                      <td className="py-3"><span className="bg-red-50 text-red-600 text-xs px-2 py-1 rounded-full font-semibold">{s.motivoBaja || 'No especifica'}</span></td>
+                      <td className="py-3 text-center font-bold text-gray-500">{s.experiencia || '—'}</td>
+                      <td className="py-3 text-center font-bold text-gray-500">{s.notaKam || '—'}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    function App() {
+      const [data, setData] = useState(null);
+      const [loading, setLoading] = useState(true);
+      const [error, setError] = useState(null);
+      const [tab, setTab] = useState(0);
+      const [mes, setMes] = useState('Todos');
+
+      const cargarData = useCallback(() => {
+        setLoading(true);
+        setError(null);
+        fetch(CONFIG_FRONTEND.URL_API_BACKEND)
+          .then(res => {
+            if (!res.ok) throw new Error("La API respondió con error.");
+            return res.json();
+          })
+          .then(parsed => {
+            if (parsed.error) throw new Error(parsed.error);
+            setData(parsed);
+            setLoading(false);
+          })
+          .catch(err => {
+            setError(err.message || "Error conectando al servidor.");
+            setLoading(false);
+          });
+      }, []);
+
+      useEffect(() => { cargarData(); }, []);
+
+      const listaMeses = useMemo(() => {
+        if (!data) return ['Todos'];
+        const setMeses = new Set();
+        if(Array.isArray(data.nps)) data.nps.forEach(r => setMeses.add(r.mes));
+        if(Array.isArray(data.csat_reunion)) data.csat_reunion.forEach(r => setMeses.add(r.mes));
+        if(Array.isArray(data.csat_abono)) data.csat_abono.forEach(r => setMeses.add(r.mes));
+        if(Array.isArray(data.salidas)) data.salidas.forEach(r => setMeses.add(r.mes));
+        return ['Todos', ...Array.from(setMeses)];
+      }, [data]);
+
+      return (
+        <div className="min-h-screen pb-10">
+          <header className="bg-white border-b border-gray-200 sticky top-0 z-20 shadow-sm px-6 py-4">
+            <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center text-white text-base shadow-md shadow-blue-200">
+                  <i className="fa-solid fa-heart-pulse"></i>
+                </div>
+                <div>
+                  <h1 className="text-base font-bold text-gray-800 leading-none">Experiencia del cliente</h1>
+                  <p className="text-xs text-gray-400 mt-1">Infraestructura GitHub Pages + Apps Script API</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-3 w-full sm:w-auto justify-end">
+                <select value={mes} onChange={e => setMes(e.target.value)} className="text-xs font-semibold text-gray-600 bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 outline-none cursor-pointer">
+                  {listaMeses.map(m => <option key={m} value={m}>{m}</option>)}
+                </select>
+                <button onClick={cargarData} disabled={loading} className="p-2 bg-gray-50 hover:bg-gray-100 rounded-xl text-gray-500 border border-gray-200">
+                  <i className={`fa-solid fa-arrow-rotate-right ${loading ? 'animate-spin' : ''}`}></i>
+                </button>
+              </div>
+            </div>
+            <div className="max-w-7xl mx-auto flex gap-6 -mb-4 mt-4 overflow-x-auto">
+              {[
+                ['NPS', 'fa-solid fa-chart-line', 0],
+                ['CSAT', 'fa-solid fa-star', 1],
+                ['Inactivos', 'fa-solid fa-user-clock', 2],
+                ['Salidas / Off', 'fa-solid fa-arrow-right-from-bracket', 3]
+              ].map(([label, icon, id]) => (
+                <button key={id} onClick={() => setTab(id)} className={`tab-btn pb-3 text-xs font-bold tracking-wider uppercase flex items-center gap-1.5 whitespace-nowrap ${tab === id ? 'active text-blue-600' : 'text-gray-400 hover:text-gray-600'}`}>
+                  <i className={icon}></i>{label}
+                </button>
+              ))}
+            </div>
+          </header>
+
+          <main className="max-w-7xl mx-auto px-6 mt-6">
+            {loading && (
+              <div className="space-y-4">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4"><div className="skeleton h-24"/><div className="skeleton h-24"/><div className="skeleton h-24"/><div className="skeleton h-24"/></div>
+                <div className="skeleton h-64 w-full"/>
+              </div>
+            )}
+            {!loading && error && (
+              <div className="card p-8 text-center max-w-md mx-auto space-y-3">
+                <i className="fa-solid fa-triangle-exclamation text-red-500 text-3xl"></i>
+                <p className="font-bold text-gray-800">Error de conexión</p>
+                <p className="text-xs text-gray-400">{error}</p>
+                <button onClick={cargarData} className="px-4 py-2 bg-blue-600 text-white text-xs font-bold rounded-xl">Reintentar</button>
+              </div>
+            )}
+            {!loading && !error && data && (
+              <>
+                {tab === 0 && <TabNPS data={data} mes={mes} />}
+                {tab === 1 && <TabCSAT data={data} mes={mes} />}
+                {tab === 2 && (
+                  <div className="card p-10 text-center text-gray-500 font-medium">
+                    <i className="fa-solid fa-gears text-4xl text-blue-400 mb-3 block animate-pulse"></i>
+                    {data.inactivos}
+                  </div>
+                )}
+                {tab === 3 && <TabSalidas data={data} mes={mes} />}
+              </>
+            )}
+          </main>
+        </div>
+      );
+    }
+
+    // Renderizado compatible con React 17
+    ReactDOM.render(<App />, document.getElementById('root'));
+  </script>
+</body>
+</html>
