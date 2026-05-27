@@ -8,7 +8,6 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
 
   <script src="https://cdn.tailwindcss.com"></script>
@@ -20,7 +19,7 @@
           colors: {
             brand: { DEFAULT: '#4361EE', light: '#EEF1FD', dark: '#3451D1' },
             success: '#22C55E', warn: '#F59E0B', danger: '#EF4444',
-            neutral: { 50: '#F8F9FC', 100: '#F0F2F7', 200: '#E5E8EF', 300: '#CDD1DC', 400: '#9AA0B4', 500: '#6B7280', 700: '#374151', 800: '#1F2937', 900: '#111827' }
+            neutral: { 50: '#F8F9FA', 100: '#F1F3F7', 200: '#E4E7EB', 300: '#CBD1D6', 400: '#9AA0B4', 500: '#6B7280', 700: '#374151', 800: '#1F2937', 900: '#111827' }
           }
         }
       }
@@ -33,15 +32,14 @@
 
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    html, body { font-family: 'DM Sans', sans-serif; background: #F0F2F7; min-height: 100vh; color: #1F2937; }
-    .card { background: #fff; border-radius: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.05); }
-    .tab-btn { position: relative; transition: color 0.2s; }
-    .tab-btn::after { content: ''; position: absolute; bottom: -1px; left: 0; right: 0; height: 2px; background: #4361EE; border-radius: 2px 2px 0 0; transform: scaleX(0); transition: transform 0.25s ease; }
-    .tab-btn.active { color: #4361EE; font-weight: 600; }
+    html, body { font-family: 'DM Sans', sans-serif; background: #F8F9FA; min-height: 100vh; color: #1F2937; }
+    .card { background: #ffffff; border-radius: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.02), 0 1px 3px rgba(0,0,0,0.03); border: 1px solid #E4E7EB; }
+    .tab-btn { position: relative; transition: all 0.2s; }
+    .tab-btn::after { content: ''; position: absolute; bottom: -1px; left: 0; right: 0; height: 3px; background: #4361EE; border-radius: 3px 3px 0 0; transform: scaleX(0); transition: transform 0.2s ease; }
+    .tab-btn.active { color: #4361EE; font-weight: 700; }
     .tab-btn.active::after { transform: scaleX(1); }
-    .skeleton { background: linear-gradient(90deg, #f0f2f7 25%, #e5e8ef 50%, #f0f2f7 75%); background-size: 200% 100%; animation: shimmer 1.6s infinite; border-radius: 12px; }
-    @keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
-    canvas { max-width: 100%; }
+    .tooltip-box { display: none; position: absolute; z-index: 50; width: 280px; background: #111827; color: #ffffff; padding: 12px; border-radius: 12px; font-size: 11px; box-shadow: 0 10px 25px rgba(0,0,0,0.15); line-height: 1.4; }
+    .tooltip-container:hover .tooltip-box { display: block; }
   </style>
 </head>
 
@@ -52,25 +50,18 @@
     const e = React.createElement;
     const { useState, useEffect, useCallback, useMemo, useRef } = React;
 
-    // URL Definitiva Verificada
     const CONFIG_FRONTEND = {
       URL_API_BACKEND: "https://script.google.com/macros/s/AKfycbx3TEMFdxbYGKZFhF5GSZstiiV6vivCCbLq9L7A2iq5oq6DgrVyM6Q3a5Wd_JLAhbT1Wg/exec"
     };
 
-    // --- Componente Gráfico NPS (Donut) ---
-    function ChartDonutNPS({ dataPromotores, dataNeutrales, dataDetractores, score }) {
+    // --- GRÁFICO DONUT COMÚN ---
+    function ChartDonut({ id, promotores, neutrales, detractores, score, labelCenter }) {
       const canvasRef = useRef(null);
       const chartRef = useRef(null);
 
       useEffect(() => {
         if (!canvasRef.current) return;
-
-        if (chartRef.current) {
-          chartRef.current.destroy();
-        }
-
-        const total = dataPromotores + dataNeutrales + dataDetractores;
-        if (total === 0) return;
+        if (chartRef.current) chartRef.current.destroy();
 
         const ctx = canvasRef.current.getContext('2d');
         chartRef.current = new Chart(ctx, {
@@ -78,259 +69,400 @@
           data: {
             labels: ['Promotores (9-10)', 'Neutrales (7-8)', 'Detractores (0-6)'],
             datasets: [{
-              data: [dataPromotores, dataNeutrales, dataDetractores],
-              backgroundColor: ['#22C55E', '#F59E0B', '#EF4444'], // verde, ámbar, rojo
-              borderWidth: 2,
+              data: [promotores, neutrales, detractores],
+              backgroundColor: ['#22C55E', '#F59E0B', '#EF4444'],
+              borderWidth: 3,
               borderColor: '#ffffff',
-              hoverOffset: 10,
-              cutout: '75%'
+              hoverOffset: 6,
+              cutout: '78%'
             }]
           },
           options: {
             responsive: true,
             maintainAspectRatio: false,
-            plugins: {
-              legend: { display: false },
-              tooltip: {
-                callbacks: {
-                  label: (context) => {
-                    const value = context.raw;
-                    const percentage = total > 0 ? ((value / total) * 100).toFixed(1) : 0;
-                    return ` ${context.label}: ${value} (${percentage}%)`;
-                  }
-                }
-              }
-            }
+            plugins: { legend: { display: false } }
           },
           plugins: [{
             id: 'textCenter',
             beforeDraw: (chart) => {
               const { ctx, width, height } = chart;
               ctx.save();
-              const fontHeight = Math.min(width, height) / 6;
+              const fontHeight = Math.min(width, height) / 5.5;
               ctx.font = `800 ${fontHeight}px DM Sans, sans-serif`;
               ctx.textAlign = 'center';
               ctx.textBaseline = 'middle';
               ctx.fillStyle = '#111827';
-              const textX = width / 2;
-              const textY = height / 2;
-              ctx.fillText(String(score || '0'), textX, textY);
+              ctx.fillText((score > 0 ? '+' : '') + score, width / 2, height / 2 - 5);
               
-              ctx.font = `600 ${fontHeight/2.5}px DM Sans, sans-serif`;
+              ctx.font = `600 ${fontHeight/2.8}px DM Sans, sans-serif`;
               ctx.fillStyle = '#9AA0B4';
-              ctx.fillText('NPS Score', textX, textY + fontHeight/1.5);
+              ctx.fillText(labelCenter, width / 2, height / 2 + fontHeight/1.5);
               ctx.restore();
             }
           }]
         });
 
-        return () => {
-          if (chartRef.current) {
-            chartRef.current.destroy();
-          }
-        };
-      }, [dataPromotores, dataNeutrales, dataDetractores, score]);
+        return () => { if (chartRef.current) chartRef.current.destroy(); };
+      }, [promotores, neutrales, detractores, score, labelCenter]);
 
-      return e('div', { className: 'relative w-full h-[260px] flex items-center justify-center' },
-        e('canvas', { ref: canvasRef })
-      );
+      return e('div', { className: 'relative w-full h-[200px]' }, e('canvas', { ref: canvasRef }));
     }
 
-    // --- Componente Pestaña NPS (Basado en el Sketch) ---
-    function TabNPS({ npsCompleto }) {
-      const [filtroPais, setFiltroPais] = useState('Todos');
-      const [filtroMes, setFiltroMes] = useState('Todos');
+    // --- GRÁFICO DE TENDENCIA HISTÓRICA (LÍNEAS) ---
+    function ChartLineaHistorico({ datos }) {
+      const canvasRef = useRef(null);
+      const chartRef = useRef(null);
 
-      // 1. Cálculos de Filtros Seguros
-      const { listaPaises, listaMeses } = useMemo(() => {
-        const paisesSet = new Set();
-        const mesesSet = new Set();
-        npsCompleto.forEach(r => {
-          if (r.pais) paisesSet.add(r.pais);
-          if (r.mes) mesesSet.add(r.mes);
-        });
-        return {
-          listaPaises: ['Todos', ...Array.from(paisesSet)],
-          listaMeses: ['Todos', ...Array.from(mesesSet)]
-        };
-      }, [npsCompleto]);
+      useEffect(() => {
+        if (!canvasRef.current) return;
+        if (chartRef.current) chartRef.current.destroy();
 
-      const npsFiltrados = useMemo(() => {
-        return npsCompleto.filter(r => {
-          const cumplePais = filtroPais === 'Todos' || r.pais === filtroPais;
-          const cumpleMes = filtroMes === 'Todos' || r.mes === filtroMes;
-          return cumplePais && cumpleMes;
-        });
-      }, [npsCompleto, filtroPais, filtroMes]);
-
-      // 2. Cálculos de Métricas
-      const metricas = useMemo(() => {
-        const total = npsFiltrados.length;
-        if (total === 0) return { score: 0, promotores: 0, neutrales: 0, detractores: 0, promotoresPorc: 0, neutralesPorc: 0, detractoresPorc: 0, promotorScore: '—' };
-        
-        let promotores = 0;
-        let neutrales = 0;
-        let detractores = 0;
-        let sumaPromotor = 0;
-        let cantPromotor = 0;
-
-        npsFiltrados.forEach(r => {
-          const nota = parseFloat(r.puntuacion);
-          if (!isNaN(nota)) {
-            if (nota >= 9) promotores++;
-            else if (nota >= 7) neutrales++;
-            else detractores++;
-
-            // Métrica adicional "Datos Generales"
-            sumaPromotor += nota;
-            cantPromotor++;
+        const ctx = canvasRef.current.getContext('2d');
+        chartRef.current = new Chart(ctx, {
+          type: 'line',
+          data: {
+            labels: datos.map(d => d.q),
+            datasets: [{
+              label: 'NPS Score ',
+              data: datos.map(d => d.score),
+              borderColor: '#4361EE',
+              backgroundColor: 'rgba(67, 97, 238, 0.06)',
+              borderWidth: 3,
+              tension: 0.35,
+              fill: true,
+              pointBackgroundColor: '#4361EE',
+              pointRadius: 5,
+              pointHoverRadius: 8
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+              y: { min: -100, max: 100, grid: { color: '#F1F3F7' }, ticks: { font: { family: 'DM Sans' } } },
+              x: { grid: { display: false }, ticks: { font: { family: 'DM Sans', weight: 'bold' } } }
+            },
+            plugins: { legend: { display: false } }
           }
         });
 
-        const promotoresPorc = total > 0 ? (promotores / total) * 100 : 0;
-        const detractoresPorc = total > 0 ? (detractores / total) * 100 : 0;
-        const score = Math.round(promotoresPorc - detractoresPorc);
+        return () => { if (chartRef.current) chartRef.current.destroy(); };
+      }, [datos]);
 
-        const neutralesPorc = total > 0 ? (neutrales / total) * 100 : 0;
-        const promotorScore = cantPromotor > 0 ? (sumaPromotor / cantPromotor).toFixed(1) : '—';
+      return e('div', { className: 'w-full h-[240px]' }, e('canvas', { ref: canvasRef }));
+    }
 
-        return { score, promotores, neutrales, detractores, promotoresPorc: promotoresPorc.toFixed(1), neutralesPorc: neutralesPorc.toFixed(1), detractoresPorc: detractoresPorc.toFixed(1), promotorScore };
-      }, [npsFiltrados]);
-
-      return e('div', { className: 'space-y-6' },
-        // Bloque 1: NPS Título y Descripción (Sketch Top)
-        e('div', { className: 'card p-6 border border-gray-100 shadow-sm' },
-          e('div', { className: 'flex items-center gap-3 mb-2' },
-            e('i', { className: 'fa-solid fa-chart-line text-blue-600 text-xl' }),
-            e('h2', { className: 'text-xl font-extrabold text-gray-900 tracking-tight' }, 'Net Promoter Score (NPS)')
-          ),
-          e('p', { className: 'text-sm text-gray-500 max-w-2xl' }, 
-            'El NPS mide la lealtad y satisfacción del cliente haciendo una pregunta clave: "¿Qué tan probable es que recomiende nuestro servicio?". Esta pestaña visualiza la distribución de Promotores, Neutrales y Detractores junto con sus comentarios cualitativos.'
-          )
-        ),
-
-        // Bloque 2: Distribución y Filtros (Sketch Middle - Flex)
-        e('div', { className: 'flex flex-col lg:flex-row gap-6' },
-          // Gráfico y KPI (60% ancho)
-          e('div', { className: 'card p-8 lg:w-3/5' },
-            e('div', { className: 'flex justify-between items-start mb-6' },
-              e('div', {},
-                e('h3', { className: 'text-xs font-bold text-gray-400 uppercase tracking-wider' }, 'Distribución de Clientes'),
-                e('p', { className: 'text-sm font-medium text-gray-600' }, `Basado en ${npsFiltrados.length} encuestas ${filtroPais !== 'Todos' ? 'en '+filtroPais : ''} ${filtroMes !== 'Todos' ? 'del '+filtroMes : ''}`)
-              ),
-              e('span', { className: `badge text-xs font-bold px-3 py-1 rounded-full ${metricas.score >= 50 ? 'bg-green-100 text-green-700' : metricas.score >= 0 ? 'bg-amber-100 text-amber-700' : 'bg-red-100 text-red-700'}` }, 
-                `Score: ${metricas.score}`
-              )
+    // --- SUB-MÓDULO DE BLOQUE DE PREGUNTA ESPEJO ---
+    function BloquePreguntaNPS({ titulo, descripcion, totalRespuestas, promotores, neutrales, detractores, score, promedio, totalPromotores, porcentajePromotores, listaPaises, listaMeses, filtroPais, setFiltroPais, filtroMes, setFiltroMes, textoExportar }) {
+      return e('div', { className: 'card p-6 flex flex-col md:flex-row gap-6 bg-white' },
+        // Lado Izquierdo: Gráfica y Filtros Internos
+        e('div', { className: 'w-full md:w-7/12 flex flex-col justify-between border-r border-gray-100 pr-0 md:pr-4' },
+          e('div', { className: 'flex justify-between items-start mb-4' },
+            e('div', {},
+              e('h3', { className: 'text-sm font-bold text-gray-900' }, titulo),
+              e('p', { className: 'text-[11px] font-semibold text-gray-400 uppercase mt-0.5' }, `Basado en ${totalRespuestas} respuestas`)
             ),
-            e(ChartDonutNPS, { dataPromotores: metricas.promotores, dataNeutrales: metricas.neutrales, dataDetractores: metricas.detractores, score: metricas.score }),
-            // Leyendas Inline
-            e('div', { className: 'flex justify-center gap-8 mt-6 border-t border-gray-100 pt-5 text-center' },
-              [['Promotores', 'bg-green-500', metricas.promotores, metricas.promotoresPorc], ['Neutrales', 'bg-amber-500', metricas.neutrales, metricas.neutralesPorc], ['Detractores', 'bg-red-500', metricas.detractores, metricas.detractoresPorc]].map(([lbl, bg, cant, porc]) => 
-                e('div', { key: lbl, className: 'space-y-1' },
-                  e('div', { className: 'flex items-center gap-2 justify-center' },
-                    e('span', { className: `w-2.5 h-2.5 rounded-full ${bg}` }),
-                    e('span', { className: 'text-xs font-semibold text-gray-500' }, lbl)
-                  ),
-                  e('p', { className: 'text-base font-bold text-gray-900 leading-none' }, `${porc}%`),
-                  e('p', { className: 'text-[11px] text-gray-400' }, `(${cant})`)
-                )
+            // Filtros Dinámicos Incrustados en la esquina del gráfico
+            e('div', { className: 'flex gap-2' },
+              e('select', { value: filtroPais, onChange: ev => setFiltroPais(ev.target.value), className: 'text-[11px] font-bold text-gray-500 bg-gray-50 border border-gray-200 rounded-lg px-2 py-1 outline-none cursor-pointer' },
+                listaPaises.map(p => e('option', { key: p, value: p }, p === 'Todos' ? 'País: Todos' : p))
+              ),
+              e('select', { value: filtroMes, onChange: ev => setFiltroMes(ev.target.value), className: 'text-[11px] font-bold text-gray-500 bg-gray-50 border border-gray-200 rounded-lg px-2 py-1 outline-none cursor-pointer' },
+                listaMeses.map(m => e('option', { key: m, value: m }, m === 'Todos' ? 'Mes: Todos' : m))
               )
             )
           ),
-
-          // Filtros y Métricas Generales (40% ancho - Sketch Right)
-          e('div', { className: 'space-y-6 lg:w-2/5' },
-            // Filtros Dinámicos
-            e('div', { className: 'card p-6 space-y-4 border border-gray-100' },
-              e('h3', { className: 'text-xs font-semibold text-gray-400 uppercase tracking-wider' }, 'Filtros Dinámicos'),
-              e('div', { className: 'grid grid-cols-2 gap-4' },
-                e('div', { className: 'space-y-1.5' },
-                  e('label', { className: 'text-xs text-gray-500' }, 'País:'),
-                  e('select', { value: filtroPais, onChange: ev => setFiltroPais(ev.target.value), className: 'w-full text-xs font-semibold text-gray-600 bg-gray-50 border border-gray-100 rounded-lg px-3 py-2 outline-none cursor-pointer' },
-                    listaPaises.map(p => e('option', { key: p, value: p }, p))
-                  )
-                ),
-                e('div', { className: 'space-y-1.5' },
-                  e('label', { className: 'text-xs text-gray-500' }, 'Mes:'),
-                  e('select', { value: filtroMes, onChange: ev => setFiltroMes(ev.target.value), className: 'w-full text-xs font-semibold text-gray-600 bg-gray-50 border border-gray-100 rounded-lg px-3 py-2 outline-none cursor-pointer' },
-                    listaMeses.map(m => e('option', { key: m, value: m }, m))
-                  )
-                )
+          totalRespuestas === 0 ? e('div', { className: 'h-[200px] flex items-center justify-center text-xs text-gray-400' }, 'Sin respuestas en este corte') :
+          e(ChartDonut, { promotores, neutrales, detractores, score, labelCenter: 'Score General' }),
+          
+          // Mini leyendas porcentuales abajo del donut
+          e('div', { className: 'flex justify-around mt-4 text-center text-xs border-t border-gray-50 pt-3' },
+            [['Promotores', 'text-green-600', promotores], ['Neutrales', 'text-amber-500', neutrales], ['Detractores', 'text-red-500', detractores]].map(([lbl, clr, cant]) => 
+              e('div', { key: lbl },
+                e('p', { className: `font-bold ${clr} text-sm` }, cant),
+                e('p', { className: 'text-[10px] text-gray-400 font-medium' }, lbl)
               )
-            ),
-            // Métricas Generales (Sketch: "Datos Generales")
-            e('div', { className: 'grid grid-cols-2 gap-4' },
-              // Promedio General
-              e('div', { className: 'card p-5 space-y-1' },
-                e('div', { className: 'flex justify-between items-center' },
-                  e('p', { className: 'text-xs font-medium text-gray-400' }, 'Promedio General'),
-                  e('i', { className: 'fa-solid fa-star-half-stroke text-blue-300 text-sm' })
-                ),
-                e('p', { className: 'text-2xl font-extrabold text-gray-900 leading-none' }, metricas.promotorScore),
-                e('p', { className: 'text-[11px] text-gray-400' }, 'Nota Promedio (0-10)')
-              ),
-              // Promotor Count
-              e('div', { className: 'card p-5 space-y-1' },
-                e('div', { className: 'flex justify-between items-center' },
-                  e('p', { className: 'text-xs font-medium text-gray-400' }, 'Total Promotores'),
-                  e('i', { className: 'fa-solid fa-user-check text-green-300 text-sm' })
-                ),
-                e('p', { className: 'text-2xl font-extrabold text-green-600 leading-none' }, metricas.promotores),
-                e('p', { className: 'text-[11px] text-gray-400' }, `${metricas.promotoresPorc}% de total`)
-              )
-            ),
-            // Botón de Acción (Sketch: "Exportar")
-            e('button', { className: 'w-full p-4 bg-gray-900 text-white rounded-xl text-xs font-bold uppercase tracking-widest flex items-center justify-center gap-2.5 shadow-lg shadow-gray-200' },
-              e('i', { className: 'fa-solid fa-file-csv' }),
-              'Exportar Respuestas'
             )
           )
         ),
-
-        // Bloque 3: Tabla de Respuestas Detallada
-        e('div', { className: 'card p-6' },
-          e('h3', { className: 'text-sm font-bold text-gray-700 mb-5' }, 'Comentarios y Respuestas Cualitativas'),
-          npsFiltrados.length === 0 ? e('div', { className: 'text-center py-10 text-gray-400' }, 'No hay respuestas para los filtros seleccionados.') :
-          e('div', { className: 'overflow-x-auto' },
-            e('table', { className: 'w-full text-sm text-left' },
-              e('thead', {},
-                e('tr', { className: 'border-b border-gray-100 text-gray-400 text-xs font-bold uppercase tracking-wider' },
-                  e('th', { className: 'pb-3' }, 'Cliente'), 
-                  e('th', { className: 'pb-3' }, 'País'), 
-                  e('th', { className: 'pb-3' }, 'Período'), 
-                  e('th', { className: 'pb-3 text-center' }, 'Nota'), 
-                  e('th', { className: 'pb-3 pl-4' }, 'Razón del Comentario')
-                )
+        // Lado Derecho: Tarjetas de Datos Generales y Botón Inteligente
+        e('div', { className: 'w-full md:w-5/12 flex flex-col justify-between' },
+          e('div', { className: 'space-y-4' },
+            e('h4', { className: 'text-[10px] font-bold text-gray-400 uppercase tracking-wider' }, 'Datos Generales Corte Filtrado'),
+            e('div', { className: 'grid grid-cols-2 gap-3' },
+              e('div', { className: 'bg-gray-50/60 p-4 rounded-xl border border-gray-100' },
+                e('p', { className: 'text-[11px] font-medium text-gray-400' }, 'Promedio General'),
+                e('p', { className: 'text-xl font-extrabold text-gray-800 mt-1' }, promedio),
+                e('p', { className: 'text-[9px] text-gray-400 mt-0.5 font-medium' }, 'Escala (0 a 10)')
               ),
-              e('tbody', {},
-                npsFiltrados.map((r, i) => r && e('tr', { key: i, className: 'border-b border-gray-50 text-gray-700 last:border-0 hover:bg-gray-50/50' },
-                  e('td', { className: 'py-3.5 font-semibold text-gray-900' }, r.cliente || '—'),
-                  e('td', { className: 'py-3.5 text-gray-600' }, r.pais || '—'),
-                  e('td', { className: 'py-3.5' }, e('span', { className: 'px-2 py-0.5 bg-blue-50 text-blue-600 rounded font-semibold text-[11px]' }, r.periodoQ || '—')),
-                  e('td', { className: 'py-3.5 text-center' }, e('span', { className: `font-bold text-lg leading-none ${r.puntuacion >= 9 ? 'text-green-600' : r.puntuacion >= 7 ? 'text-amber-600' : 'text-red-600'}` }, r.puntuacion !== undefined ? r.puntuacion : '—')),
-                  e('td', { className: 'py-3.5 pl-4 text-xs text-gray-500 italic max-w-lg' }, r.razon ? `"${r.razon}"` : '—')
-                ))
+              e('div', { className: 'bg-gray-50/60 p-4 rounded-xl border border-gray-100' },
+                e('p', { className: 'text-[11px] font-medium text-gray-400' }, 'Total Promotores'),
+                e('p', { className: 'text-xl font-extrabold text-green-600 mt-1' }, totalPromotores),
+                e('p', { className: 'text-[9px] text-gray-400 mt-0.5 font-medium' }, `${porcentajePromotores}% del grupo`)
               )
-            )
+            ),
+            e('p', { className: 'text-[11px] text-gray-400 mt-2 italic leading-relaxed' }, descripcion)
+          ),
+          // Botón Automatizado con IA
+          e('button', { className: 'w-full mt-5 p-3 bg-brand hover:bg-brand-dark text-white rounded-xl text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 shadow-md shadow-blue-100 transition-colors' },
+            e('i', { className: 'fa-solid fa-wand-magic-sparkles' }),
+            textoExportar
           )
         )
       );
     }
 
-    // --- Componentes para otras pestañas (Marcadores de posición) ---
+    // --- COMPONENTE PRINCIPAL MÓDULO NPS ---
+    function ModuleNPS({ rawNps }) {
+      // Corte de Filtros para Pregunta 1
+      const [p1Pais, setP1Pais] = useState('Todos');
+      const [p1Mes, setP1Mes] = useState('Todos');
+      // Corte de Filtros para Pregunta 2
+      const [p2Pais, setP2Pais] = useState('Todos');
+      const [p2Mes, setP2Mes] = useState('Todos');
+      // Corte de Filtros para Histórico
+      const [histPais, setHistPais] = useState('Todos');
+      const [histAnio, setHistAnio] = useState('2026');
+
+      // Universos de filtros únicos extraídos de la data limpia
+      const { listPaises, listMeses, listAnios } = useMemo(() => {
+        const p = new Set(), m = new Set(), a = new Set();
+        rawNps.forEach(r => {
+          if (r.pais) p.add(r.pais);
+          if (r.mes) m.add(r.mes);
+          if (r.anio) a.add(String(r.anio));
+        });
+        return {
+          listPaises: ['Todos', ...Array.from(p)],
+          listMeses: ['Todos', ...Array.from(m)],
+          listAnios: Array.from(a).length > 0 ? Array.from(a) : ['2026']
+        };
+      }, [rawNps]);
+
+      // --- CÓMPUTO PREGUNTA 1 (RECOMENDACIÓN) ---
+      const p1Filtrados = useMemo(() => {
+        return rawNps.filter(r => (p1Pais === 'Todos' || r.pais === p1Pais) && (p1Mes === 'Todos' || r.mes === p1Mes));
+      }, [rawNps, p1Pais, p1Mes]);
+
+      const m1 = useMemo(() => {
+        const total = p1Filtrados.length;
+        if (total === 0) return { total: 0, p: 0, n: 0, d: 0, score: 0, avg: '—', pPorc: 0 };
+        let prom = 0, neut = 0, detr = 0, suma = 0;
+        p1Filtrados.forEach(r => {
+          const v = parseFloat(r.puntuacion);
+          if (!isNaN(v)) {
+            suma += v;
+            if (v >= 9) prom++;
+            else if (v >= 7) neut++;
+            else detr++;
+          }
+        });
+        const pP = (prom / total) * 100;
+        const dP = (detr / total) * 100;
+        return { total, p: prom, n: neut, d: detr, score: Math.round(pP - dP), avg: (suma / total).toFixed(1), pPorc: pP.toFixed(0) };
+      }, [p1Filtrados]);
+
+      // --- CÓMPUTO PREGUNTA 2 (ATENCIÓN / PLATAFORMA) ---
+      const p2Filtrados = useMemo(() => {
+        return rawNps.filter(r => (p2Pais === 'Todos' || r.pais === p2Pais) && (p2Mes === 'Todos' || r.mes === p2Mes));
+      }, [rawNps, p2Pais, p2Mes]);
+
+      const m2 = useMemo(() => {
+        // Filtramos solo los registros que de verdad respondieron la pregunta 2
+        const validos = p2Filtrados.filter(r => r.pregunta2 !== undefined && r.pregunta2 !== null && r.pregunta2 !== '');
+        const total = validos.length;
+        if (total === 0) return { total: 0, p: 0, n: 0, d: 0, score: 0, avg: '—', pPorc: 0 };
+        let prom = 0, neut = 0, detr = 0, suma = 0;
+        validos.forEach(r => {
+          const v = parseFloat(r.pregunta2);
+          if (!isNaN(v)) {
+            suma += v;
+            if (v >= 9) prom++;
+            else if (v >= 7) neut++;
+            else detr++;
+          }
+        });
+        const pP = (prom / total) * 100;
+        const dP = (detr / total) * 100;
+        return { total, p: prom, n: neut, d: detr, score: Math.round(pP - dP), avg: (suma / total).toFixed(1), pPorc: pP.toFixed(0) };
+      }, [p2Filtrados]);
+
+      // --- CÓMPUTO HISTÓRICO DE TENDENCIA POR Q ---
+      const datosLinea = useMemo(() => {
+        const filtradosHist = rawNps.filter(r => (histPais === 'Todos' || r.pais === histPais) && (String(r.anio) === histAnio));
+        
+        // Agrupamos por los Qs existentes
+        const qsMap = {};
+        filtradosHist.forEach(r => {
+          if (!r.periodoQ) return;
+          if (!qsMap[r.periodoQ]) qsMap[r.periodoQ] = [];
+          qsMap[r.periodoQ].push(r);
+        });
+
+        const listaQs = Object.keys(qsMap).sort();
+        return listaQs.map(qName => {
+          const arr = qsMap[qName];
+          let p = 0, d = 0, tot = arr.length;
+          arr.forEach(r => {
+            const v = parseFloat(r.puntuacion);
+            if (!isNaN(v)) {
+              if (v >= 9) p++;
+              else if (v < 7) d++;
+            }
+          });
+          const scoreQ = tot > 0 ? Math.round(((p / tot) * 100) - ((d / tot) * 100)) : 0;
+          return { q: qName, score: scoreQ };
+        });
+      }, [rawNps, histPais, histAnio]);
+
+      // --- FILTRO DE CLIENTES CRÍTICOS (DETRACTORES: NOTAS 0-6) ---
+      const criticos = useMemo(() => {
+        return rawNps.filter(r => {
+          const n = parseFloat(r.puntuacion);
+          return !isNaN(n) && n <= 6;
+        });
+      }, [rawNps]);
+
+      return e('div', { className: 'space-y-6 animate-fade-in' },
+        // Cabecera Descriptiva Pestaña
+        e('div', { className: 'card p-5 bg-white' },
+          e('h2', { className: 'text-base font-extrabold text-gray-900 flex items-center gap-2' },
+            e('i', { className: 'fa-solid fa-chart-pie text-brand' }),
+            'Análisis Detallado Operativo · Net Promoter Score'
+          ),
+          e('p', { className: 'text-xs text-gray-400 mt-1 max-w-3xl leading-relaxed' },
+            'Monitoreo centralizado de los índices corporativos. El bloque evalúa la recomendación global de marca y la satisfacción operativa con el equipo ejecutivo de cuentas asignado.'
+          )
+        ),
+
+        // Bloque de Preguntas Espejo (P1 y P2 Paralelas en Grid)
+        e('div', { className: 'grid grid-cols-1 xl:grid-cols-2 gap-6' },
+          // Espejo P1
+          e(BloquePreguntaNPS, {
+            titulo: 'Pregunta 1: Recomendación de Marca (NPS Core)',
+            descripcion: 'Evaluación macro de fidelidad. Identifica el volumen de promotores orgánicos dispuestos a recomendar activamente la plataforma en el ecosistema comercial.',
+            totalRespuestas: m1.total, promotores: m1.p, neutrales: m1.n, detractores: m1.d, score: m1.score, promedio: m1.avg, totalPromotores: m1.p, porcentajePromotores: m1.pPorc,
+            listaPaises: listPaises, listaMeses: listMeses, filtroPais: p1Pais, setFiltroPais: setFiltroPais, filtroMes: p1Mes, setFiltroMes: setFiltroMes,
+            textoExportar: 'Generar con IA reporte de respuestas P1'
+          }),
+          // Espejo P2
+          e(BloquePreguntaNPS, {
+            titulo: 'Pregunta 2: Evaluación Operativa (Atención de Cuentas / KAM)',
+            descripcion: 'Medición táctica del servicio. Muestra la consistencia en soporte, tiempos de respuesta y la calificación directa de la gestión consultiva realizada por el KAM.',
+            totalRespuestas: m2.total, promotores: m2.p, neutrales: m2.n, detractores: m2.d, score: m2.score, promedio: m2.avg, totalPromotores: m2.p, porcentajePromotores: m2.pPorc,
+            listaPaises: listPaises, listaMeses: listMeses, filtroPais: p2Pais, setFiltroPais: setFiltroPais, filtroMes: p2Mes, setFiltroMes: setFiltroMes,
+            textoExportar: 'Generar con IA reporte de respuestas P2'
+          })
+        ),
+
+        // Línea de Tendencia Histórica con Tooltip Informativo Integrado
+        e('div', { className: 'card p-6 bg-white flex flex-col md:flex-row gap-6' },
+          // Gráfica Histórica
+          e('div', { className: 'w-full md:w-8/12' },
+            e('div', { className: 'flex justify-between items-center mb-4' },
+              e('div', { className: 'flex items-center gap-2' },
+                e('h3', { className: 'text-sm font-bold text-gray-900' }, 'Evolución Histórica de Tendencia por Trimestre (Qs)'),
+                // CONTENEDOR DEL TOOLTIP INTERACTIVO (ⓘ)
+                e('div', { className: 'tooltip-container relative inline-block cursor-help' },
+                  e('i', { className: 'fa-solid fa-circle-info text-gray-300 hover:text-brand text-xs transition-colors' }),
+                  e('div', { className: 'tooltip-box shadow-xl' },
+                    e('p', { className: 'font-bold border-b border-gray-700 pb-1 mb-1.5 text-white' }, '¿Qué significa el Score NPS?'),
+                    e('p', { className: 'text-[10px] text-gray-300' }, 'No es un promedio de notas. Se calcula restando el porcentaje de clientes Promotores (9-10) menos el porcentaje de clientes Detractores (0-6).'),
+                    e('p', { className: 'mt-1.5 font-bold text-brand-light' }, 'Rango del Índice: -100 a +100'),
+                    e('p', { className: 'text-[9px] mt-0.5 text-gray-400' }, '• >0: Bueno | • >30: Muy Bueno | • >50: Excelente')
+                  )
+                )
+              ),
+              e('p', { className: 'text-[10px] font-medium text-gray-400 uppercase' }, 'Tendencia del año')
+            ),
+            datosLinea.length === 0 ? e('div', { className: 'h-[240px] flex items-center justify-center text-xs text-gray-400' }, 'Sin históricos para el corte seleccionado') :
+            e(ChartLineaHistorico, { datos: datosLinea })
+          ),
+          // Filtros del Histórico
+          e('div', { className: 'w-full md:w-4/12 flex flex-col justify-between border-l border-gray-100 pl-0 md:pl-6' },
+            e('div', { className: 'space-y-4' },
+              e('h4', { className: 'text-[10px] font-bold text-gray-400 uppercase tracking-wider' }, 'Filtros de Tendencia'),
+              e('div', { className: 'space-y-3' },
+                e('div', { className: 'space-y-1' },
+                  e('label', { className: 'text-[11px] text-gray-400 font-medium' }, 'País:'),
+                  e('select', { value: histPais, onChange: ev => setHistPais(ev.target.value), className: 'w-full text-xs font-semibold text-gray-600 bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 outline-none' },
+                    listPaises.map(p => e('option', { key: p, value: p }, p))
+                  )
+                ),
+                e('div', { className: 'space-y-1' },
+                  e('label', { className: 'text-[11px] text-gray-400 font-medium' }, 'Año Fiscal:'),
+                  e('select', { value: histAnio, onChange: ev => setHistAnio(ev.target.value), className: 'w-full text-xs font-semibold text-gray-600 bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 outline-none' },
+                    listAnios.map(a => e('option', { key: a, value: a }, a))
+                  )
+                )
+              )
+            ),
+            e('div', { className: 'mt-6 bg-brand/5 p-4 rounded-xl border border-brand/10 text-xs text-brand leading-relaxed font-medium' },
+              e('i', { className: 'fa-solid fa-chart-line mr-1.5' }),
+              'La gráfica unifica los cortes Q1, Q2, Q3 y Q4 permitiendo evaluar si las acciones de retención aplicadas por el equipo KAM están impactando el índice macro de lealtad.'
+            )
+          )
+        ),
+
+        // Radar de Control de Clientes Críticos (Detractores con Columna M en Vivo)
+        e('div', { className: 'card p-6 bg-white' },
+          e('div', { className: 'flex justify-between items-center mb-5' },
+            e('div', {},
+              e('h3', { className: 'text-sm font-bold text-red-600 flex items-center gap-1.5' },
+                e('i', { className: 'fa-solid fa-triangle-exclamation animate-pulse' }),
+                'Radar de Alertas Avanzado · Control de Clientes Críticos'
+              ),
+              e('p', { className: 'text-[11px] text-gray-400 mt-0.5' }, 'Muestra de forma exclusiva las empresas con notas críticas (Notas de 0 a 6) para gestión de rescate inmediata.')
+            ),
+            e('span', { className: 'px-2.5 py-1 bg-red-50 text-red-600 text-xs font-extrabold rounded-full' }, `${criticos.length} Casos Críticos`)
+          ),
+          criticos.length === 0 ? e('p', { className: 'text-center py-8 text-xs text-gray-400 font-medium' }, '¡Felicidades! No hay alertas ni clientes críticos detectados en la base 🎉') :
+          e('div', { className: 'space-y-3' },
+            criticos.map((c, i) => {
+              // Verificamos si en la columna m hay registro de comunicación
+              const gestionado = String(c.notaKam || '').trim().toLowerCase().includes('comunic'); 
+              const textoGestion = c.notaKam || 'No se registra contacto (Pendiente)';
+              
+              return e('div', { key: i, className: 'p-4 rounded-xl border border-red-100 bg-red-50/20 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3' },
+                e('div', { className: 'space-y-1 max-w-3xl' },
+                  e('div', { className: 'flex items-center gap-2 flex-wrap' },
+                    e('span', { className: 'font-extrabold text-xs text-gray-900' }, c.cliente || 'Empresa'),
+                    e('span', { className: 'text-[10px] text-gray-400 font-bold bg-white px-1.5 py-0.5 rounded border' }, c.pais || '—'),
+                    e('span', { className: 'text-[10px] text-blue-500 font-bold bg-blue-50 px-1.5 py-0.5 rounded' }, c.periodoQ || '—')
+                  ),
+                  e('p', { className: 'text-xs text-gray-600 italic font-medium' }, c.razon ? `"${c.razon}"` : '—')
+                ),
+                // Lado de Control: Nota e Indicador Columna M
+                e('div', { className: 'flex items-center gap-4 w-full sm:w-auto justify-between sm:justify-end border-t sm:border-0 border-gray-100 pt-2 sm:pt-0' },
+                  e('div', { className: 'text-left sm:text-right' },
+                    e('span', { className: `inline-block px-2.5 py-1 rounded-lg text-xs font-bold text-white bg-red-500` }, `Nota: ${c.puntuacion}`),
+                    e('p', { className: `text-[10px] font-bold mt-1 ${gestionado ? 'text-green-600' : 'text-amber-500'}` }, 
+                      e('i', { className: `fa-solid ${gestionado ? 'fa-circle-check' : 'fa-circle-dot'} mr-1` }),
+                      textoGestion
+                    )
+                  )
+                )
+              );
+            })
+          )
+        )
+      );
+    }
+
+    // --- Marcador de Posición para otras pestañas en desarrollo ---
     function PlaceholderTab({ title, icon, dataRaw }) {
-      return e('div', { className: 'card p-10 text-center text-gray-500 font-medium space-y-4 border border-gray-100 shadow-sm' },
+      return e('div', { className: 'card p-10 text-center text-gray-500 font-medium space-y-4 bg-white' },
         e('i', { className: `fa-solid ${icon} text-4xl text-blue-400 block animate-pulse` }),
-        e('h2', { className: 'text-xl font-extrabold text-gray-800' }, title),
-        e('p', { className: 'text-sm text-gray-400' }, 'Pestaña bajo diseño visual.'),
-        e('div', { className: 'bg-gray-50 p-4 rounded-xl font-mono text-[10px] text-gray-600 text-left overflow-x-auto max-w-xl mx-auto border' },
-          e('p', {className: 'text-xs font-bold text-gray-900 mb-2'}, 'Datos raw recibidos:'),
+        e('h2', { className: 'text-base font-extrabold text-gray-800' }, title),
+        e('p', { className: 'text-xs text-gray-400 max-w-md mx-auto leading-relaxed' }, 'Pestaña operativa bajo construcción estructural de datos. El canal de comunicación de Google Apps Script ya responde con éxito.'),
+        e('div', { className: 'bg-gray-50 p-4 rounded-xl font-mono text-[10px] text-gray-600 text-left overflow-x-auto max-w-xl mx-auto border border-gray-100' },
+          e('p', {className: 'text-xs font-bold text-gray-900 mb-2'}, 'Estructura Raw de datos en caché:'),
           JSON.stringify(dataRaw, null, 2)
         )
       );
     }
 
-    // --- App Principal ---
+    // --- CONTENEDOR CORE APP ---
     function App() {
       const [data, setData] = useState(null);
       const [loading, setLoading] = useState(true);
@@ -342,25 +474,22 @@
         setError(null);
         fetch(CONFIG_FRONTEND.URL_API_BACKEND)
           .then(res => {
-            if (!res.ok) throw new Error("Error de red.");
+            if (!res.ok) throw new Error("Fallo de respuesta del servidor de Google.");
             return res.json();
           })
           .then(parsed => {
-            if (!parsed || typeof parsed !== 'object') {
-              throw new Error("Formato inválido.");
-            }
+            if (!parsed || typeof parsed !== 'object') throw new Error("Esquema JSON corrupto.");
             setData(parsed);
             setLoading(false);
           })
           .catch(err => {
-            setError(err.message || "Error conectando.");
+            setError(err.message || "Error general de enlace.");
             setLoading(false);
           });
       }, []);
 
       useEffect(() => { cargarData(); }, []);
 
-      // Menú de pestañas
       const menuTabs = [
         ['NPS', 'fa-solid fa-chart-line'],
         ['CSAT', 'fa-solid fa-star'],
@@ -368,70 +497,68 @@
         ['Salidas / Off', 'fa-solid fa-arrow-right-from-bracket']
       ];
 
-      return e('div', { className: 'min-h-screen pb-10' },
-        // Header Estático
-        e('header', { className: 'bg-white border-b border-gray-200 sticky top-0 z-20 shadow-sm px-6 py-4' },
-          e('div', { className: 'max-w-7xl mx-auto flex items-center justify-between' },
-            e('div', { className: 'flex items-center gap-3' },
-              e('div', { className: 'w-10 h-10 rounded-xl bg-brand flex items-center justify-center text-white text-base shadow-lg shadow-blue-200' },
-                e('i', { className: 'fa-solid fa-heart-pulse' })
+      return e('div', { className: 'min-h-screen flex flex-col justify-between' },
+        e('div', {},
+          // Cabecera Principal Estática de la Suite
+          e('header', { className: 'bg-white border-b border-gray-200 sticky top-0 z-20 shadow-sm px-6 py-4' },
+            e('div', { className: 'max-w-7xl mx-auto flex items-center justify-between' },
+              e('div', { className: 'flex items-center gap-3' },
+                e('div', { className: 'w-10 h-10 rounded-xl bg-brand flex items-center justify-center text-white text-base shadow-md shadow-blue-100' },
+                  e('i', { className: 'fa-solid fa-heart-pulse' })
+                ),
+                e('div', {},
+                  e('h1', { className: 'text-base font-extrabold text-gray-900 leading-none tracking-tight' }, 'Experiencia del cliente'),
+                  e('p', { className: 'text-[11px] text-gray-400 mt-1 font-medium' }, 'Métricas sincronizadas en vivo corporativo')
+                )
               ),
-              e('div', {},
-                e('h1', { className: 'text-lg font-extrabold text-gray-900 leading-none tracking-tight' }, 'Experiencia del cliente'),
-                e('p', { className: 'text-xs text-gray-400 mt-0.5' }, 'GitHub Pages + Apps Script API Live')
+              e('button', { onClick: cargarData, disabled: loading, className: 'p-2.5 bg-gray-50 hover:bg-gray-100 rounded-xl text-gray-400 border border-gray-200 transition-all' },
+                e('i', { className: `fa-solid fa-arrow-rotate-right ${loading ? 'animate-spin' : ''}` })
               )
             ),
-            e('button', { onClick: cargarData, disabled: loading, className: 'p-2.5 bg-gray-50 hover:bg-gray-100 rounded-xl text-gray-400 border border-gray-100 shadow-inner' },
-              e('i', { className: `fa-solid fa-arrow-rotate-right ${loading ? 'animate-spin' : ''}` })
+            // Selector de Módulos (Tabs)
+            e('div', { className: 'max-w-7xl mx-auto flex gap-6 -mb-4 mt-4 overflow-x-auto' },
+              menuTabs.map(([lbl, icon], id) => 
+                e('button', {
+                  key: id,
+                  onClick: () => setTab(id),
+                  className: `tab-btn pb-3 text-xs font-bold tracking-wider uppercase whitespace-nowrap flex items-center gap-2 ${tab === id ? 'active text-brand' : 'text-gray-400 hover:text-gray-600'}`
+                }, e('i', { className: icon }), lbl)
+              )
             )
           ),
-          // Selector de Pestañas
-          e('div', { className: 'max-w-7xl mx-auto flex gap-6 -mb-4 mt-5 overflow-x-auto' },
-            menuTabs.map(([lbl, icon], id) => 
-              e('button', {
-                key: id,
-                onClick: () => setTab(id),
-                className: `tab-btn pb-3 text-xs font-extrabold tracking-wider uppercase whitespace-nowrap flex items-center gap-2 ${tab === id ? 'active text-brand' : 'text-gray-400 hover:text-gray-600'}`
-              }, 
-                e('i', { className: icon }),
-                lbl
-              )
+
+          // Renderizado de Contenidos
+          e('main', { className: 'max-w-7xl mx-auto px-6 mt-6' },
+            loading && e('div', { className: 'space-y-5' },
+              e('div', { className: 'skeleton h-20' }),
+              e('div', { className: 'grid grid-cols-1 lg:grid-cols-2 gap-6' },
+                e('div', { className: 'skeleton h-[360px]' }), e('div', { className: 'skeleton h-[360px]' })
+              ),
+              e('div', { className: 'skeleton h-64 w-full' })
+            ),
+
+            !loading && error && e('div', { className: 'card p-8 text-center max-w-md mx-auto mt-10 space-y-3 bg-white' },
+              e('i', { className: 'fa-solid fa-triangle-exclamation text-red-500 text-3xl' }),
+              e('p', { className: 'font-bold text-gray-800' }, 'Error de consistencia'),
+              e('p', { className: 'text-xs text-gray-400 bg-gray-50 p-2 rounded border' }, error),
+              e('button', { onClick: cargarData, className: 'px-4 py-2 bg-brand text-white text-xs font-bold rounded-xl shadow-md' }, 'Reintentar')
+            ),
+
+            !loading && !error && data && e('div', {},
+              tab === 0 && e(ModuleNPS, { rawNps: Array.isArray(data.nps) ? data.nps : [] }),
+              tab === 1 && e(PlaceholderTab, { title: 'Métricas de Satisfacción (CSAT)', icon: 'fa-star', dataRaw: { csat_reunion: data.csat_reunion, csat_abono: data.csat_abono } }),
+              tab === 2 && e(PlaceholderTab, { title: 'Análisis de Clientes Inactivos', icon: 'fa-user-clock', dataRaw: { inactivos: data.inactivos } }),
+              tab === 3 && e(PlaceholderTab, { title: 'Registro de Procesos de Offboarding', icon: 'fa-arrow-right-from-bracket', dataRaw: { salidas: data.salidas } })
             )
           )
         ),
-
-        // Contenedor de Carga/Error/Contenido
-        e('main', { className: 'max-w-7xl mx-auto px-6 mt-6' },
-          loading && e('div', { className: 'space-y-4' },
-            e('div', { className: 'skeleton h-24' }),
-            e('div', { className: 'flex gap-6' },
-              e('div', { className: 'skeleton h-[380px] lg:w-3/5' }),
-              e('div', { className: 'space-y-4 lg:w-2/5' },
-                e('div', { className: 'skeleton h-28' }),
-                e('div', { className: 'skeleton h-28' })
-              )
-            ),
-            e('div', { className: 'skeleton h-64 w-full' })
-          ),
-
-          !loading && error && e('div', { className: 'card p-8 text-center max-w-md mx-auto mt-10 space-y-3' },
-            e('i', { className: 'fa-solid fa-triangle-exclamation text-red-500 text-3xl' }),
-            e('p', { className: 'font-bold text-gray-800' }, 'Error cargando Dashboard'),
-            e('p', { className: 'text-xs text-gray-400 bg-gray-50 p-2 rounded border' }, error),
-            e('button', { onClick: cargarData, className: 'px-4 py-2 bg-blue-600 text-white text-xs font-bold rounded-xl shadow-md' }, 'Reintentar')
-          ),
-
-          !loading && !error && data && e('div', {},
-            tab === 0 && e(TabNPS, { npsCompleto: Array.isArray(data.nps) ? data.nps : [] }),
-            tab === 1 && e(PlaceholderTab, { title: 'Métricas CSAT', icon: 'fa-star', dataRaw: { csat_reunion: data.csat_reunion, csat_abono: data.csat_abono } }),
-            tab === 2 && e(PlaceholderTab, { title: 'Análisis de Inactividad', icon: 'fa-user-clock', dataRaw: { inactivos: data.inactivos } }),
-            tab === 3 && e(PlaceholderTab, { title: 'Registro de Offboarding', icon: 'fa-arrow-right-from-bracket', dataRaw: { salidas: data.salidas } })
-          )
+        // Footer de Marca
+        e('footer', { className: 'text-center py-6 text-[11px] text-gray-400 mt-10 border-t border-gray-200 bg-white w-full' },
+          'Apprecio · Dashboard Experiencia del cliente · 2026'
         )
       );
     }
 
-    // Renderizado clásico React 17
     ReactDOM.render(e(App), document.getElementById('root'));
   </script>
 </body>
