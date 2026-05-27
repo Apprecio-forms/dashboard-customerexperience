@@ -52,10 +52,8 @@
     const { useState, useEffect, useRef, useCallback, useMemo } = React;
 
     const CONFIG_FRONTEND = {
-      // =================================================================
-      // Coloca aquí tu enlace de Apps Script generado en el Paso 2
-      // =================================================================
-      URL_API_BACKEND: "https://script.google.com/macros/s/AKfycbw6T6T66wLw6tGfU5-mZksv_WbV6IqLshF7i6I9MvA-Fxtq-CIs_C6lUq6O-Mh1X9U/exec" 
+      // Pega tu URL real completa de Google Apps Script dentro de las comillas de abajo:
+      URL_API_BACKEND: "https://script.google.com/macros/s/AKfycbwNapYYzUOfV7UMCBv8xDiTOm5mN_veAiiuuFd94Ha6uExMnCxaCwiZmAvbpsjPyObo5w/exec"
     };
 
     function KPI({ label, value, sub, iconClass }) {
@@ -81,7 +79,11 @@
     }
 
     function TabNPS({ data, mes }) {
-      const registros = useMemo(() => mes === 'Todos' ? data.nps : data.nps.filter(r => r.mes === mes), [data, mes]);
+      const registros = useMemo(() => {
+        if (!data || !Array.isArray(data.nps)) return [];
+        return mes === 'Todos' ? data.nps : data.nps.filter(r => r.mes === mes);
+      }, [data, mes]);
+
       return (
         <div className="space-y-6">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -122,8 +124,16 @@
     }
 
     function TabCSAT({ data, mes }) {
-      const filteredReunion = useMemo(() => mes === 'Todos' ? data.csat_reunion : data.csat_reunion.filter(r => r.mes === mes), [data, mes]);
-      const filteredAbono = useMemo(() => mes === 'Todos' ? data.csat_abono : data.csat_abono.filter(r => r.mes === mes), [data, mes]);
+      const filteredReunion = useMemo(() => {
+        if (!data || !Array.isArray(data.csat_reunion)) return [];
+        return mes === 'Todos' ? data.csat_reunion : data.csat_reunion.filter(r => r.mes === mes);
+      }, [data, mes]);
+
+      const filteredAbono = useMemo(() => {
+        if (!data || !Array.isArray(data.csat_abono)) return [];
+        return mes === 'Todos' ? data.csat_abono : data.csat_abono.filter(r => r.mes === mes);
+      }, [data, mes]);
+
       return (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="card p-6">
@@ -164,7 +174,11 @@
     }
 
     function TabSalidas({ data, mes }) {
-      const registros = useMemo(() => mes === 'Todos' ? data.salidas : data.salidas.filter(r => r.mes === mes), [data, mes]);
+      const registros = useMemo(() => {
+        if (!data || !Array.isArray(data.salidas)) return [];
+        return mes === 'Todos' ? data.salidas : data.salidas.filter(r => r.mes === mes);
+      }, [data, mes]);
+
       return (
         <div className="card p-6">
           <h3 className="text-sm font-bold text-gray-700 mb-4">Registro de Clientes Desactivados (Offboarding)</h3>
@@ -305,7 +319,6 @@
       );
     }
 
-    // Renderizado compatible con React 17
     ReactDOM.render(<App />, document.getElementById('root'));
   </script>
 </body>
