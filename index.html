@@ -28,7 +28,8 @@
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/react/17.0.2/umd/react.production.min.js" crossorigin></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/17.0.2/umd/react-dom.production.min.js" crossorigin></script>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
+  
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
 
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -60,7 +61,7 @@
       const chartRef = useRef(null);
 
       useEffect(() => {
-        if (!canvasRef.current) return;
+        if (!canvasRef.current || typeof Chart === 'undefined') return;
         if (chartRef.current) chartRef.current.destroy();
 
         const ctx = canvasRef.current.getContext('2d');
@@ -73,17 +74,19 @@
               backgroundColor: ['#22C55E', '#F59E0B', '#EF4444'],
               borderWidth: 3,
               borderColor: '#ffffff',
-              hoverOffset: 6,
-              cutout: '78%'
+              hoverOffset: 4
             }]
           },
           options: {
             responsive: true,
             maintainAspectRatio: false,
-            plugins: { legend: { display: false } }
+            plugins: { 
+              legend: { display: false },
+              tooltip: { enabled: true }
+            }
           },
           plugins: [{
-            id: 'textCenter',
+            id: 'textCenter_' + id,
             beforeDraw: (chart) => {
               const { ctx, width, height } = chart;
               ctx.save();
@@ -103,7 +106,7 @@
         });
 
         return () => { if (chartRef.current) chartRef.current.destroy(); };
-      }, [promotores, neutrales, detractores, score, labelCenter]);
+      }, [promotores, neutrales, detractores, score, labelCenter, id]);
 
       return e('div', { className: 'relative w-full h-[200px]' }, e('canvas', { ref: canvasRef }));
     }
@@ -114,7 +117,7 @@
       const chartRef = useRef(null);
 
       useEffect(() => {
-        if (!canvasRef.current) return;
+        if (!canvasRef.current || typeof Chart === 'undefined') return;
         if (chartRef.current) chartRef.current.destroy();
 
         const ctx = canvasRef.current.getContext('2d');
@@ -123,24 +126,23 @@
           data: {
             labels: datos.map(d => d.q),
             datasets: [{
-              label: 'NPS Score ',
+              label: 'NPS Score',
               data: datos.map(d => d.score),
               borderColor: '#4361EE',
-              backgroundColor: 'rgba(67, 97, 238, 0.06)',
+              backgroundColor: 'rgba(67, 97, 238, 0.05)',
               borderWidth: 3,
-              tension: 0.35,
+              tension: 0.3,
               fill: true,
               pointBackgroundColor: '#4361EE',
-              pointRadius: 5,
-              pointHoverRadius: 8
+              pointRadius: 4
             }]
           },
           options: {
             responsive: true,
             maintainAspectRatio: false,
             scales: {
-              y: { min: -100, max: 100, grid: { color: '#F1F3F7' }, ticks: { font: { family: 'DM Sans' } } },
-              x: { grid: { display: false }, ticks: { font: { family: 'DM Sans', weight: 'bold' } } }
+              y: { min: -100, max: 100, ticks: { font: { family: 'DM Sans' } } },
+              x: { ticks: { font: { family: 'DM Sans', weight: 'bold' } } }
             },
             plugins: { legend: { display: false } }
           }
@@ -153,29 +155,26 @@
     }
 
     // --- SUB-MÓDULO DE BLOQUE DE PREGUNTA ESPEJO ---
-    function BloquePreguntaNPS({ titulo, descripcion, totalRespuestas, promotores, neutrales, detractores, score, promedio, totalPromotores, porcentajePromotores, listaPaises, listaMeses, filtroPais, setFiltroPais, filtroMes, setFiltroMes, textoExportar }) {
+    function BloquePreguntaNPS({ id, titulo, descripcion, totalRespuestas, promotores, neutrales, detractores, score, promedio, totalPromotores, porcentajePromotores, listaPaises, listaMeses, filtroPais, setFiltroPais, filtroMes, setFiltroMes, textoExportar }) {
       return e('div', { className: 'card p-6 flex flex-col md:flex-row gap-6 bg-white' },
-        // Lado Izquierdo: Gráfica y Filtros Internos
         e('div', { className: 'w-full md:w-7/12 flex flex-col justify-between border-r border-gray-100 pr-0 md:pr-4' },
-          e('div', { className: 'flex justify-between items-start mb-4' },
+          e('div', { className: 'flex justify-between items-start mb-4 gap-2' },
             e('div', {},
-              e('h3', { className: 'text-sm font-bold text-gray-900' }, titulo),
+              e('h3', { className: 'text-sm font-bold text-gray-900 leading-tight' }, titulo),
               e('p', { className: 'text-[11px] font-semibold text-gray-400 uppercase mt-0.5' }, `Basado en ${totalRespuestas} respuestas`)
             ),
-            // Filtros Dinámicos Incrustados en la esquina del gráfico
-            e('div', { className: 'flex gap-2' },
-              e('select', { value: filtroPais, onChange: ev => setFiltroPais(ev.target.value), className: 'text-[11px] font-bold text-gray-500 bg-gray-50 border border-gray-200 rounded-lg px-2 py-1 outline-none cursor-pointer' },
+            e('div', { className: 'flex gap-1.5 flex-shrink-0' },
+              e('select', { value: filtroPais, onChange: ev => setFiltroPais(ev.target.value), className: 'text-[10px] font-bold text-gray-500 bg-gray-50 border border-gray-200 rounded-lg px-2 py-1 outline-none' },
                 listaPaises.map(p => e('option', { key: p, value: p }, p === 'Todos' ? 'País: Todos' : p))
               ),
-              e('select', { value: filtroMes, onChange: ev => setFiltroMes(ev.target.value), className: 'text-[11px] font-bold text-gray-500 bg-gray-50 border border-gray-200 rounded-lg px-2 py-1 outline-none cursor-pointer' },
+              e('select', { value: filtroMes, onChange: ev => setFiltroMes(ev.target.value), className: 'text-[10px] font-bold text-gray-500 bg-gray-50 border border-gray-200 rounded-lg px-2 py-1 outline-none' },
                 listaMeses.map(m => e('option', { key: m, value: m }, m === 'Todos' ? 'Mes: Todos' : m))
               )
             )
           ),
           totalRespuestas === 0 ? e('div', { className: 'h-[200px] flex items-center justify-center text-xs text-gray-400' }, 'Sin respuestas en este corte') :
-          e(ChartDonut, { promotores, neutrales, detractores, score, labelCenter: 'Score General' }),
+          e(ChartDonut, { id, promotores, neutrales, detractores, score, labelCenter: 'Score General' }),
           
-          // Mini leyendas porcentuales abajo del donut
           e('div', { className: 'flex justify-around mt-4 text-center text-xs border-t border-gray-50 pt-3' },
             [['Promotores', 'text-green-600', promotores], ['Neutrales', 'text-amber-500', neutrales], ['Detractores', 'text-red-500', detractores]].map(([lbl, clr, cant]) => 
               e('div', { key: lbl },
@@ -185,7 +184,6 @@
             )
           )
         ),
-        // Lado Derecho: Tarjetas de Datos Generales y Botón Inteligente
         e('div', { className: 'w-full md:w-5/12 flex flex-col justify-between' },
           e('div', { className: 'space-y-4' },
             e('h4', { className: 'text-[10px] font-bold text-gray-400 uppercase tracking-wider' }, 'Datos Generales Corte Filtrado'),
@@ -203,7 +201,6 @@
             ),
             e('p', { className: 'text-[11px] text-gray-400 mt-2 italic leading-relaxed' }, descripcion)
           ),
-          // Botón Automatizado con IA
           e('button', { className: 'w-full mt-5 p-3 bg-brand hover:bg-brand-dark text-white rounded-xl text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 shadow-md shadow-blue-100 transition-colors' },
             e('i', { className: 'fa-solid fa-wand-magic-sparkles' }),
             textoExportar
@@ -214,17 +211,13 @@
 
     // --- COMPONENTE PRINCIPAL MÓDULO NPS ---
     function ModuleNPS({ rawNps }) {
-      // Corte de Filtros para Pregunta 1
       const [p1Pais, setP1Pais] = useState('Todos');
       const [p1Mes, setP1Mes] = useState('Todos');
-      // Corte de Filtros para Pregunta 2
       const [p2Pais, setP2Pais] = useState('Todos');
       const [p2Mes, setP2Mes] = useState('Todos');
-      // Corte de Filtros para Histórico
       const [histPais, setHistPais] = useState('Todos');
       const [histAnio, setHistAnio] = useState('2026');
 
-      // Universos de filtros únicos extraídos de la data limpia
       const { listPaises, listMeses, listAnios } = useMemo(() => {
         const p = new Set(), m = new Set(), a = new Set();
         rawNps.forEach(r => {
@@ -239,7 +232,7 @@
         };
       }, [rawNps]);
 
-      // --- CÓMPUTO PREGUNTA 1 (RECOMENDACIÓN) ---
+      // P1 Cómputo
       const p1Filtrados = useMemo(() => {
         return rawNps.filter(r => (p1Pais === 'Todos' || r.pais === p1Pais) && (p1Mes === 'Todos' || r.mes === p1Mes));
       }, [rawNps, p1Pais, p1Mes]);
@@ -262,13 +255,12 @@
         return { total, p: prom, n: neut, d: detr, score: Math.round(pP - dP), avg: (suma / total).toFixed(1), pPorc: pP.toFixed(0) };
       }, [p1Filtrados]);
 
-      // --- CÓMPUTO PREGUNTA 2 (ATENCIÓN / PLATAFORMA) ---
+      // P2 Cómputo
       const p2Filtrados = useMemo(() => {
         return rawNps.filter(r => (p2Pais === 'Todos' || r.pais === p2Pais) && (p2Mes === 'Todos' || r.mes === p2Mes));
       }, [rawNps, p2Pais, p2Mes]);
 
       const m2 = useMemo(() => {
-        // Filtramos solo los registros que de verdad respondieron la pregunta 2
         const validos = p2Filtrados.filter(r => r.pregunta2 !== undefined && r.pregunta2 !== null && r.pregunta2 !== '');
         const total = validos.length;
         if (total === 0) return { total: 0, p: 0, n: 0, d: 0, score: 0, avg: '—', pPorc: 0 };
@@ -287,20 +279,16 @@
         return { total, p: prom, n: neut, d: detr, score: Math.round(pP - dP), avg: (suma / total).toFixed(1), pPorc: pP.toFixed(0) };
       }, [p2Filtrados]);
 
-      // --- CÓMPUTO HISTÓRICO DE TENDENCIA POR Q ---
+      // Histórico Cómputo
       const datosLinea = useMemo(() => {
         const filtradosHist = rawNps.filter(r => (histPais === 'Todos' || r.pais === histPais) && (String(r.anio) === histAnio));
-        
-        // Agrupamos por los Qs existentes
         const qsMap = {};
         filtradosHist.forEach(r => {
           if (!r.periodoQ) return;
           if (!qsMap[r.periodoQ]) qsMap[r.periodoQ] = [];
           qsMap[r.periodoQ].push(r);
         });
-
-        const listaQs = Object.keys(qsMap).sort();
-        return listaQs.map(qName => {
+        return Object.keys(qsMap).sort().map(qName => {
           const arr = qsMap[qName];
           let p = 0, d = 0, tot = arr.length;
           arr.forEach(r => {
@@ -310,12 +298,11 @@
               else if (v < 7) d++;
             }
           });
-          const scoreQ = tot > 0 ? Math.round(((p / tot) * 100) - ((d / tot) * 100)) : 0;
-          return { q: qName, score: scoreQ };
+          return { q: qName, score: tot > 0 ? Math.round(((p / tot) * 100) - ((d / tot) * 100)) : 0 };
         });
       }, [rawNps, histPais, histAnio]);
 
-      // --- FILTRO DE CLIENTES CRÍTICOS (DETRACTORES: NOTAS 0-6) ---
+      // Críticos (0-6)
       const criticos = useMemo(() => {
         return rawNps.filter(r => {
           const n = parseFloat(r.puntuacion);
@@ -323,62 +310,50 @@
         });
       }, [rawNps]);
 
-      return e('div', { className: 'space-y-6 animate-fade-in' },
-        // Cabecera Descriptiva Pestaña
+      return e('div', { className: 'space-y-6' },
         e('div', { className: 'card p-5 bg-white' },
           e('h2', { className: 'text-base font-extrabold text-gray-900 flex items-center gap-2' },
             e('i', { className: 'fa-solid fa-chart-pie text-brand' }),
             'Análisis Detallado Operativo · Net Promoter Score'
           ),
-          e('p', { className: 'text-xs text-gray-400 mt-1 max-w-3xl leading-relaxed' },
+          e('p', { className: 'text-xs text-gray-400 mt-1 max-w-3xl' },
             'Monitoreo centralizado de los índices corporativos. El bloque evalúa la recomendación global de marca y la satisfacción operativa con el equipo ejecutivo de cuentas asignado.'
           )
         ),
 
-        // Bloque de Preguntas Espejo (P1 y P2 Paralelas en Grid)
         e('div', { className: 'grid grid-cols-1 xl:grid-cols-2 gap-6' },
-          // Espejo P1
           e(BloquePreguntaNPS, {
-            titulo: 'Pregunta 1: Recomendación de Marca (NPS Core)',
+            id: 'p1', titulo: 'Pregunta 1: Recomendación de Marca (NPS Core)',
             descripcion: 'Evaluación macro de fidelidad. Identifica el volumen de promotores orgánicos dispuestos a recomendar activamente la plataforma en el ecosistema comercial.',
             totalRespuestas: m1.total, promotores: m1.p, neutrales: m1.n, detractores: m1.d, score: m1.score, promedio: m1.avg, totalPromotores: m1.p, porcentajePromotores: m1.pPorc,
-            listaPaises: listPaises, listaMeses: listMeses, filtroPais: p1Pais, setFiltroPais: setFiltroPais, filtroMes: p1Mes, setFiltroMes: setFiltroMes,
+            listaPaises: listPaises, listaMeses: listMeses, filtroPais: p1Pais, setFiltroPais: setP1Pais, filtroMes: p1Mes, setFiltroMes: setP1Mes,
             textoExportar: 'Generar con IA reporte de respuestas P1'
           }),
-          // Espejo P2
           e(BloquePreguntaNPS, {
-            titulo: 'Pregunta 2: Evaluación Operativa (Atención de Cuentas / KAM)',
+            id: 'p2', titulo: 'Pregunta 2: Evaluación Operativa (Atención de Cuentas / KAM)',
             descripcion: 'Medición táctica del servicio. Muestra la consistencia en soporte, tiempos de respuesta y la calificación directa de la gestión consultiva realizada por el KAM.',
             totalRespuestas: m2.total, promotores: m2.p, neutrales: m2.n, detractores: m2.d, score: m2.score, promedio: m2.avg, totalPromotores: m2.p, porcentajePromotores: m2.pPorc,
-            listaPaises: listPaises, listaMeses: listMeses, filtroPais: p2Pais, setFiltroPais: setFiltroPais, filtroMes: p2Mes, setFiltroMes: setFiltroMes,
+            listaPaises: listPaises, listaMeses: listMeses, filtroPais: p2Pais, setFiltroPais: setP2Pais, filtroMes: p2Mes, setFiltroMes: setP2Mes,
             textoExportar: 'Generar con IA reporte de respuestas P2'
           })
         ),
 
-        // Línea de Tendencia Histórica con Tooltip Informativo Integrado
         e('div', { className: 'card p-6 bg-white flex flex-col md:flex-row gap-6' },
-          // Gráfica Histórica
           e('div', { className: 'w-full md:w-8/12' },
-            e('div', { className: 'flex justify-between items-center mb-4' },
-              e('div', { className: 'flex items-center gap-2' },
-                e('h3', { className: 'text-sm font-bold text-gray-900' }, 'Evolución Histórica de Tendencia por Trimestre (Qs)'),
-                // CONTENEDOR DEL TOOLTIP INTERACTIVO (ⓘ)
-                e('div', { className: 'tooltip-container relative inline-block cursor-help' },
-                  e('i', { className: 'fa-solid fa-circle-info text-gray-300 hover:text-brand text-xs transition-colors' }),
-                  e('div', { className: 'tooltip-box shadow-xl' },
-                    e('p', { className: 'font-bold border-b border-gray-700 pb-1 mb-1.5 text-white' }, '¿Qué significa el Score NPS?'),
-                    e('p', { className: 'text-[10px] text-gray-300' }, 'No es un promedio de notas. Se calcula restando el porcentaje de clientes Promotores (9-10) menos el porcentaje de clientes Detractores (0-6).'),
-                    e('p', { className: 'mt-1.5 font-bold text-brand-light' }, 'Rango del Índice: -100 a +100'),
-                    e('p', { className: 'text-[9px] mt-0.5 text-gray-400' }, '• >0: Bueno | • >30: Muy Bueno | • >50: Excelente')
-                  )
+            e('div', { className: 'flex items-center gap-2 mb-4' },
+              e('h3', { className: 'text-sm font-bold text-gray-900' }, 'Evolución Histórica de Tendencia por Trimestre (Qs)'),
+              e('div', { className: 'tooltip-container relative inline-block cursor-help' },
+                e('i', { className: 'fa-solid fa-circle-info text-gray-300 hover:text-brand text-xs' }),
+                e('div', { className: 'tooltip-box shadow-xl' },
+                  e('p', { className: 'font-bold border-b border-gray-700 pb-1 mb-1' }, '¿Qué significa el Score NPS?'),
+                  e('p', {}, 'Se calcula restando el % de Promotores (9-10) menos el % de Detractores (0-6).'),
+                  e('p', { className: 'mt-1 font-bold text-blue-400' }, 'Rango: -100 a +100')
                 )
-              ),
-              e('p', { className: 'text-[10px] font-medium text-gray-400 uppercase' }, 'Tendencia del año')
+              )
             ),
             datosLinea.length === 0 ? e('div', { className: 'h-[240px] flex items-center justify-center text-xs text-gray-400' }, 'Sin históricos para el corte seleccionado') :
             e(ChartLineaHistorico, { datos: datosLinea })
           ),
-          // Filtros del Histórico
           e('div', { className: 'w-full md:w-4/12 flex flex-col justify-between border-l border-gray-100 pl-0 md:pl-6' },
             e('div', { className: 'space-y-4' },
               e('h4', { className: 'text-[10px] font-bold text-gray-400 uppercase tracking-wider' }, 'Filtros de Tendencia'),
@@ -397,14 +372,13 @@
                 )
               )
             ),
-            e('div', { className: 'mt-6 bg-brand/5 p-4 rounded-xl border border-brand/10 text-xs text-brand leading-relaxed font-medium' },
+            e('div', { className: 'mt-6 bg-brand/5 p-4 rounded-xl border border-brand/10 text-xs text-brand font-medium' },
               e('i', { className: 'fa-solid fa-chart-line mr-1.5' }),
-              'La gráfica unifica los cortes Q1, Q2, Q3 y Q4 permitiendo evaluar si las acciones de retención aplicadas por el equipo KAM están impactando el índice macro de lealtad.'
+              'La gráfica unifica los cortes trimestrales permitiendo evaluar la evolución macro de lealtad.'
             )
           )
         ),
 
-        // Radar de Control de Clientes Críticos (Detractores con Columna M en Vivo)
         e('div', { className: 'card p-6 bg-white' },
           e('div', { className: 'flex justify-between items-center mb-5' },
             e('div', {},
@@ -416,14 +390,14 @@
             ),
             e('span', { className: 'px-2.5 py-1 bg-red-50 text-red-600 text-xs font-extrabold rounded-full' }, `${criticos.length} Casos Críticos`)
           ),
-          criticos.length === 0 ? e('p', { className: 'text-center py-8 text-xs text-gray-400 font-medium' }, '¡Felicidades! No hay alertas ni clientes críticos detectados en la base 🎉') :
+          criticos.length === 0 ? e('p', { className: 'text-center py-8 text-xs text-gray-400 font-medium' }, '¡Felicidades! No hay alertas ni clientes críticos detectados 🎉') :
           e('div', { className: 'space-y-3' },
             criticos.map((c, i) => {
-              // Verificamos si en la columna m hay registro de comunicación
-              const gestionado = String(c.notaKam || '').trim().toLowerCase().includes('comunic'); 
-              const textoGestion = c.notaKam || 'No se registra contacto (Pendiente)';
+              // Validamos la columna de comunicación (notaKam de tu Excel)
+              const statusRaw = String(c.notaKam || '').trim();
+              const gestionado = statusRaw.toLowerCase().includes('comunic') || statusRaw.toLowerCase().includes('hablo') || statusRaw.toLowerCase().includes('ok');
               
-              return e('div', { key: i, className: 'p-4 rounded-xl border border-red-100 bg-red-50/20 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3' },
+              return e('div', { key: i, className: 'p-4 rounded-xl border border-red-100 bg-red-50/10 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3' },
                 e('div', { className: 'space-y-1 max-w-3xl' },
                   e('div', { className: 'flex items-center gap-2 flex-wrap' },
                     e('span', { className: 'font-extrabold text-xs text-gray-900' }, c.cliente || 'Empresa'),
@@ -432,13 +406,12 @@
                   ),
                   e('p', { className: 'text-xs text-gray-600 italic font-medium' }, c.razon ? `"${c.razon}"` : '—')
                 ),
-                // Lado de Control: Nota e Indicador Columna M
                 e('div', { className: 'flex items-center gap-4 w-full sm:w-auto justify-between sm:justify-end border-t sm:border-0 border-gray-100 pt-2 sm:pt-0' },
                   e('div', { className: 'text-left sm:text-right' },
-                    e('span', { className: `inline-block px-2.5 py-1 rounded-lg text-xs font-bold text-white bg-red-500` }, `Nota: ${c.puntuacion}`),
+                    e('span', { className: 'inline-block px-2.5 py-1 rounded-lg text-xs font-bold text-white bg-red-500' }, `Nota: ${c.puntuacion}`),
                     e('p', { className: `text-[10px] font-bold mt-1 ${gestionado ? 'text-green-600' : 'text-amber-500'}` }, 
                       e('i', { className: `fa-solid ${gestionado ? 'fa-circle-check' : 'fa-circle-dot'} mr-1` }),
-                      textoGestion
+                      statusRaw || 'Pendiente de contacto'
                     )
                   )
                 )
@@ -449,20 +422,17 @@
       );
     }
 
-    // --- Marcador de Posición para otras pestañas en desarrollo ---
+    // --- OTRAS PESTAÑAS ---
     function PlaceholderTab({ title, icon, dataRaw }) {
       return e('div', { className: 'card p-10 text-center text-gray-500 font-medium space-y-4 bg-white' },
-        e('i', { className: `fa-solid ${icon} text-4xl text-blue-400 block animate-pulse` }),
-        e('h2', { className: 'text-base font-extrabold text-gray-800' }, title),
-        e('p', { className: 'text-xs text-gray-400 max-w-md mx-auto leading-relaxed' }, 'Pestaña operativa bajo construcción estructural de datos. El canal de comunicación de Google Apps Script ya responde con éxito.'),
+        e('i', { className: `fa-solid ${icon} text-4xl text-blue-400 block` }),
+        e('h2', { className: 'text-sm font-extrabold text-gray-800' }, title),
         e('div', { className: 'bg-gray-50 p-4 rounded-xl font-mono text-[10px] text-gray-600 text-left overflow-x-auto max-w-xl mx-auto border border-gray-100' },
-          e('p', {className: 'text-xs font-bold text-gray-900 mb-2'}, 'Estructura Raw de datos en caché:'),
           JSON.stringify(dataRaw, null, 2)
         )
       );
     }
 
-    // --- CONTENEDOR CORE APP ---
     function App() {
       const [data, setData] = useState(null);
       const [loading, setLoading] = useState(true);
@@ -474,11 +444,11 @@
         setError(null);
         fetch(CONFIG_FRONTEND.URL_API_BACKEND)
           .then(res => {
-            if (!res.ok) throw new Error("Fallo de respuesta del servidor de Google.");
+            if (!res.ok) throw new Error("Fallo de respuesta del servidor.");
             return res.json();
           })
           .then(parsed => {
-            if (!parsed || typeof parsed !== 'object') throw new Error("Esquema JSON corrupto.");
+            if (!parsed || typeof parsed !== 'object') throw new Error("Esquema corrupto.");
             setData(parsed);
             setLoading(false);
           })
@@ -491,19 +461,15 @@
       useEffect(() => { cargarData(); }, []);
 
       const menuTabs = [
-        ['NPS', 'fa-solid fa-chart-line'],
-        ['CSAT', 'fa-solid fa-star'],
-        ['Inactivos', 'fa-solid fa-user-clock'],
-        ['Salidas / Off', 'fa-solid fa-arrow-right-from-bracket']
+        ['NPS', 'fa-solid fa-chart-line'], ['CSAT', 'fa-solid fa-star'], ['Inactivos', 'fa-solid fa-user-clock'], ['Salidas / Off', 'fa-solid fa-arrow-right-from-bracket']
       ];
 
       return e('div', { className: 'min-h-screen flex flex-col justify-between' },
         e('div', {},
-          // Cabecera Principal Estática de la Suite
           e('header', { className: 'bg-white border-b border-gray-200 sticky top-0 z-20 shadow-sm px-6 py-4' },
             e('div', { className: 'max-w-7xl mx-auto flex items-center justify-between' },
               e('div', { className: 'flex items-center gap-3' },
-                e('div', { className: 'w-10 h-10 rounded-xl bg-brand flex items-center justify-center text-white text-base shadow-md shadow-blue-100' },
+                e('div', { className: 'w-10 h-10 rounded-xl bg-brand flex items-center justify-center text-white text-base shadow-md' },
                   e('i', { className: 'fa-solid fa-heart-pulse' })
                 ),
                 e('div', {},
@@ -511,11 +477,10 @@
                   e('p', { className: 'text-[11px] text-gray-400 mt-1 font-medium' }, 'Métricas sincronizadas en vivo corporativo')
                 )
               ),
-              e('button', { onClick: cargarData, disabled: loading, className: 'p-2.5 bg-gray-50 hover:bg-gray-100 rounded-xl text-gray-400 border border-gray-200 transition-all' },
+              e('button', { onClick: cargarData, disabled: loading, className: 'p-2.5 bg-gray-50 hover:bg-gray-100 rounded-xl text-gray-400 border border-gray-200' },
                 e('i', { className: `fa-solid fa-arrow-rotate-right ${loading ? 'animate-spin' : ''}` })
               )
             ),
-            // Selector de Módulos (Tabs)
             e('div', { className: 'max-w-7xl mx-auto flex gap-6 -mb-4 mt-4 overflow-x-auto' },
               menuTabs.map(([lbl, icon], id) => 
                 e('button', {
@@ -527,21 +492,20 @@
             )
           ),
 
-          // Renderizado de Contenidos
           e('main', { className: 'max-w-7xl mx-auto px-6 mt-6' },
             loading && e('div', { className: 'space-y-5' },
               e('div', { className: 'skeleton h-20' }),
               e('div', { className: 'grid grid-cols-1 lg:grid-cols-2 gap-6' },
-                e('div', { className: 'skeleton h-[360px]' }), e('div', { className: 'skeleton h-[360px]' })
+                e('div', { className: 'skeleton h-[300px]' }), e('div', { className: 'skeleton h-[300px]' })
               ),
-              e('div', { className: 'skeleton h-64 w-full' })
+              e('div', { className: 'skeleton h-48 w-full' })
             ),
 
             !loading && error && e('div', { className: 'card p-8 text-center max-w-md mx-auto mt-10 space-y-3 bg-white' },
               e('i', { className: 'fa-solid fa-triangle-exclamation text-red-500 text-3xl' }),
-              e('p', { className: 'font-bold text-gray-800' }, 'Error de consistencia'),
+              e('p', { className: 'font-bold text-gray-800' }, 'Error de conexión'),
               e('p', { className: 'text-xs text-gray-400 bg-gray-50 p-2 rounded border' }, error),
-              e('button', { onClick: cargarData, className: 'px-4 py-2 bg-brand text-white text-xs font-bold rounded-xl shadow-md' }, 'Reintentar')
+              e('button', { onClick: cargarData, className: 'px-4 py-2 bg-brand text-white text-xs font-bold rounded-xl' }, 'Reintentar')
             ),
 
             !loading && !error && data && e('div', {},
@@ -552,7 +516,6 @@
             )
           )
         ),
-        // Footer de Marca
         e('footer', { className: 'text-center py-6 text-[11px] text-gray-400 mt-10 border-t border-gray-200 bg-white w-full' },
           'Apprecio · Dashboard Experiencia del cliente · 2026'
         )
