@@ -3,14 +3,14 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Dashboard · Customer Experience</title>
+  <title>Dashboard · Experiencia del cliente</title>
 
-  <!-- ── Fuente: DM Sans — tipografía moderna B2B ── -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;0,9..40,800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 
-  <!-- ── Tailwind CSS CDN (Play) ── -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
@@ -21,101 +21,27 @@
             brand: { DEFAULT: '#4361EE', light: '#EEF1FD', dark: '#3451D1' },
             success: '#22C55E', warn: '#F59E0B', danger: '#EF4444',
             neutral: { 50: '#F8F9FC', 100: '#F0F2F7', 200: '#E5E8EF', 300: '#CDD1DC', 400: '#9AA0B4', 500: '#6B7280', 700: '#374151', 800: '#1F2937', 900: '#111827' }
-          },
-          borderRadius: { xl: '12px', '2xl': '16px', '3xl': '20px' },
-          boxShadow: {
-            card : '0 1px 3px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.05)',
-            'card-hover': '0 4px 12px rgba(0,0,0,0.1), 0 8px 28px rgba(0,0,0,0.08)'
           }
         }
       }
     };
   </script>
 
-  <!-- ── Chart.js ── -->
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
-
-  <!-- ── React 18 ── -->
- <script src="https://cdnjs.cloudflare.com/ajax/libs/react/17.0.2/umd/react.production.min.js" crossorigin></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/17.0.2/umd/react-dom.production.min.js" crossorigin></script>
-
-
-  <!-- ── Babel (JSX en browser) ── -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/17.0.2/umd/react.production.min.js" crossorigin></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/17.0.2/umd/react-dom.production.min.js" crossorigin></script>
+  
   <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/6.26.0/babel.min.js" crossorigin></script>
-
-  <!-- ── Lucide React (UMD) ── -->
-  <script src="https://unpkg.com/lucide-react@0.436.0/dist/umd/lucide-react.js"></script>
 
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    html { font-family: 'DM Sans', sans-serif; }
-    body { background: #F0F2F7; min-height: 100vh; }
-
-    /* ── Cards ── */
-    .card {
-      background: #fff;
-      border-radius: 16px;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.05);
-    }
-    .card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.09), 0 8px 28px rgba(0,0,0,0.07); }
-
-    /* ── Tab indicator ── */
+    html, body { font-family: 'DM Sans', sans-serif; background: #F0F2F7; min-height: 100vh; }
+    .card { background: #fff; border-radius: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.05); }
     .tab-btn { position: relative; transition: color 0.2s; }
-    .tab-btn::after {
-      content: '';
-      position: absolute;
-      bottom: -1px; left: 0; right: 0;
-      height: 2px;
-      background: #4361EE;
-      border-radius: 2px 2px 0 0;
-      transform: scaleX(0);
-      transition: transform 0.25s cubic-bezier(.4,0,.2,1);
-    }
+    .tab-btn::after { content: ''; position: absolute; bottom: -1px; left: 0; right: 0; height: 2px; background: #4361EE; border-radius: 2px 2px 0 0; transform: scaleX(0); transition: transform 0.25s ease; }
     .tab-btn.active { color: #4361EE; font-weight: 600; }
     .tab-btn.active::after { transform: scaleX(1); }
-
-    /* ── Animations ── */
-    @keyframes fadeUp {
-      from { opacity: 0; transform: translateY(10px); }
-      to   { opacity: 1; transform: translateY(0); }
-    }
-    @keyframes shimmer {
-      0%   { background-position: -200% 0; }
-      100% { background-position:  200% 0; }
-    }
-    .fade-up { animation: fadeUp 0.35s ease forwards; }
-    .skeleton {
-      background: linear-gradient(90deg, #f0f2f7 25%, #e5e8ef 50%, #f0f2f7 75%);
-      background-size: 200% 100%;
-      animation: shimmer 1.6s infinite;
-      border-radius: 12px;
-    }
-
-    /* ── Select custom ── */
-    .custom-select {
-      appearance: none; -webkit-appearance: none;
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236B7280' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
-      background-repeat: no-repeat;
-      background-position: right 10px center;
-      padding-right: 30px;
-      cursor: pointer;
-    }
-
-    /* ── Table ── */
-    .tbl-row:hover td { background: #F8F9FC; }
-    td, th { transition: background 0.15s; }
-
-    /* ── Scrollbar ── */
-    ::-webkit-scrollbar { width: 6px; height: 6px; }
-    ::-webkit-scrollbar-track { background: transparent; }
-    ::-webkit-scrollbar-thumb { background: #CDD1DC; border-radius: 3px; }
-
-    /* ── Progress bar ── */
-    .prog-bar { height: 8px; border-radius: 99px; overflow: hidden; background: #F0F2F7; }
-    .prog-fill { height: 100%; border-radius: 99px; transition: width 0.8s cubic-bezier(.4,0,.2,1); }
-
-    /* ── Badge ── */
-    .badge { display: inline-flex; align-items: center; border-radius: 99px; font-size: 11px; font-weight: 600; padding: 2px 9px; letter-spacing: .02em; }
+    .skeleton { background: linear-gradient(90deg, #f0f2f7 25%, #e5e8ef 50%, #f0f2f7 75%); background-size: 200% 100%; animation: shimmer 1.6s infinite; border-radius: 12px; }
+    @keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
   </style>
 </head>
 
@@ -125,694 +51,65 @@
   <script type="text/babel">
     const { useState, useEffect, useRef, useCallback, useMemo } = React;
 
-    // ─── Ícones (Lucide UMD) ─────────────────────────────────
-    const {
-      TrendingUp, TrendingDown, Users, Star, AlertTriangle, BarChart2,
-      MessageSquare, LogOut, RefreshCw, Activity, Award, Minus,
-      ChevronRight, Info, CheckCircle2, XCircle, MinusCircle,
-      ArrowUpRight, ArrowDownRight
-    } = LucideReact;
-
-
-    // ─── Constantes / Paleta ──────────────────────────────────
-    const MESES_ORDEN = [
-      'Enero','Febrero','Marzo','Abril','Mayo','Junio',
-      'Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'
-    ];
-
-    const C = {
-      brand   : '#4361EE',
-      success : '#22C55E',
-      warn    : '#F59E0B',
-      danger  : '#EF4444',
-      purple  : '#8B5CF6',
-      gray    : '#6B7280',
-      bg      : '#F0F2F7',
+    const CONFIG_FRONTEND = {
+      // =================================================================
+      // Coloca aquí tu enlace de Apps Script generado en el Paso 2
+      // =================================================================
+      URL_API_BACKEND: "https://script.google.com/macros/s/AKfycbw6T6T66wLw6tGfU5-mZksv_WbV6IqLshF7i6I9MvA-Fxtq-CIs_C6lUq6O-Mh1X9U/exec" 
     };
 
-    // Tailwind color tokens estáticos (necesario para CDN play)
-    const COLOR_MAP = {
-      brand   : { bg: 'bg-blue-50',   text: 'text-blue-600',   icon: 'bg-blue-100',   bold: 'text-blue-700'   },
-      success : { bg: 'bg-green-50',  text: 'text-green-600',  icon: 'bg-green-100',  bold: 'text-green-700'  },
-      warn    : { bg: 'bg-amber-50',  text: 'text-amber-600',  icon: 'bg-amber-100',  bold: 'text-amber-700'  },
-      danger  : { bg: 'bg-red-50',    text: 'text-red-600',    icon: 'bg-red-100',    bold: 'text-red-700'    },
-      purple  : { bg: 'bg-purple-50', text: 'text-purple-600', icon: 'bg-purple-100', bold: 'text-purple-700' },
-      neutral : { bg: 'bg-gray-50',   text: 'text-gray-600',   icon: 'bg-gray-100',   bold: 'text-gray-700'   },
-    };
-
-    // ─── Data Mock (modo desarrollo fuera de GAS) ─────────────
-    const MOCK = {
-      nps: [
-        { mes:'Enero',   anio:2025, cliente:'TechCorp SA',   kam:'Ana García',   puntuacion:9,  comentario:'Excelente servicio, muy recomendable.' },
-        { mes:'Enero',   anio:2025, cliente:'Retail Plus',   kam:'Luis Torres',  puntuacion:6,  comentario:'Podría mejorar tiempos de respuesta.' },
-        { mes:'Enero',   anio:2025, cliente:'Foodie Inc',    kam:'Ana García',   puntuacion:8,  comentario:'Muy buena experiencia general.' },
-        { mes:'Enero',   anio:2025, cliente:'HomeCo',        kam:'Luis Torres',  puntuacion:4,  comentario:'Tuvimos varios problemas técnicos.' },
-        { mes:'Febrero', anio:2025, cliente:'StyleBrand',    kam:'María López',  puntuacion:10, comentario:'Superó todas nuestras expectativas.' },
-        { mes:'Febrero', anio:2025, cliente:'AutoParts',     kam:'Ana García',   puntuacion:9,  comentario:'Gran plataforma, fácil de usar.' },
-        { mes:'Febrero', anio:2025, cliente:'QuickFood',     kam:'Luis Torres',  puntuacion:5,  comentario:'La implementación fue confusa.' },
-        { mes:'Marzo',   anio:2025, cliente:'TechCorp SA',   kam:'Ana García',   puntuacion:9,  comentario:'Seguimos muy satisfechos.' },
-        { mes:'Marzo',   anio:2025, cliente:'Retail Plus',   kam:'Luis Torres',  puntuacion:7,  comentario:'Ha mejorado, pero aún hay brechas.' },
-        { mes:'Marzo',   anio:2025, cliente:'AutoParts',     kam:'Ana García',   puntuacion:10, comentario:'Increíble plataforma de fidelización.' },
-        { mes:'Marzo',   anio:2025, cliente:'FoodChain',     kam:'María López',  puntuacion:3,  comentario:'El servicio al cliente no responde.' },
-        { mes:'Marzo',   anio:2025, cliente:'StyleBrand',    kam:'María López',  puntuacion:9,  comentario:'Muy contentos con los resultados.' },
-        { mes:'Abril',   anio:2025, cliente:'HomeCo',        kam:'Luis Torres',  puntuacion:8,  comentario:'Mejoró bastante desde el último mes.' },
-        { mes:'Abril',   anio:2025, cliente:'TechCorp SA',   kam:'Ana García',   puntuacion:10, comentario:'Renovamos encantados. Excelente.' },
-        { mes:'Abril',   anio:2025, cliente:'FoodChain',     kam:'María López',  puntuacion:7,  comentario:'Ha mejorado la atención.' },
-      ],
-      csat_reunion: [
-        { mes:'Enero',   anio:2025, cliente:'TechCorp SA',  kam:'Ana García',  puntuacion:4.5, comentario:'Reunión muy productiva y bien estructurada.' },
-        { mes:'Enero',   anio:2025, cliente:'Retail Plus',  kam:'Luis Torres', puntuacion:3.8, comentario:'Faltó preparación por parte del KAM.' },
-        { mes:'Enero',   anio:2025, cliente:'HomeCo',       kam:'Luis Torres', puntuacion:4.2, comentario:'Bien organizada, buen uso del tiempo.' },
-        { mes:'Febrero', anio:2025, cliente:'StyleBrand',   kam:'María López', puntuacion:5.0, comentario:'Perfecta, muy completa.' },
-        { mes:'Febrero', anio:2025, cliente:'AutoParts',    kam:'Ana García',  puntuacion:4.7, comentario:'Excelente presentación de resultados.' },
-        { mes:'Febrero', anio:2025, cliente:'QuickFood',    kam:'Luis Torres', puntuacion:3.5, comentario:'Muy corta, quedaron temas pendientes.' },
-        { mes:'Marzo',   anio:2025, cliente:'TechCorp SA',  kam:'Ana García',  puntuacion:4.8, comentario:'Gran agenda y seguimiento de compromisos.' },
-        { mes:'Marzo',   anio:2025, cliente:'AutoParts',    kam:'Ana García',  puntuacion:4.6, comentario:'Muy informativa, claros objetivos.' },
-        { mes:'Marzo',   anio:2025, cliente:'FoodChain',    kam:'María López', puntuacion:4.0, comentario:'Buena, mejoró mucho.' },
-        { mes:'Abril',   anio:2025, cliente:'TechCorp SA',  kam:'Ana García',  puntuacion:4.9, comentario:'Siempre de alta calidad.' },
-        { mes:'Abril',   anio:2025, cliente:'HomeCo',       kam:'Luis Torres', puntuacion:4.3, comentario:'Mejor que la anterior.' },
-      ],
-      csat_abono: [
-        { mes:'Enero',   anio:2025, cliente:'TechCorp SA', kam:'Ana García',  puntuacion:4.2, comentario:'Rápido y sin errores.' },
-        { mes:'Enero',   anio:2025, cliente:'Retail Plus', kam:'Luis Torres', puntuacion:3.5, comentario:'Tardó más de lo prometido.' },
-        { mes:'Enero',   anio:2025, cliente:'HomeCo',      kam:'Luis Torres', puntuacion:3.8, comentario:'Proceso confuso al inicio.' },
-        { mes:'Febrero', anio:2025, cliente:'StyleBrand',  kam:'María López', puntuacion:4.8, comentario:'Excelente proceso de abono.' },
-        { mes:'Febrero', anio:2025, cliente:'AutoParts',   kam:'Ana García',  puntuacion:4.5, comentario:'Muy eficiente, sin demoras.' },
-        { mes:'Marzo',   anio:2025, cliente:'TechCorp SA', kam:'Ana García',  puntuacion:4.5, comentario:'Ha mejorado notablemente.' },
-        { mes:'Marzo',   anio:2025, cliente:'FoodChain',   kam:'María López', puntuacion:3.9, comentario:'Aceptable, pero esperaba más velocidad.' },
-        { mes:'Marzo',   anio:2025, cliente:'AutoParts',   kam:'Ana García',  puntuacion:4.7, comentario:'Muy bueno, sin quejas.' },
-        { mes:'Abril',   anio:2025, cliente:'TechCorp SA', kam:'Ana García',  puntuacion:4.8, comentario:'Perfecto.' },
-        { mes:'Abril',   anio:2025, cliente:'HomeCo',      kam:'Luis Torres', puntuacion:4.0, comentario:'Mejoró respecto al mes pasado.' },
-      ],
-      salidas: [
-        { mes:'Enero',   anio:2025, cliente:'OldClient SA', kam:'Luis Torres', motivo:'Precio',         monto:15000 },
-        { mes:'Febrero', anio:2025, cliente:'MiniMart',     kam:'María López', motivo:'Competencia',    monto:8500  },
-        { mes:'Marzo',   anio:2025, cliente:'QuickShop',    kam:'Ana García',  motivo:'Insatisfacción', monto:22000 },
-        { mes:'Abril',   anio:2025, cliente:'CaféRed',      kam:'Luis Torres', motivo:'Presupuesto',    monto:6200  },
-      ],
-      meses: MESES_ORDEN,
-      ultimaActualizacion: '26/05/2025 10:30'
-    };
-
-
-    // ─── Helpers de cálculo ───────────────────────────────────
-    function filtrar(arr, mes) {
-      if (!arr || !mes || mes === 'Todos') return arr || [];
-      return arr.filter(r => r.mes === mes);
-    }
-
-    function calcNPS(resp) {
-      const total = resp.length;
-      if (!total) return { nps: 0, prom: 0, pas: 0, det: 0, total: 0 };
-      const prom = resp.filter(r => r.puntuacion >= 9).length;
-      const pas  = resp.filter(r => r.puntuacion >= 7 && r.puntuacion <= 8).length;
-      const det  = resp.filter(r => r.puntuacion <= 6).length;
-      return {
-        nps   : Math.round(((prom - det) / total) * 100),
-        prom  : Math.round((prom / total) * 100),
-        pas   : Math.round((pas  / total) * 100),
-        det   : Math.round((det  / total) * 100),
-        total
-      };
-    }
-
-    function promedio(arr) {
-      if (!arr.length) return 0;
-      return +(arr.reduce((s, r) => s + r.puntuacion, 0) / arr.length).toFixed(2);
-    }
-
-    function porKAM(resp) {
-      const g = {};
-      resp.forEach(r => {
-        const k = r.kam || 'Sin KAM';
-        if (!g[k]) g[k] = [];
-        g[k].push(r);
-      });
-      return Object.entries(g)
-        .map(([kam, items]) => ({ kam, prom: +promedio(items).toFixed(2), total: items.length }))
-        .sort((a, b) => b.prom - a.prom);
-    }
-
-    function npsColorToken(nps) {
-      return nps >= 50 ? 'success' : nps >= 0 ? 'warn' : 'danger';
-    }
-    function csatColor(v) {
-      return v >= 4 ? 'success' : v >= 3 ? 'warn' : 'danger';
-    }
-    function csatColorHex(v) {
-      return v >= 4 ? C.success : v >= 3 ? C.warn : C.danger;
-    }
-
-
-    // ─── Componentes UI ───────────────────────────────────────
-
-    /* KPI Card */
-    function KPI({ label, value, sub, token = 'brand', Icon, delta }) {
-      const col = COLOR_MAP[token] || COLOR_MAP.brand;
+    function KPI({ label, value, sub, iconClass }) {
       return (
-        <div className="card p-5 flex flex-col gap-3 transition-shadow duration-200">
+        <div className="card p-5 flex flex-col gap-2">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-gray-400 uppercase tracking-widest leading-none">{label}</span>
-            {Icon && (
-              <span className={`${col.icon} p-2 rounded-xl flex items-center justify-center`}>
-                <Icon size={15} className={col.text} strokeWidth={2.2} />
-              </span>
-            )}
+            <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">{label}</span>
+            {iconClass && <i className={`${iconClass} text-gray-400`}></i>}
           </div>
-          <div className="flex items-end gap-2">
-            <span className={`text-[2rem] font-bold leading-none tracking-tight ${col.text}`}>{value}</span>
-            {delta !== undefined && (
-              <span className={`text-xs font-semibold mb-0.5 ${delta >= 0 ? 'text-green-500' : 'text-red-500'}`}>
-                {delta >= 0 ? <ArrowUpRight size={13} className="inline" /> : <ArrowDownRight size={13} className="inline" />}
-                {Math.abs(delta)}%
-              </span>
-            )}
-          </div>
-          {sub && <span className="text-[11px] text-gray-400 leading-snug">{sub}</span>}
+          <span className="text-2xl font-bold text-gray-800">{value}</span>
+          {sub && <span className="text-[11px] text-gray-400">{sub}</span>}
         </div>
       );
     }
 
-    /* Empty State */
-    function Empty({ msg = 'Sin datos para el período seleccionado' }) {
+    function Empty({ msg = 'Sin datos para mostrar' }) {
       return (
-        <div className="flex flex-col items-center gap-3 py-14 text-gray-300">
-          <BarChart2 size={36} strokeWidth={1.2} />
-          <p className="text-sm text-gray-400">{msg}</p>
+        <div className="text-center py-10 text-gray-400">
+          <i className="fa-solid fa-folder-open text-3xl mb-2 block"></i>
+          <p className="text-sm">{msg}</p>
         </div>
       );
     }
 
-    /* Skeleton Loader */
-    function Skeleton({ rows = 5, cols = 2 }) {
-      return (
-        <div className="space-y-4 fade-up">
-          <div className={`grid grid-cols-${cols} gap-4`}>
-            {Array.from({ length: cols }).map((_, i) => (
-              <div key={i} className="skeleton h-[110px]" />
-            ))}
-          </div>
-          <div className="grid grid-cols-2 gap-4">
-            {Array.from({ length: 2 }).map((_, i) => (
-              <div key={i} className="skeleton h-[300px]" />
-            ))}
-          </div>
-          <div className="skeleton h-[200px]" />
-        </div>
-      );
-    }
-
-    /* Pill Badge */
-    function Pill({ label, token = 'neutral' }) {
-      const col = COLOR_MAP[token] || COLOR_MAP.neutral;
-      return (
-        <span className={`badge ${col.bg} ${col.text}`}>{label}</span>
-      );
-    }
-
-
-    // ─── Charts (Chart.js wrapped en React hooks) ─────────────
-
-    /* Donut NPS */
-    function DonutNPS({ prom, pas, det }) {
-      const ref = useRef(null);
-      const inst = useRef(null);
-      useEffect(() => {
-        if (!ref.current) return;
-        inst.current?.destroy();
-        inst.current = new Chart(ref.current, {
-          type: 'doughnut',
-          data: {
-            labels: ['Promotores','Pasivos','Detractores'],
-            datasets: [{
-              data: [prom, pas, det],
-              backgroundColor: [C.success, C.warn, C.danger],
-              borderWidth: 0, hoverOffset: 8
-            }]
-          },
-          options: {
-            cutout: '75%', responsive: true, maintainAspectRatio: true,
-            animation: { animateScale: true, duration: 700 },
-            plugins: {
-              legend: { display: false },
-              tooltip: { callbacks: { label: ctx => ` ${ctx.label}: ${ctx.raw}%` } }
-            }
-          }
-        });
-        return () => inst.current?.destroy();
-      }, [prom, pas, det]);
-      return <canvas ref={ref} />;
-    }
-
-    /* Bar Chart — CSAT por KAM */
-    function BarKAM({ datos }) {
-      const ref = useRef(null);
-      const inst = useRef(null);
-      useEffect(() => {
-        if (!ref.current || !datos.length) return;
-        inst.current?.destroy();
-        inst.current = new Chart(ref.current, {
-          type: 'bar',
-          data: {
-            labels: datos.map(d => d.kam),
-            datasets: [{
-              label: 'CSAT',
-              data: datos.map(d => d.prom),
-              backgroundColor: datos.map(d => csatColorHex(d.prom) + 'CC'),
-              borderRadius: 8,
-              borderSkipped: false,
-              barPercentage: 0.6
-            }]
-          },
-          options: {
-            indexAxis: 'y',
-            responsive: true,
-            maintainAspectRatio: false,
-            animation: { duration: 600 },
-            scales: {
-              x: {
-                min: 0, max: 5,
-                grid: { color: '#F0F2F7' },
-                ticks: { font: { family: 'DM Sans', size: 11 }, color: '#9AA0B4' }
-              },
-              y: {
-                grid: { display: false },
-                ticks: { font: { family: 'DM Sans', size: 11, weight: '500' }, color: '#374151' }
-              }
-            },
-            plugins: {
-              legend: { display: false },
-              tooltip: { callbacks: { label: ctx => ` CSAT: ${ctx.raw.toFixed(2)} / 5.0 (${datos[ctx.dataIndex].total} enc.)` } }
-            }
-          }
-        });
-        return () => inst.current?.destroy();
-      }, [datos]);
-      return <canvas ref={ref} />;
-    }
-
-    /* Scatter — Adopción vs Adherencia */
-    function ScatterAA({ reunion, abono }) {
-      const ref = useRef(null);
-      const inst = useRef(null);
-      useEffect(() => {
-        if (!ref.current) return;
-        inst.current?.destroy();
-        // Cruzar clientes que tienen datos en ambas fuentes
-        const mapa = {};
-        reunion.forEach(r => { mapa[r.cliente] = { x: r.puntuacion, label: r.cliente, kam: r.kam }; });
-        const puntos = abono
-          .filter(r => mapa[r.cliente])
-          .map(r => ({ x: mapa[r.cliente].x, y: r.puntuacion, label: r.cliente }));
-        if (!puntos.length) return;
-        inst.current = new Chart(ref.current, {
-          type: 'scatter',
-          data: {
-            datasets: [{
-              label: 'Clientes',
-              data: puntos,
-              backgroundColor: puntos.map(p => {
-                if (p.x >= 3.5 && p.y >= 3.5) return C.success + 'BB';
-                if (p.x >= 3.5 && p.y < 3.5)  return C.warn + 'BB';
-                if (p.x < 3.5  && p.y >= 3.5)  return C.brand + 'BB';
-                return C.danger + 'BB';
-              }),
-              pointRadius: 12,
-              pointHoverRadius: 16,
-              borderWidth: 0,
-            }]
-          },
-          options: {
-            responsive: true, maintainAspectRatio: false,
-            animation: { duration: 600 },
-            scales: {
-              x: {
-                min: 1, max: 5,
-                title: { display: true, text: '← CSAT Reunión (Adopción) →', font: { family: 'DM Sans', size: 11 }, color: '#9AA0B4' },
-                grid: { color: '#F0F2F7' },
-                ticks: { font: { family: 'DM Sans', size: 11 }, color: '#9AA0B4' }
-              },
-              y: {
-                min: 1, max: 5,
-                title: { display: true, text: '← CSAT Abono (Adherencia) →', font: { family: 'DM Sans', size: 11 }, color: '#9AA0B4' },
-                grid: { color: '#F0F2F7' },
-                ticks: { font: { family: 'DM Sans', size: 11 }, color: '#9AA0B4' }
-              }
-            },
-            plugins: {
-              legend: { display: false },
-              tooltip: {
-                callbacks: {
-                  title: ctx => puntos[ctx[0].dataIndex]?.label || '',
-                  label: ctx => ` Adopción: ${ctx.parsed.x.toFixed(1)} · Adherencia: ${ctx.parsed.y.toFixed(1)}`
-                }
-              }
-            }
-          }
-        });
-        return () => inst.current?.destroy();
-      }, [reunion, abono]);
-      return (
-        <div style={{ height: '280px', position: 'relative' }}>
-          <canvas ref={ref} />
-        </div>
-      );
-    }
-
-    /* Line Chart — Tendencia NPS mensual */
-    function LineNPS({ todosNPS }) {
-      const ref = useRef(null);
-      const inst = useRef(null);
-      useEffect(() => {
-        if (!ref.current) return;
-        inst.current?.destroy();
-        const mesesConData = MESES_ORDEN.filter(m => todosNPS.some(r => r.mes === m));
-        const npsVals = mesesConData.map(m => calcNPS(todosNPS.filter(r => r.mes === m)).nps);
-        inst.current = new Chart(ref.current, {
-          type: 'line',
-          data: {
-            labels: mesesConData,
-            datasets: [{
-              data: npsVals,
-              borderColor: C.brand,
-              backgroundColor: C.brand + '14',
-              fill: true,
-              tension: 0.45,
-              pointBackgroundColor: '#fff',
-              pointBorderColor: C.brand,
-              pointBorderWidth: 2.5,
-              pointRadius: 5,
-              pointHoverRadius: 8
-            }]
-          },
-          options: {
-            responsive: true, maintainAspectRatio: false,
-            animation: { duration: 700 },
-            scales: {
-              y: {
-                grid: { color: '#F0F2F7' },
-                ticks: { font: { family: 'DM Sans', size: 11 }, color: '#9AA0B4' }
-              },
-              x: {
-                grid: { display: false },
-                ticks: { font: { family: 'DM Sans', size: 11 }, color: '#9AA0B4' }
-              }
-            },
-            plugins: {
-              legend: { display: false },
-              tooltip: { callbacks: { label: ctx => ` NPS: ${ctx.raw > 0 ? '+' : ''}${ctx.raw}` } }
-            }
-          }
-        });
-        return () => inst.current?.destroy();
-      }, [todosNPS]);
-      return (
-        <div style={{ height: '210px', position: 'relative' }}>
-          <canvas ref={ref} />
-        </div>
-      );
-    }
-
-
-    // ─── PESTAÑA 1: NPS ───────────────────────────────────────
     function TabNPS({ data, mes }) {
-      const resp = filtrar(data.nps, mes);
-      const { nps, prom, pas, det, total } = calcNPS(resp);
-      const token = npsColorToken(nps);
-
+      const registros = useMemo(() => mes === 'Todos' ? data.nps : data.nps.filter(r => r.mes === mes), [data, mes]);
       return (
-        <div className="space-y-5 fade-up">
-          {/* KPIs */}
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-            <KPI label="NPS Neto" value={`${nps >= 0 ? '+' : ''}${nps}`}
-              sub="% Promotores – % Detractores" token={token} Icon={TrendingUp} />
-            <KPI label="Total Respuestas" value={total}
-              sub={`Período: ${mes || 'Todos'}`} token="brand" Icon={Users} />
-            <KPI label="Promotores" value={`${prom}%`}
-              sub="Puntuación 9–10" token="success" Icon={CheckCircle2} />
-            <KPI label="Pasivos" value={`${pas}%`}
-              sub="Puntuación 7–8" token="warn" Icon={MinusCircle} />
-            <KPI label="Detractores" value={`${det}%`}
-              sub="Puntuación 0–6" token="danger" Icon={XCircle} />
-          </div>
-
-          {/* Donut + Tendencia */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-            <div className="card p-6">
-              <h3 className="text-sm font-semibold text-gray-700 mb-4">Distribución NPS del período</h3>
-              <div className="relative max-w-[220px] mx-auto">
-                <DonutNPS prom={prom} pas={pas} det={det} />
-                <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                  <div className="text-center">
-                    <div className={`text-2xl font-bold leading-none ${COLOR_MAP[token].text}`}>
-                      {nps >= 0 ? '+' : ''}{nps}
-                    </div>
-                    <div className="text-[10px] font-semibold text-gray-400 uppercase tracking-widest mt-1">NPS</div>
-                  </div>
-                </div>
-              </div>
-              <div className="flex justify-center gap-5 mt-4 flex-wrap">
-                {[[C.success,'Promotores',prom],[C.warn,'Pasivos',pas],[C.danger,'Detractores',det]].map(
-                  ([color, label, val]) => (
-                    <div key={label} className="flex items-center gap-1.5">
-                      <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ background: color }} />
-                      <span className="text-xs text-gray-500">{label} <strong className="text-gray-700">{val}%</strong></span>
-                    </div>
-                  )
-                )}
-              </div>
-            </div>
-
-            <div className="card p-6">
-              <h3 className="text-sm font-semibold text-gray-700 mb-1">Evolución NPS — Histórico</h3>
-              <p className="text-xs text-gray-400 mb-4">Tendencia mensual del Net Promoter Score</p>
-              <LineNPS todosNPS={data.nps} />
-            </div>
-          </div>
-
-          {/* Tabla */}
-          <div className="card p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-sm font-semibold text-gray-700">Historial de Respuestas NPS</h3>
-              <span className="text-xs text-gray-400">{resp.length} registros</span>
-            </div>
-            {resp.length === 0 ? <Empty /> : (
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm border-collapse">
-                  <thead>
-                    <tr className="border-b border-gray-100">
-                      {['Mes','Cliente','KAM','Score','Categoría','Comentario'].map(h => (
-                        <th key={h} className="text-left text-[11px] font-semibold text-gray-400 uppercase tracking-widest pb-3 pr-5 first:pl-0">{h}</th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {resp.map((r, i) => {
-                      const cat = r.puntuacion >= 9 ? ['Promotor','success']
-                                : r.puntuacion >= 7 ? ['Pasivo','warn'] : ['Detractor','danger'];
-                      return (
-                        <tr key={i} className="tbl-row border-b border-gray-50 last:border-0">
-                          <td className="py-3 pr-5 text-gray-400 text-xs font-medium">{r.mes}</td>
-                          <td className="py-3 pr-5 font-semibold text-gray-800">{r.cliente}</td>
-                          <td className="py-3 pr-5 text-gray-500">{r.kam}</td>
-                          <td className="py-3 pr-5">
-                            <span className="inline-flex items-center justify-center w-8 h-8 rounded-full text-white text-xs font-bold"
-                              style={{ background: r.puntuacion >= 9 ? C.success : r.puntuacion >= 7 ? C.warn : C.danger }}>
-                              {r.puntuacion}
-                            </span>
-                          </td>
-                          <td className="py-3 pr-5"><Pill label={cat[0]} token={cat[1]} /></td>
-                          <td className="py-3 text-gray-500 text-xs max-w-[220px] truncate">{r.comentario || '—'}</td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
-            )}
-          </div>
-        </div>
-      );
-    }
-
-
-    // ─── PESTAÑA 2: CSAT ──────────────────────────────────────
-    function TabCSAT({ data, mes }) {
-      const reunion = filtrar(data.csat_reunion, mes);
-      const abono   = filtrar(data.csat_abono, mes);
-      const pReunion = promedio(reunion);
-      const pAbono   = promedio(abono);
-      const kamR = porKAM(reunion);
-      const kamA = porKAM(abono);
-
-      return (
-        <div className="space-y-5 fade-up">
-          {/* KPIs */}
+        <div className="space-y-6">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <KPI label="CSAT Reunión Prom." value={`${pReunion} / 5`}
-              sub="Promedio general de satisfacción en reuniones"
-              token={csatColor(pReunion)} Icon={MessageSquare} />
-            <KPI label="CSAT Abono Prom." value={`${pAbono} / 5`}
-              sub="Promedio general de satisfacción en abono"
-              token={csatColor(pAbono)} Icon={Star} />
-            <KPI label="Vol. Reuniones" value={reunion.length}
-              sub="Encuestas post-reunión registradas" token="brand" Icon={Users} />
-            <KPI label="Vol. Abono" value={abono.length}
-              sub="Encuestas de abono de puntos registradas" token="purple" Icon={Activity} />
+            <KPI label="Total Encuestas" value={registros.length} iconClass="fa-solid fa-users" />
+            <KPI label="Periodo Filtrado" value={mes} iconClass="fa-solid fa-calendar" />
           </div>
-
-          {/* Barras por KAM */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-            <div className="card p-6">
-              <h3 className="text-sm font-semibold text-gray-700 mb-1">CSAT por KAM — Reuniones</h3>
-              <p className="text-xs text-gray-400 mb-4">Promedio de satisfacción por gestor de cuenta</p>
-              {kamR.length
-                ? <div style={{ height: `${Math.max(kamR.length * 56, 160)}px`, position: 'relative' }}><BarKAM datos={kamR} /></div>
-                : <Empty />}
-            </div>
-            <div className="card p-6">
-              <h3 className="text-sm font-semibold text-gray-700 mb-1">CSAT por KAM — Abono de Puntos</h3>
-              <p className="text-xs text-gray-400 mb-4">Promedio de satisfacción por gestor de cuenta</p>
-              {kamA.length
-                ? <div style={{ height: `${Math.max(kamA.length * 56, 160)}px`, position: 'relative' }}><BarKAM datos={kamA} /></div>
-                : <Empty />}
-            </div>
-          </div>
-
-          {/* Mapa Cuadrantes */}
           <div className="card p-6">
-            <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-3 mb-5">
-              <div>
-                <h3 className="text-sm font-semibold text-gray-700">Mapa de Cuadrantes — Adopción vs Adherencia</h3>
-                <p className="text-xs text-gray-400 mt-0.5">
-                  CSAT Reunión (Adopción) en eje X · CSAT Abono (Adherencia) en eje Y · Cruce por cliente
-                </p>
-              </div>
-              <div className="grid grid-cols-2 gap-1.5 text-[10px] font-semibold shrink-0">
-                {[
-                  ['bg-green-50 text-green-600','⭐ Alta adopción · Alta adherencia'],
-                  ['bg-amber-50 text-amber-600', '↗ Alta adopción · Baja adherencia'],
-                  ['bg-blue-50 text-blue-600',   '↗ Baja adopción · Alta adherencia'],
-                  ['bg-red-50 text-red-600',     '⚠ Baja adopción · Baja adherencia'],
-                ].map(([cls, txt]) => (
-                  <span key={txt} className={`${cls} px-2 py-1.5 rounded-lg`}>{txt}</span>
-                ))}
-              </div>
-            </div>
-            {(reunion.length && abono.length)
-              ? <ScatterAA reunion={reunion} abono={abono} />
-              : <Empty msg="Se requieren datos en ambas fuentes para trazar el mapa de cuadrantes" />}
-          </div>
-
-          {/* Tabla unificada */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-            {[['Reuniones', reunion], ['Abono', abono]].map(([tipo, datos]) => (
-              <div key={tipo} className="card p-6">
-                <h3 className="text-sm font-semibold text-gray-700 mb-4">Detalle CSAT — {tipo}</h3>
-                {datos.length === 0 ? <Empty /> : (
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-xs">
-                      <thead>
-                        <tr className="border-b border-gray-100">
-                          {['Cliente','KAM','Score','Comentario'].map(h => (
-                            <th key={h} className="text-left text-[10px] font-semibold text-gray-400 uppercase tracking-widest pb-2.5 pr-4">{h}</th>
-                          ))}
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {datos.map((r, i) => (
-                          <tr key={i} className="tbl-row border-b border-gray-50 last:border-0">
-                            <td className="py-2.5 pr-4 font-semibold text-gray-800">{r.cliente}</td>
-                            <td className="py-2.5 pr-4 text-gray-500">{r.kam}</td>
-                            <td className="py-2.5 pr-4">
-                              <span className="font-bold" style={{ color: csatColorHex(r.puntuacion) }}>{r.puntuacion}</span>
-                              <span className="text-gray-300">/5</span>
-                            </td>
-                            <td className="py-2.5 text-gray-400 max-w-[160px] truncate">{r.comentario || '—'}</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-        </div>
-      );
-    }
-
-
-    // ─── PESTAÑA 3: SALIDAS / RIESGO ──────────────────────────
-    function TabSalidas({ data, mes }) {
-      const salidas = filtrar(data.salidas, mes);
-      const montoTotal = salidas.reduce((s, r) => s + r.monto, 0);
-
-      const motivosMap = {};
-      salidas.forEach(s => { motivosMap[s.motivo] = (motivosMap[s.motivo] || 0) + 1; });
-      const motivos = Object.entries(motivosMap).sort((a, b) => b[1] - a[1]);
-      const topMotivo = motivos[0];
-
-      return (
-        <div className="space-y-5 fade-up">
-          {/* KPIs */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <KPI label="Total Bajas" value={salidas.length}
-              sub="Clientes dados de baja en el período" token="danger" Icon={LogOut} />
-            <KPI label="Facturación en Riesgo" value={`$${montoTotal.toLocaleString()}`}
-              sub="Monto mensual perdido acumulado" token="danger" Icon={TrendingDown} />
-            <KPI label="Principal Motivo" value={topMotivo?.[0] || '—'}
-              sub={topMotivo ? `${topMotivo[1]} caso(s) registrado(s)` : 'Sin datos suficientes'}
-              token="warn" Icon={AlertTriangle} />
-          </div>
-
-          {/* Motivos */}
-          <div className="card p-6">
-            <h3 className="text-sm font-semibold text-gray-700 mb-5">Distribución de Motivos de Baja</h3>
-            {motivos.length === 0 ? <Empty msg="Sin bajas registradas en este período 🎉" /> : (
-              <div className="space-y-3">
-                {motivos.map(([motivo, cant]) => {
-                  const pct = Math.round((cant / salidas.length) * 100);
-                  return (
-                    <div key={motivo}>
-                      <div className="flex justify-between text-sm mb-1.5">
-                        <span className="font-medium text-gray-700">{motivo}</span>
-                        <span className="text-gray-400 text-xs">{cant} caso{cant > 1 ? 's' : ''} · <strong className="text-gray-600">{pct}%</strong></span>
-                      </div>
-                      <div className="prog-bar">
-                        <div className="prog-fill" style={{ width: `${pct}%`, background: C.danger }} />
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-          </div>
-
-          {/* Tabla de registros */}
-          <div className="card p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-sm font-semibold text-gray-700">Registro de Bajas</h3>
-              <span className="text-xs text-gray-400">{salidas.length} registro{salidas.length !== 1 ? 's' : ''}</span>
-            </div>
-            {salidas.length === 0 ? <Empty msg="Sin bajas en el período seleccionado 🎉" /> : (
+            <h3 className="text-sm font-bold text-gray-700 mb-4">Respuestas Recientes (NPS)</h3>
+            {registros.length === 0 ? <Empty /> : (
               <div className="overflow-x-auto">
-                <table className="w-full text-sm border-collapse">
+                <table className="w-full text-sm text-left">
                   <thead>
-                    <tr className="border-b border-gray-100">
-                      {['Mes','Cliente','KAM','Motivo','Monto Mensual'].map(h => (
-                        <th key={h} className="text-left text-[11px] font-semibold text-gray-400 uppercase tracking-widest pb-3 pr-5">{h}</th>
-                      ))}
+                    <tr className="border-b border-gray-100 text-gray-400 text-xs uppercase font-bold">
+                      <th className="pb-3">Cliente</th>
+                      <th className="pb-3">País</th>
+                      <th className="pb-3">Periodo</th>
+                      <th className="pb-3">Nota NPS</th>
+                      <th className="pb-3">Razón</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {salidas.map((s, i) => (
-                      <tr key={i} className="tbl-row border-b border-gray-50 last:border-0">
-                        <td className="py-3 pr-5 text-gray-400 text-xs font-medium">{s.mes}</td>
-                        <td className="py-3 pr-5 font-semibold text-gray-800">{s.cliente}</td>
-                        <td className="py-3 pr-5 text-gray-500">{s.kam}</td>
-                        <td className="py-3 pr-5"><Pill label={s.motivo} token="danger" /></td>
-                        <td className="py-3 font-bold text-gray-800">${s.monto.toLocaleString()}</td>
+                    {registros.map((r, i) => (
+                      <tr key={i} className="border-b border-gray-50 last:border-0 text-gray-700">
+                        <td className="py-3 font-bold">{r.cliente}</td>
+                        <td className="py-3">{r.pais}</td>
+                        <td className="py-3"><span className="bg-blue-50 text-blue-600 text-xs px-2 py-1 rounded font-semibold">{r.periodoQ}</span></td>
+                        <td className="py-3"><span className={`font-bold px-2 py-1 rounded text-white ${r.puntuacion >= 9 ? 'bg-green-500' : r.puntuacion >= 7 ? 'bg-amber-500' : 'bg-red-500'}`}>{r.puntuacion}</span></td>
+                        <td className="py-3 text-xs text-gray-500 max-w-[200px] truncate" title={r.razon}>{r.razon || '—'}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -824,304 +121,191 @@
       );
     }
 
-
-    // ─── PESTAÑA 4: HEALTH SCORE ──────────────────────────────
-    function TabHealth({ data, mes }) {
-      const npsResp = filtrar(data.nps, mes);
-      const reunion  = filtrar(data.csat_reunion, mes);
-      const abono    = filtrar(data.csat_abono, mes);
-      const salidas  = filtrar(data.salidas, mes);
-
-      const { nps } = calcNPS(npsResp);
-      const pReunion = promedio(reunion);
-      const pAbono   = promedio(abono);
-
-      // Normalización 0–100
-      const normNPS    = Math.min(Math.max(((nps + 100) / 2), 0), 100);
-      const normReunion = (pReunion / 5) * 100;
-      const normAbono   = (pAbono   / 5) * 100;
-      const penBajas    = Math.min(salidas.length * 8, 40);
-
-      const rawScore = normNPS * 0.40 + normReunion * 0.30 + normAbono * 0.30;
-      const health   = Math.max(0, Math.round(rawScore - penBajas));
-
-      const hToken  = health >= 70 ? 'success' : health >= 40 ? 'warn' : 'danger';
-      const hLabel  = health >= 70 ? 'Saludable' : health >= 40 ? 'En Riesgo' : 'Crítico';
-      const hColor  = health >= 70 ? C.success : health >= 40 ? C.warn : C.danger;
-      const circ    = 2 * Math.PI * 50; // r=50
-
-      const metricas = [
-        { label: 'NPS Score',      val: nps,       norm: normNPS,    color: C.brand,   fmt: v => `${v >= 0 ? '+' : ''}${v}`,    peso: '40%' },
-        { label: 'CSAT Reuniones', val: pReunion,  norm: normReunion,color: C.success, fmt: v => `${v.toFixed(2)} / 5`, peso: '30%' },
-        { label: 'CSAT Abono',     val: pAbono,    norm: normAbono,  color: C.warn,    fmt: v => `${v.toFixed(2)} / 5`, peso: '30%' },
-        { label: 'Penalización Bajas', val: penBajas, norm: penBajas, color: C.danger, fmt: v => `-${v} pts`,           peso: 'ajuste' },
-      ];
-
+    function TabCSAT({ data, mes }) {
+      const filteredReunion = useMemo(() => mes === 'Todos' ? data.csat_reunion : data.csat_reunion.filter(r => r.mes === mes), [data, mes]);
+      const filteredAbono = useMemo(() => mes === 'Todos' ? data.csat_abono : data.csat_abono.filter(r => r.mes === mes), [data, mes]);
       return (
-        <div className="space-y-5 fade-up">
-          {/* Health Score Hero */}
-          <div className="card p-7 flex flex-col md:flex-row items-center gap-8">
-            {/* Gauge circular SVG */}
-            <div className="relative shrink-0">
-              <svg viewBox="0 0 120 120" className="w-40 h-40" style={{ transform: 'rotate(-90deg)' }}>
-                <circle cx="60" cy="60" r="50" fill="none" stroke="#F0F2F7" strokeWidth="11" />
-                <circle cx="60" cy="60" r="50" fill="none"
-                  stroke={hColor} strokeWidth="11" strokeLinecap="round"
-                  strokeDasharray={`${(health / 100) * circ} ${circ}`}
-                  style={{ transition: 'stroke-dasharray 1s cubic-bezier(.4,0,.2,1)' }}
-                />
-              </svg>
-              <div className="absolute inset-0 flex flex-col items-center justify-center">
-                <span className="text-4xl font-black text-gray-800 leading-none">{health}</span>
-                <span className="text-[11px] font-semibold text-gray-400 mt-1">/ 100</span>
-              </div>
-            </div>
-
-            <div className="flex-1 min-w-0">
-              <div className="flex flex-wrap items-center gap-2 mb-2">
-                <h2 className="text-xl font-bold text-gray-800">Customer Health Score</h2>
-                <Pill label={hLabel} token={hToken} />
-              </div>
-              <p className="text-xs text-gray-400 mb-5 leading-relaxed">
-                Índice compuesto: <strong>NPS 40%</strong> + <strong>CSAT Reunión 30%</strong> + <strong>CSAT Abono 30%</strong><br/>
-                Ajuste automático por bajas registradas en el período.
-              </p>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5">
-                {[
-                  ['NPS',      nps >= 0 ? `+${nps}` : `${nps}`, 'brand'  ],
-                  ['CSAT Reu.',`${pReunion}/5`,                  'success'],
-                  ['CSAT Abo.',`${pAbono}/5`,                    'warn'   ],
-                  ['Bajas',    salidas.length,                    'danger' ],
-                ].map(([label, val, tok]) => {
-                  const col = COLOR_MAP[tok] || COLOR_MAP.neutral;
-                  return (
-                    <div key={label} className={`${col.bg} rounded-xl p-3 flex flex-col gap-0.5`}>
-                      <span className={`text-[10px] font-semibold uppercase tracking-wider ${col.text}`}>{label}</span>
-                      <span className={`text-base font-black ${col.bold}`}>{val}</span>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          </div>
-
-          {/* Indicadores individuales */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="card p-6">
-            <h3 className="text-sm font-semibold text-gray-700 mb-5">Desglose de Indicadores con Ponderación</h3>
-            <div className="space-y-5">
-              {metricas.map(m => (
-                <div key={m.label}>
-                  <div className="flex justify-between items-center mb-2">
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm font-semibold text-gray-700">{m.label}</span>
-                      <span className="text-[10px] font-medium text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full">{m.peso}</span>
+            <h3 className="text-sm font-bold text-gray-700 mb-4"><i className="fa-solid fa-comments text-blue-500 mr-2"></i>Post Reuniones Comerciales</h3>
+            {filteredReunion.length === 0 ? <Empty /> : (
+              <div className="space-y-3 max-h-[350px] overflow-y-auto pr-2">
+                {filteredReunion.map((r, i) => (
+                  <div key={i} className="p-3 bg-gray-50 rounded-xl flex justify-between items-start gap-2">
+                    <div>
+                      <p className="font-bold text-gray-800 text-xs">{r.cliente} <span className="text-gray-400 font-normal">({r.pais})</span></p>
+                      <p className="text-[11px] text-gray-500 mt-1">KAM: {r.kam || 'Sin asignar'}</p>
+                      {r.comentario && <p className="text-[11px] text-gray-400 italic mt-1">"{r.comentario}"</p>}
                     </div>
-                    <span className="text-sm font-bold" style={{ color: m.color }}>{m.fmt(m.val)}</span>
+                    <span className="text-xs font-bold text-green-600 bg-green-50 px-2 py-0.5 rounded">⭐ {r.puntuacion}</span>
                   </div>
-                  <div className="prog-bar">
-                    <div className="prog-fill" style={{ width: `${Math.min(m.norm, 100)}%`, background: m.color }} />
-                  </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
           </div>
-
-          {/* Interpretación */}
           <div className="card p-6">
-            <h3 className="text-sm font-semibold text-gray-700 mb-4">Guía de Interpretación del Score</h3>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-              {[
-                { range: '70 – 100', label: 'Saludable', desc: 'Clientes satisfechos, bajas bajo control. Estrategia: programas de upsell y embajadores.', color: C.success, bg: 'bg-green-50' },
-                { range: '40 – 69',  label: 'En Riesgo',  desc: 'Señales de alerta en satisfacción o churn. Acción inmediata: reunión ejecutiva de diagnóstico.', color: C.warn, bg: 'bg-amber-50' },
-                { range: '0 – 39',   label: 'Crítico',    desc: 'Alta probabilidad de baja o deterioro severo. Escalar a Customer Success y Dirección Comercial.', color: C.danger, bg: 'bg-red-50' },
-              ].map(s => (
-                <div key={s.range} className={`${s.bg} rounded-2xl p-4`}>
-                  <div className="flex items-center gap-2 mb-2">
-                    <span className="text-lg font-black" style={{ color: s.color }}>{s.range}</span>
-                    <Pill label={s.label} token={health >= 70 && s.range.startsWith('70') ? 'success' : health >= 40 && !health >= 70 && s.range.startsWith('40') ? 'warn' : 'neutral'} />
+            <h3 className="text-sm font-bold text-gray-700 mb-4"><i className="fa-solid fa-money-bill-transfer text-purple-500 mr-2"></i>Post Abonos Trimestrales</h3>
+            {filteredAbono.length === 0 ? <Empty /> : (
+              <div className="space-y-3 max-h-[350px] overflow-y-auto pr-2">
+                {filteredAbono.map((r, i) => (
+                  <div key={i} className="p-3 bg-gray-50 rounded-xl flex justify-between items-center">
+                    <div>
+                      <p className="font-bold text-gray-800 text-xs">{r.cliente}</p>
+                      <p className="text-[10px] text-gray-400 mt-0.5">Región: {r.pais}</p>
+                    </div>
+                    <span className="text-[11px] font-semibold text-purple-600 bg-purple-50 px-2 py-1 rounded">Abonos: {r.abonos}</span>
                   </div>
-                  <p className="text-xs text-gray-500 leading-relaxed">{s.desc}</p>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       );
     }
 
+    function TabSalidas({ data, mes }) {
+      const registros = useMemo(() => mes === 'Todos' ? data.salidas : data.salidas.filter(r => r.mes === mes), [data, mes]);
+      return (
+        <div className="card p-6">
+          <h3 className="text-sm font-bold text-gray-700 mb-4">Registro de Clientes Desactivados (Offboarding)</h3>
+          {registros.length === 0 ? <Empty msg="¡Excelente! No hay salidas registradas 🎉" /> : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm text-left">
+                <thead>
+                  <tr className="border-b border-gray-100 text-gray-400 text-xs uppercase font-bold">
+                    <th className="pb-3">Cliente</th>
+                    <th className="pb-3">País</th>
+                    <th className="pb-3">Principal Motivo</th>
+                    <th className="pb-3 text-center">Exp (1-10)</th>
+                    <th className="pb-3 text-center">Nota KAM</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {registros.map((s, i) => (
+                    <tr key={i} className="border-b border-gray-50 last:border-0 text-gray-700">
+                      <td className="py-3 font-bold">{s.cliente || 'Empresa'}</td>
+                      <td className="py-3">{s.pais}</td>
+                      <td className="py-3"><span className="bg-red-50 text-red-600 text-xs px-2 py-1 rounded-full font-semibold">{s.motivoBaja || 'No especifica'}</span></td>
+                      <td className="py-3 text-center font-bold text-gray-500">{s.experiencia || '—'}</td>
+                      <td className="py-3 text-center font-bold text-gray-500">{s.notaKam || '—'}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      );
+    }
 
-    // ─── APP PRINCIPAL ────────────────────────────────────────
     function App() {
-      const [data, setData]         = useState(null);
-      const [loading, setLoading]   = useState(true);
-      const [error, setError]       = useState(null);
-      const [tab, setTab]           = useState(0);
-      const [mes, setMes]           = useState('Todos');
-      const [esMock, setEsMock]     = useState(false);
+      const [data, setData] = useState(null);
+      const [loading, setLoading] = useState(true);
+      const [error, setError] = useState(null);
+      const [tab, setTab] = useState(0);
+      const [mes, setMes] = useState('Todos');
 
       const cargarData = useCallback(() => {
         setLoading(true);
         setError(null);
-
-        const useGAS = typeof google !== 'undefined' &&
-                       typeof google.script !== 'undefined' &&
-                       typeof google.script.run !== 'undefined';
-
-        if (useGAS) {
-          google.script.run
-            .withSuccessHandler(json => {
-              try { setData(JSON.parse(json)); }
-              catch (_) { setError('Error al procesar la respuesta del servidor.'); }
-              setLoading(false);
-            })
-            .withFailureHandler(err => {
-              setError('Error de conexión: ' + (err.message || err));
-              setLoading(false);
-            })
-            .obtenerDataDashboard();
-        } else {
-          // Modo desarrollo — usar data mock
-          setTimeout(() => {
-            setData(MOCK);
-            setEsMock(true);
+        fetch(CONFIG_FRONTEND.URL_API_BACKEND)
+          .then(res => {
+            if (!res.ok) throw new Error("La API respondió con error.");
+            return res.json();
+          })
+          .then(parsed => {
+            if (parsed.error) throw new Error(parsed.error);
+            setData(parsed);
             setLoading(false);
-          }, 900);
-        }
+          })
+          .catch(err => {
+            setError(err.message || "Error conectando al servidor.");
+            setLoading(false);
+          });
       }, []);
 
       useEffect(() => { cargarData(); }, []);
 
-      // Meses que realmente tienen datos
-      const mesesConData = useMemo(() => {
+      const listaMeses = useMemo(() => {
         if (!data) return ['Todos'];
-        const all = [...data.nps, ...data.csat_reunion, ...data.csat_abono, ...data.salidas];
-        const found = MESES_ORDEN.filter(m => all.some(r => r.mes === m));
-        return ['Todos', ...found];
+        const setMeses = new Set();
+        if(Array.isArray(data.nps)) data.nps.forEach(r => setMeses.add(r.mes));
+        if(Array.isArray(data.csat_reunion)) data.csat_reunion.forEach(r => setMeses.add(r.mes));
+        if(Array.isArray(data.csat_abono)) data.csat_abono.forEach(r => setMeses.add(r.mes));
+        if(Array.isArray(data.salidas)) data.salidas.forEach(r => setMeses.add(r.mes));
+        return ['Todos', ...Array.from(setMeses)];
       }, [data]);
 
-      const TABS = [
-        { label: 'NPS',               Icon: TrendingUp,  id: 0 },
-        { label: 'CSAT',              Icon: Star,        id: 1 },
-        { label: 'Salidas / Riesgo',  Icon: LogOut,      id: 2 },
-        { label: 'Health Score',      Icon: Award,       id: 3 },
-      ];
-
       return (
-        <div className="min-h-screen" style={{ background: C.bg }}>
-
-          {/* ── Header ── */}
-          <header className="bg-white sticky top-0 z-20" style={{ boxShadow: '0 1px 4px rgba(0,0,0,0.07)' }}>
-            <div className="max-w-7xl mx-auto px-5 md:px-8">
-              {/* Top bar */}
-              <div className="flex items-center justify-between py-4 gap-4">
-                <div className="flex items-center gap-3 min-w-0">
-                  {/* Logo mark */}
-                  <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
-                    style={{ background: 'linear-gradient(135deg, #4361EE 0%, #7B95F5 100%)' }}>
-                    <Activity size={17} color="white" strokeWidth={2.5} />
-                  </div>
-                  <div className="min-w-0">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <h1 className="text-sm font-bold text-gray-800 leading-none">Customer Health Dashboard</h1>
-                      {esMock && (
-                        <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-amber-50 text-amber-600 border border-amber-200 leading-none whitespace-nowrap">
-                          Vista previa · Data de muestra
-                        </span>
-                      )}
-                    </div>
-                    {data && (
-                      <p className="text-[11px] text-gray-400 mt-0.5">
-                        Última actualización: <strong className="text-gray-500">{data.ultimaActualizacion}</strong>
-                      </p>
-                    )}
-                  </div>
+        <div className="min-h-screen pb-10">
+          <header className="bg-white border-b border-gray-200 sticky top-0 z-20 shadow-sm px-6 py-4">
+            <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center text-white text-base shadow-md shadow-blue-200">
+                  <i className="fa-solid fa-heart-pulse"></i>
                 </div>
-
-                <div className="flex items-center gap-2 shrink-0">
-                  {/* Selector de mes */}
-                  <select
-                    value={mes}
-                    onChange={e => setMes(e.target.value)}
-                    className="custom-select text-sm font-medium text-gray-700 bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-200"
-                    style={{ minWidth: 130 }}
-                  >
-                    {mesesConData.map(m => <option key={m} value={m}>{m}</option>)}
-                  </select>
-
-                  {/* Botón actualizar */}
-                  <button
-                    onClick={cargarData}
-                    disabled={loading}
-                    className="flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-gray-600 bg-gray-50 border border-gray-200 rounded-xl hover:bg-gray-100 transition-colors disabled:opacity-40"
-                  >
-                    <RefreshCw size={14} className={loading ? 'animate-spin' : ''} />
-                    <span className="hidden md:inline">Actualizar</span>
-                  </button>
+                <div>
+                  <h1 className="text-base font-bold text-gray-800 leading-none">Experiencia del cliente</h1>
+                  <p className="text-xs text-gray-400 mt-1">Infraestructura GitHub Pages + Apps Script API</p>
                 </div>
               </div>
-
-              {/* Tab nav */}
-              <div className="flex gap-0.5 border-b border-gray-100 -mb-px">
-                {TABS.map(t => {
-                  const I = t.Icon;
-                  return (
-                    <button
-                      key={t.id}
-                      onClick={() => setTab(t.id)}
-                      className={`tab-btn flex items-center gap-2 px-4 py-3 text-sm font-medium transition-colors ${tab === t.id ? 'active text-blue-600' : 'text-gray-500 hover:text-gray-700'}`}
-                    >
-                      <I size={14} strokeWidth={2.2} />
-                      {t.label}
-                    </button>
-                  );
-                })}
+              <div className="flex items-center gap-3 w-full sm:w-auto justify-end">
+                <select value={mes} onChange={e => setMes(e.target.value)} className="text-xs font-semibold text-gray-600 bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 outline-none cursor-pointer">
+                  {listaMeses.map(m => <option key={m} value={m}>{m}</option>)}
+                </select>
+                <button onClick={cargarData} disabled={loading} className="p-2 bg-gray-50 hover:bg-gray-100 rounded-xl text-gray-500 border border-gray-200">
+                  <i className={`fa-solid fa-arrow-rotate-right ${loading ? 'animate-spin' : ''}`}></i>
+                </button>
               </div>
+            </div>
+            <div className="max-w-7xl mx-auto flex gap-6 -mb-4 mt-4 overflow-x-auto">
+              {[
+                ['NPS', 'fa-solid fa-chart-line', 0],
+                ['CSAT', 'fa-solid fa-star', 1],
+                ['Inactivos', 'fa-solid fa-user-clock', 2],
+                ['Salidas / Off', 'fa-solid fa-arrow-right-from-bracket', 3]
+              ].map(([label, icon, id]) => (
+                <button key={id} onClick={() => setTab(id)} className={`tab-btn pb-3 text-xs font-bold tracking-wider uppercase flex items-center gap-1.5 whitespace-nowrap ${tab === id ? 'active text-blue-600' : 'text-gray-400 hover:text-gray-600'}`}>
+                  <i className={icon}></i>{label}
+                </button>
+              ))}
             </div>
           </header>
 
-          {/* ── Content ── */}
-          <main className="max-w-7xl mx-auto px-5 md:px-8 py-6">
-
-            {/* Loading */}
-            {loading && <Skeleton cols={tab === 0 ? 5 : tab === 1 ? 4 : 3} />}
-
-            {/* Error */}
-            {!loading && error && (
-              <div className="card p-10 flex flex-col items-center gap-4 text-center fade-up">
-                <div className="w-14 h-14 rounded-2xl bg-red-50 flex items-center justify-center">
-                  <AlertTriangle size={26} className="text-red-500" />
-                </div>
-                <div>
-                  <p className="font-semibold text-gray-800 mb-1">Error al cargar los datos</p>
-                  <p className="text-sm text-gray-500 max-w-md">{error}</p>
-                </div>
-                <button onClick={cargarData}
-                  className="mt-2 px-5 py-2.5 bg-red-50 text-red-600 rounded-xl text-sm font-semibold hover:bg-red-100 transition-colors">
-                  Reintentar
-                </button>
+          <main className="max-w-7xl mx-auto px-6 mt-6">
+            {loading && (
+              <div className="space-y-4">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4"><div className="skeleton h-24"/><div className="skeleton h-24"/><div className="skeleton h-24"/><div className="skeleton h-24"/></div>
+                <div className="skeleton h-64 w-full"/>
               </div>
             )}
-
-            {/* Tabs */}
+            {!loading && error && (
+              <div className="card p-8 text-center max-w-md mx-auto space-y-3">
+                <i className="fa-solid fa-triangle-exclamation text-red-500 text-3xl"></i>
+                <p className="font-bold text-gray-800">Error de conexión</p>
+                <p className="text-xs text-gray-400">{error}</p>
+                <button onClick={cargarData} className="px-4 py-2 bg-blue-600 text-white text-xs font-bold rounded-xl">Reintentar</button>
+              </div>
+            )}
             {!loading && !error && data && (
               <>
-                {tab === 0 && <TabNPS     data={data} mes={mes} />}
-                {tab === 1 && <TabCSAT    data={data} mes={mes} />}
-                {tab === 2 && <TabSalidas data={data} mes={mes} />}
-                {tab === 3 && <TabHealth  data={data} mes={mes} />}
+                {tab === 0 && <TabNPS data={data} mes={mes} />}
+                {tab === 1 && <TabCSAT data={data} mes={mes} />}
+                {tab === 2 && (
+                  <div className="card p-10 text-center text-gray-500 font-medium">
+                    <i className="fa-solid fa-gears text-4xl text-blue-400 mb-3 block animate-pulse"></i>
+                    {data.inactivos}
+                  </div>
+                )}
+                {tab === 3 && <TabSalidas data={data} mes={mes} />}
               </>
             )}
           </main>
-
-          {/* ── Footer ── */}
-          <footer className="text-center text-[11px] text-gray-300 pb-8 mt-2">
-            Apprecio · Dashboard Customer Experience · {new Date().getFullYear()}
-          </footer>
         </div>
       );
     }
 
-    // ── Mount ──
+    // Renderizado compatible con React 17
     ReactDOM.render(<App />, document.getElementById('root'));
   </script>
 </body>
