@@ -155,7 +155,7 @@
     }
 
     // --- SUB-MÓDULO DE BLOQUE DE PREGUNTA ESPEJO ---
-    function BloquePreguntaNPS({ id, titulo, descripcion, totalRespuestas, promotores, neutrales, detractores, score, promedio, totalPromotores, porcentajePromotores, listaPaises, listaMeses, filtroPais, setFiltroPais, filtroMes, setFiltroMes, textoExportar }) {
+    function BloquePreguntaNPS({ id, titulo, descripcion, totalRespuestas, promotores, neutrales, detractores, score, promedio, totalPromotores, porcentajePromotores, listaPaises, listaMeses, filtroPais, setFiltroPais, filtroMes, setFiltroMes, textoExportar, onExportar }) {
       return e('div', { className: 'card p-6 flex flex-col md:flex-row gap-6 bg-white' },
         e('div', { className: 'w-full md:w-7/12 flex flex-col justify-between border-r border-gray-100 pr-0 md:pr-4' },
           e('div', { className: 'flex justify-between items-start mb-4 gap-2' },
@@ -201,7 +201,7 @@
             ),
             e('p', { className: 'text-[11px] text-gray-400 mt-2 italic leading-relaxed' }, descripcion)
           ),
-          e('button', { className: 'w-full mt-5 p-3 bg-brand hover:bg-brand-dark text-white rounded-xl text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 shadow-md shadow-blue-100 transition-colors' },
+          e('button', { onClick: onExportar, className: 'w-full mt-5 p-3 bg-brand hover:bg-brand-dark text-white rounded-xl text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 shadow-md shadow-blue-100 transition-colors' },
             e('i', { className: 'fa-solid fa-wand-magic-sparkles' }),
             textoExportar
           )
@@ -279,6 +279,37 @@
         return { total, p: prom, n: neut, d: detr, score: Math.round(pP - dP), avg: (suma / total).toFixed(1), pPorc: pP.toFixed(0) };
       }, [p2Filtrados]);
 
+      // Función de Exportación Dinámica para IA
+      const exportarDataCSV = useCallback((registros, tipoPregunta) => {
+        if (!registros || registros.length === 0) {
+          alert("No hay comentarios disponibles en este corte para generar un reporte.");
+          return;
+        }
+
+        let contenidoCsv = "PROMPT DE ENTRADA IA: Analiza cualitativamente las siguientes razones de respuesta abiertas de experiencia de cliente. Agrupa por principales dolores, quejas operativas y áreas de oportunidad.\n\n";
+        contenidoCsv += "Cliente;Pais;Periodo;Nota;Comentario Abierto\n";
+
+        registros.forEach(r => {
+          const nota = tipoPregunta === 'P1' ? (r.puntuacion || '—') : (r.pregunta2 || '—');
+          const comentario = tipoPregunta === 'P1' ? (r.razon || '—') : (r.pregunta3 || 'Sin comentarios adicionales');
+          
+          // Limpieza básica de caracteres para evitar romper el formato del archivo CSV
+          const clienteLimpio = String(r.cliente || 'Empresa').replace(/;/g, ',');
+          const comentLimpio = String(comentario).replace(/;/g, ',').replace(/\n/g, ' ');
+
+          contenidoCsv += `${clienteLimpio};${r.pais || '—'};${r.periodoQ || '—'};${nota};"${comentLimpio}"\n`;
+        });
+
+        // Crear elemento de descarga en el navegador
+        const blob = new Blob([new Uint8Array([0xEF, 0xBB, 0xBF]), contenidoCsv], { type: "text/csv;charset=utf-8;" });
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(blob);
+        link.setAttribute("download", `Data_Abierta_NPS_${tipoPregunta}_${new Date().toISOString().slice(0,10)}.csv`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      }, []);
+
       // Histórico Cómputo
       const datosLinea = useMemo(() => {
         const filtradosHist = rawNps.filter(r => (histPais === 'Todos' || r.pais === histPais) && (String(r.anio) === histAnio));
@@ -327,14 +358,16 @@
             descripcion: 'Evaluación macro de fidelidad. Identifica el volumen de promotores orgánicos dispuestos a recomendar activamente la plataforma en el ecosistema comercial.',
             totalRespuestas: m1.total, promotores: m1.p, neutrales: m1.n, detractores: m1.d, score: m1.score, promedio: m1.avg, totalPromotores: m1.p, porcentajePromotores: m1.pPorc,
             listaPaises: listPaises, listaMeses: listMeses, filtroPais: p1Pais, setFiltroPais: setP1Pais, filtroMes: p1Mes, setFiltroMes: setP1Mes,
-            textoExportar: 'Generar con IA reporte de respuestas P1'
+            textoExportar: 'Generar con IA reporte de respuestas P1',
+            onExportar: () => exportarDataCSV(p1Filtrados, 'P1')
           }),
           e(BloquePreguntaNPS, {
             id: 'p2', titulo: 'Pregunta 2: Evaluación Operativa (Atención de Cuentas / KAM)',
             descripcion: 'Medición táctica del servicio. Muestra la consistencia en soporte, tiempos de respuesta y la calificación directa de la gestión consultiva realizada por el KAM.',
             totalRespuestas: m2.total, promotores: m2.p, neutrales: m2.n, detractores: m2.d, score: m2.score, promedio: m2.avg, totalPromotores: m2.p, porcentajePromotores: m2.pPorc,
             listaPaises: listPaises, listaMeses: listMeses, filtroPais: p2Pais, setFiltroPais: setP2Pais, filtroMes: p2Mes, setFiltroMes: setP2Mes,
-            textoExportar: 'Generar con IA reporte de respuestas P2'
+            textoExportar: 'Generar con IA reporte de respuestas P2',
+            onExportar: () => exportarDataCSV(p2Filtrados, 'P2')
           })
         ),
 
@@ -393,7 +426,6 @@
           criticos.length === 0 ? e('p', { className: 'text-center py-8 text-xs text-gray-400 font-medium' }, '¡Felicidades! No hay alertas ni clientes críticos detectados 🎉') :
           e('div', { className: 'space-y-3' },
             criticos.map((c, i) => {
-              // Validamos la columna de comunicación (notaKam de tu Excel)
               const statusRaw = String(c.notaKam || '').trim();
               const gestionado = statusRaw.toLowerCase().includes('comunic') || statusRaw.toLowerCase().includes('hablo') || statusRaw.toLowerCase().includes('ok');
               
