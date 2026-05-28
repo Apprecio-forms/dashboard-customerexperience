@@ -17,7 +17,7 @@
         extend: {
           fontFamily: { sans: ['"DM Sans"', 'sans-serif'] },
           colors: {
-            brand: { DEFAULT: '#4361EE', light: '#EEF1FD', dark: '#3451D1' },
+            brand: { DEFAULT: '#FA345E', light: '#FFF0F3', dark: '#D61F47' },
             success: '#22C55E', warn: '#F59E0B', danger: '#EF4444',
             neutral: { 50: '#F8F9FA', 100: '#F1F3F7', 200: '#E4E7EB', 300: '#CBD1D6', 400: '#9AA0B4', 500: '#6B7280', 700: '#374151', 800: '#1F2937', 900: '#111827' }
           }
@@ -36,8 +36,8 @@
     html, body { font-family: 'DM Sans', sans-serif; background: #F8F9FA; min-height: 100vh; color: #1F2937; }
     .card { background: #ffffff; border-radius: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.02), 0 1px 3px rgba(0,0,0,0.03); border: 1px solid #E4E7EB; }
     .tab-btn { position: relative; transition: all 0.2s; }
-    .tab-btn::after { content: ''; position: absolute; bottom: -1px; left: 0; right: 0; height: 3px; background: #4361EE; border-radius: 3px 3px 0 0; transform: scaleX(0); transition: transform 0.2s ease; }
-    .tab-btn.active { color: #4361EE; font-weight: 700; }
+    .tab-btn::after { content: ''; position: absolute; bottom: -1px; left: 0; right: 0; height: 3px; background: #FA345E; border-radius: 3px 3px 0 0; transform: scaleX(0); transition: transform 0.2s ease; }
+    .tab-btn.active { color: #FA345E; font-weight: 700; }
     .tab-btn.active::after { transform: scaleX(1); }
     .tooltip-box { display: none; position: absolute; z-index: 50; width: 280px; background: #111827; color: #ffffff; padding: 12px; border-radius: 12px; font-size: 11px; box-shadow: 0 10px 25px rgba(0,0,0,0.15); line-height: 1.4; }
     .tooltip-container:hover .tooltip-box { display: block; }
@@ -55,7 +55,7 @@
       URL_API_BACKEND: "https://script.google.com/macros/s/AKfycbx3TEMFdxbYGKZFhF5GSZstiiV6vivCCbLq9L7A2iq5oq6DgrVyM6Q3a5Wd_JLAhbT1Wg/exec"
     };
 
-    // --- GRÁFICO DONUT COMÚN ---
+    // --- GRÁFICO DONUT ---
     function ChartDonut({ id, promotores, neutrales, detractores, score, labelCenter }) {
       const canvasRef = useRef(null);
       const chartRef = useRef(null);
@@ -111,7 +111,7 @@
       return e('div', { className: 'relative w-full h-[200px]' }, e('canvas', { ref: canvasRef }));
     }
 
-    // --- GRÁFICO DE TENDENCIA HISTÓRICA (LÍNEAS) ---
+    // --- GRÁFICO DE LÍNEAS HISTÓRICO ---
     function ChartLineaHistorico({ datos }) {
       const canvasRef = useRef(null);
       const chartRef = useRef(null);
@@ -128,12 +128,12 @@
             datasets: [{
               label: 'NPS Score',
               data: datos.map(d => d.score),
-              borderColor: '#4361EE',
-              backgroundColor: 'rgba(67, 97, 238, 0.05)',
+              borderColor: '#FA345E',
+              backgroundColor: 'rgba(250, 52, 94, 0.04)',
               borderWidth: 3,
               tension: 0.3,
               fill: true,
-              pointBackgroundColor: '#4361EE',
+              pointBackgroundColor: '#FA345E',
               pointRadius: 4
             }]
           },
@@ -154,14 +154,14 @@
       return e('div', { className: 'w-full h-[240px]' }, e('canvas', { ref: canvasRef }));
     }
 
-    // --- SUB-MÓDULO DE BLOQUE DE PREGUNTA ESPEJO ---
-    function BloquePreguntaNPS({ id, titulo, descripcion, totalRespuestas, promotores, neutrales, detractores, score, promedio, totalPromotores, porcentajePromotores, listaPaises, listaMeses, filtroPais, setFiltroPais, filtroMes, setFiltroMes, textoExportar, onExportar }) {
+    // --- SUB-MÓDULO ESPEJO DE PREGUNTA ---
+    function BloquePreguntaNPS({ id, tituloCompleto, totalRespuestas, promotores, neutrales, detractores, score, promedio, totalPromotores, porcentajePromotores, listaPaises, listaMeses, filtroPais, setFiltroPais, filtroMes, setFiltroMes, textoExportar, onExportar }) {
       return e('div', { className: 'card p-6 flex flex-col md:flex-row gap-6 bg-white' },
         e('div', { className: 'w-full md:w-7/12 flex flex-col justify-between border-r border-gray-100 pr-0 md:pr-4' },
-          e('div', { className: 'flex justify-between items-start mb-4 gap-2' },
-            e('div', {},
-              e('h3', { className: 'text-sm font-bold text-gray-900 leading-tight' }, titulo),
-              e('p', { className: 'text-[11px] font-semibold text-gray-400 uppercase mt-0.5' }, `Basado en ${totalRespuestas} respuestas`)
+          e('div', { className: 'flex justify-between items-start mb-4 gap-4' },
+            e('div', { className: 'flex-1 min-w-0' },
+              e('h3', { className: 'text-sm font-bold text-gray-900 leading-snug break-words' }, tituloCompleto),
+              e('p', { className: 'text-[11px] font-semibold text-gray-400 uppercase mt-1' }, `Basado en ${totalRespuestas} respuestas`)
             ),
             e('div', { className: 'flex gap-1.5 flex-shrink-0' },
               e('select', { value: filtroPais, onChange: ev => setFiltroPais(ev.target.value), className: 'text-[10px] font-bold text-gray-500 bg-gray-50 border border-gray-200 rounded-lg px-2 py-1 outline-none' },
@@ -184,7 +184,7 @@
             )
           )
         ),
-        e('div', { className: 'w-full md:w-5/12 flex flex-col justify-between' },
+        e('div', { className: 'w-full md:w-5/12 flex flex-col justify-between pl-0 md:pl-2' },
           e('div', { className: 'space-y-4' },
             e('h4', { className: 'text-[10px] font-bold text-gray-400 uppercase tracking-wider' }, 'Datos Generales Corte Filtrado'),
             e('div', { className: 'grid grid-cols-2 gap-3' },
@@ -198,25 +198,28 @@
                 e('p', { className: 'text-xl font-extrabold text-green-600 mt-1' }, totalPromotores),
                 e('p', { className: 'text-[9px] text-gray-400 mt-0.5 font-medium' }, `${porcentajePromotores}% del grupo`)
               )
-            ),
-            e('p', { className: 'text-[11px] text-gray-400 mt-2 italic leading-relaxed' }, descripcion)
+            )
           ),
-          e('button', { onClick: onExportar, className: 'w-full mt-5 p-3 bg-brand hover:bg-brand-dark text-white rounded-xl text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 shadow-md shadow-blue-100 transition-colors' },
-            e('i', { className: 'fa-solid fa-wand-magic-sparkles' }),
+          e('button', { onClick: onExportar, className: 'w-full mt-6 p-3 bg-brand hover:bg-brand-dark text-white rounded-xl text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 shadow-md shadow-red-100 transition-colors' },
+            e('i', { className: 'fa-solid fa-file-export' }),
             textoExportar
           )
         )
       );
     }
 
-    // --- COMPONENTE PRINCIPAL MÓDULO NPS ---
-    function ModuleNPS({ rawNps }) {
+    // --- MÓDULO CENTRAL NPS ---
+    function ModuleNPS({ rawNps, metaHeaders }) {
       const [p1Pais, setP1Pais] = useState('Todos');
       const [p1Mes, setP1Mes] = useState('Todos');
       const [p2Pais, setP2Pais] = useState('Todos');
       const [p2Mes, setP2Mes] = useState('Todos');
       const [histPais, setHistPais] = useState('Todos');
       const [histAnio, setHistAnio] = useState('2026');
+
+      // Texto de preguntas extraídas en vivo desde los encabezados del Sheets
+      const textoPregunta1 = metaHeaders.puntuacion || "Pregunta 1: Recomendación de Marca (NPS)";
+      const textoPregunta2 = metaHeaders.pregunta2 || "Pregunta 2: Evaluación Operativa (KAM)";
 
       const { listPaises, listMeses, listAnios } = useMemo(() => {
         const p = new Set(), m = new Set(), a = new Set();
@@ -232,7 +235,7 @@
         };
       }, [rawNps]);
 
-      // P1 Cómputo
+      // Filtrado P1
       const p1Filtrados = useMemo(() => {
         return rawNps.filter(r => (p1Pais === 'Todos' || r.pais === p1Pais) && (p1Mes === 'Todos' || r.mes === p1Mes));
       }, [rawNps, p1Pais, p1Mes]);
@@ -255,7 +258,7 @@
         return { total, p: prom, n: neut, d: detr, score: Math.round(pP - dP), avg: (suma / total).toFixed(1), pPorc: pP.toFixed(0) };
       }, [p1Filtrados]);
 
-      // P2 Cómputo
+      // Filtrado P2
       const p2Filtrados = useMemo(() => {
         return rawNps.filter(r => (p2Pais === 'Todos' || r.pais === p2Pais) && (p2Mes === 'Todos' || r.mes === p2Mes));
       }, [rawNps, p2Pais, p2Mes]);
@@ -279,38 +282,29 @@
         return { total, p: prom, n: neut, d: detr, score: Math.round(pP - dP), avg: (suma / total).toFixed(1), pPorc: pP.toFixed(0) };
       }, [p2Filtrados]);
 
-      // Función de Exportación Dinámica para IA
+      // Exportación CSV
       const exportarDataCSV = useCallback((registros, tipoPregunta) => {
         if (!registros || registros.length === 0) {
-          alert("No hay comentarios disponibles en este corte para generar un reporte.");
+          alert("No hay comentarios en este corte para procesar.");
           return;
         }
-
-        let contenidoCsv = "PROMPT DE ENTRADA IA: Analiza cualitativamente las siguientes razones de respuesta abiertas de experiencia de cliente. Agrupa por principales dolores, quejas operativas y áreas de oportunidad.\n\n";
-        contenidoCsv += "Cliente;Pais;Periodo;Nota;Comentario Abierto\n";
-
+        let csv = "PROMPT IA: Procesa analíticamente el feedback abierto extraído del corte operativo de experiencia.\n\n";
+        csv += "Cliente;Pais;Periodo;Nota;Comentario\n";
         registros.forEach(r => {
           const nota = tipoPregunta === 'P1' ? (r.puntuacion || '—') : (r.pregunta2 || '—');
-          const comentario = tipoPregunta === 'P1' ? (r.razon || '—') : (r.pregunta3 || 'Sin comentarios adicionales');
-          
-          // Limpieza básica de caracteres para evitar romper el formato del archivo CSV
-          const clienteLimpio = String(r.cliente || 'Empresa').replace(/;/g, ',');
-          const comentLimpio = String(comentario).replace(/;/g, ',').replace(/\n/g, ' ');
-
-          contenidoCsv += `${clienteLimpio};${r.pais || '—'};${r.periodoQ || '—'};${nota};"${comentLimpio}"\n`;
+          const comentario = tipoPregunta === 'P1' ? (r.razon || '—') : (r.pregunta3 || 'Sin feedback');
+          csv += `${String(r.cliente || 'Empresa').replace(/;/g, ',')};${r.pais || '—'};${r.periodoQ || '—'};${nota};"${String(comentario).replace(/;/g, ',').replace(/\n/g, ' ')}"\n`;
         });
-
-        // Crear elemento de descarga en el navegador
-        const blob = new Blob([new Uint8Array([0xEF, 0xBB, 0xBF]), contenidoCsv], { type: "text/csv;charset=utf-8;" });
+        const blob = new Blob([new Uint8Array([0xEF, 0xBB, 0xBF]), csv], { type: "text/csv;charset=utf-8;" });
         const link = document.createElement("a");
         link.href = URL.createObjectURL(blob);
-        link.setAttribute("download", `Data_Abierta_NPS_${tipoPregunta}_${new Date().toISOString().slice(0,10)}.csv`);
+        link.setAttribute("download", `Reporte_Respuestas_Abiertas_${tipoPregunta}.csv`);
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
       }, []);
 
-      // Histórico Cómputo
+      // Histórico
       const datosLinea = useMemo(() => {
         const filtradosHist = rawNps.filter(r => (histPais === 'Todos' || r.pais === histPais) && (String(r.anio) === histAnio));
         const qsMap = {};
@@ -333,7 +327,7 @@
         });
       }, [rawNps, histPais, histAnio]);
 
-      // Críticos (0-6)
+      // Aislamiento de Críticos (0-6)
       const criticos = useMemo(() => {
         return rawNps.filter(r => {
           const n = parseFloat(r.puntuacion);
@@ -348,29 +342,29 @@
             'Análisis Detallado Operativo · Net Promoter Score'
           ),
           e('p', { className: 'text-xs text-gray-400 mt-1 max-w-3xl' },
-            'Monitoreo centralizado de los índices corporativos. El bloque evalúa la recomendación global de marca y la satisfacción operativa con el equipo ejecutivo de cuentas asignado.'
+            'Monitoreo centralizado de los índices corporativos. El bloque evalúa de forma dinámica las preguntas de marca y satisfacción vigentes en la base de datos.'
           )
         ),
 
+        // Grid de Preguntas Espejo Dinámicas
         e('div', { className: 'grid grid-cols-1 xl:grid-cols-2 gap-6' },
           e(BloquePreguntaNPS, {
-            id: 'p1', titulo: 'Pregunta 1: Recomendación de Marca (NPS Core)',
-            descripcion: 'Evaluación macro de fidelidad. Identifica el volumen de promotores orgánicos dispuestos a recomendar activamente la plataforma en el ecosistema comercial.',
+            id: 'p1', tituloCompleto: textoPregunta1,
             totalRespuestas: m1.total, promotores: m1.p, neutrales: m1.n, detractores: m1.d, score: m1.score, promedio: m1.avg, totalPromotores: m1.p, porcentajePromotores: m1.pPorc,
             listaPaises: listPaises, listaMeses: listMeses, filtroPais: p1Pais, setFiltroPais: setP1Pais, filtroMes: p1Mes, setFiltroMes: setP1Mes,
-            textoExportar: 'Generar con IA reporte de respuestas P1',
+            textoExportar: 'Generar reporte de respuestas abiertas',
             onExportar: () => exportarDataCSV(p1Filtrados, 'P1')
           }),
           e(BloquePreguntaNPS, {
-            id: 'p2', titulo: 'Pregunta 2: Evaluación Operativa (Atención de Cuentas / KAM)',
-            descripcion: 'Medición táctica del servicio. Muestra la consistencia en soporte, tiempos de respuesta y la calificación directa de la gestión consultiva realizada por el KAM.',
+            id: 'p2', tituloCompleto: textoPregunta2,
             totalRespuestas: m2.total, promotores: m2.p, neutrales: m2.n, detractores: m2.d, score: m2.score, promedio: m2.avg, totalPromotores: m2.p, porcentajePromotores: m2.pPorc,
             listaPaises: listPaises, listaMeses: listMeses, filtroPais: p2Pais, setFiltroPais: setP2Pais, filtroMes: p2Mes, setFiltroMes: setP2Mes,
-            textoExportar: 'Generar con IA reporte de respuestas P2',
+            textoExportar: 'Generar reporte de respuestas abiertas',
             onExportar: () => exportarDataCSV(p2Filtrados, 'P2')
           })
         ),
 
+        // Línea de Tendencia
         e('div', { className: 'card p-6 bg-white flex flex-col md:flex-row gap-6' },
           e('div', { className: 'w-full md:w-8/12' },
             e('div', { className: 'flex items-center gap-2 mb-4' },
@@ -412,6 +406,7 @@
           )
         ),
 
+        // Radar de Alertas con Columna M en Vivo ("notaKam")
         e('div', { className: 'card p-6 bg-white' },
           e('div', { className: 'flex justify-between items-center mb-5' },
             e('div', {},
@@ -419,15 +414,16 @@
                 e('i', { className: 'fa-solid fa-triangle-exclamation animate-pulse' }),
                 'Radar de Alertas Avanzado · Control de Clientes Críticos'
               ),
-              e('p', { className: 'text-[11px] text-gray-400 mt-0.5' }, 'Muestra de forma exclusiva las empresas con notas críticas (Notas de 0 a 6) para gestión de rescate inmediata.')
+              e('p', { className: 'text-[11px] text-gray-400 mt-0.5' }, 'Muestra de forma exclusiva las empresas con notas críticas. El estado de control refleja fielmente tu columna M de respuestas.')
             ),
             e('span', { className: 'px-2.5 py-1 bg-red-50 text-red-600 text-xs font-extrabold rounded-full' }, `${criticos.length} Casos Críticos`)
           ),
           criticos.length === 0 ? e('p', { className: 'text-center py-8 text-xs text-gray-400 font-medium' }, '¡Felicidades! No hay alertas ni clientes críticos detectados 🎉') :
           e('div', { className: 'space-y-3' },
             criticos.map((c, i) => {
-              const statusRaw = String(c.notaKam || '').trim();
-              const gestionado = statusRaw.toLowerCase().includes('comunic') || statusRaw.toLowerCase().includes('hablo') || statusRaw.toLowerCase().includes('ok');
+              // Lectura real 1:1 de tu columna M (mapeada en la propiedad notaKam)
+              const textoColumnaM = (c.notaKam || '').trim();
+              const gestionado = textoColumnaM.toLowerCase().includes('comunic') || textoColumnaM.toLowerCase().includes('hablo') || textoColumnaM.toLowerCase().includes('ok') || textoColumnaM.toLowerCase().includes('si');
               
               return e('div', { key: i, className: 'p-4 rounded-xl border border-red-100 bg-red-50/10 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3' },
                 e('div', { className: 'space-y-1 max-w-3xl' },
@@ -443,7 +439,7 @@
                     e('span', { className: 'inline-block px-2.5 py-1 rounded-lg text-xs font-bold text-white bg-red-500' }, `Nota: ${c.puntuacion}`),
                     e('p', { className: `text-[10px] font-bold mt-1 ${gestionado ? 'text-green-600' : 'text-amber-500'}` }, 
                       e('i', { className: `fa-solid ${gestionado ? 'fa-circle-check' : 'fa-circle-dot'} mr-1` }),
-                      statusRaw || 'Pendiente de contacto'
+                      textoColumnaM || 'Sin observaciones'
                     )
                   )
                 )
@@ -467,6 +463,7 @@
 
     function App() {
       const [data, setData] = useState(null);
+      const [metaHeaders, setMetaHeaders] = useState({});
       const [loading, setLoading] = useState(true);
       const [error, setError] = useState(null);
       const [tab, setTab] = useState(0);
@@ -482,6 +479,8 @@
           .then(parsed => {
             if (!parsed || typeof parsed !== 'object') throw new Error("Esquema corrupto.");
             setData(parsed);
+            // Capturamos el mapeo de títulos dinámicos que envía tu script de Google en la raíz
+            setMetaHeaders(parsed.headers || {});
             setLoading(false);
           })
           .catch(err => {
@@ -541,7 +540,7 @@
             ),
 
             !loading && !error && data && e('div', {},
-              tab === 0 && e(ModuleNPS, { rawNps: Array.isArray(data.nps) ? data.nps : [] }),
+              tab === 0 && e(ModuleNPS, { rawNps: Array.isArray(data.nps) ? data.nps : [], metaHeaders: metaHeaders }),
               tab === 1 && e(PlaceholderTab, { title: 'Métricas de Satisfacción (CSAT)', icon: 'fa-star', dataRaw: { csat_reunion: data.csat_reunion, csat_abono: data.csat_abono } }),
               tab === 2 && e(PlaceholderTab, { title: 'Análisis de Clientes Inactivos', icon: 'fa-user-clock', dataRaw: { inactivos: data.inactivos } }),
               tab === 3 && e(PlaceholderTab, { title: 'Registro de Procesos de Offboarding', icon: 'fa-arrow-right-from-bracket', dataRaw: { salidas: data.salidas } })
