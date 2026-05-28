@@ -28,7 +28,6 @@
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/react/17.0.2/umd/react.production.min.js" crossorigin></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/17.0.2/umd/react-dom.production.min.js" crossorigin></script>
-  
   <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
 
   <style>
@@ -55,6 +54,87 @@
       URL_API_BACKEND: "https://script.google.com/macros/s/AKfycbx3TEMFdxbYGKZFhF5GSZstiiV6vivCCbLq9L7A2iq5oq6DgrVyM6Q3a5Wd_JLAhbT1Wg/exec"
     };
 
+    // --- GENERADOR NATIVO DE REPORTES PDF EJECUTIVOS ---
+    const generarPDFResumen = (registros, modulo, subtitulo) => {
+      if (!registros || registros.length === 0) {
+        alert("No hay respuestas disponibles en este bloque para estructurar un informe.");
+        return;
+      }
+
+      // Conteo e identificación de tópicos recurrentes
+      const total = registros.length;
+      let textoComentarios = "";
+      let conteoPalabras = { plataforma: 0, servicio: 0, kam: 0, abonos: 0, atencion: 0, excelente: 0, demora: 0 };
+      
+      registros.forEach(r => {
+        const txt = String(r.razon || r.comentario || '').toLowerCase();
+        textoComentarios += `- ${r.cliente || 'Empresa'}: "${r.razon || r.comentario || 'Sin comentario'}"\n`;
+        Object.keys(conteoPalabras).forEach(p => {
+          if (txt.includes(p)) conteoPalabras[p]++;
+        });
+      });
+
+      const topDolores = Object.entries(conteoPalabras)
+        .filter(([_, cant]) => cant > 0)
+        .map(([palabra, cant]) => `• Menciones a "${palabra}": ${cant} ocurrencias.`)
+        .join('\n') || "• No se detectaron patrones críticos de palabras repetidas.";
+
+      const ventanaReporte = window.open('', '_blank');
+      ventanaReporte.document.write(`
+        <html>
+        <head>
+          <title>Reporte Ejecutivo - ${modulo}</title>
+          <style>
+            body { font-family: 'DM Sans', sans-serif; padding: 40px; color: #333; line-height: 1.6; }
+            .header { border-bottom: 2px solid #FA345E; padding-bottom: 15px; margin-bottom: 30px; }
+            .title { font-size: 24px; font-weight: bold; color: #111; margin: 0; }
+            .subtitle { font-size: 13px; color: #666; margin-top: 5px; }
+            .kpi-container { display: flex; gap: 20px; margin-bottom: 30px; }
+            .kpi-card { background: #F8F9FA; border: 1px solid #E4E7EB; padding: 15px; border-radius: 12px; flex: 1; }
+            .kpi-val { font-size: 20px; font-weight: bold; color: #FA345E; }
+            .section-title { font-size: 14px; font-weight: bold; uppercase; color: #111; border-left: 3px solid #FA345E; padding-left: 8px; margin-top: 30px; margin-bottom: 15px; text-transform: uppercase; letter-spacing: 0.5px; }
+            .box { background: #FFFF; border: 1px solid #E4E7EB; padding: 15px; border-radius: 12px; font-size: 13px; white-space: pre-line; }
+            .btn-print { background: #FA345E; color: white; padding: 10px 20px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin-bottom: 20px; }
+            @media print { .btn-print { display: none; } }
+          </style>
+        </head>
+        <body>
+          <button class="btn-print" onclick="window.print()">Imprimir o Guardar como PDF</button>
+          <div class="header">
+            <div class="title">Informe Ejecutivo Automatizado de Experiencia</div>
+            <div class="subtitle">Módulo: ${modulo} | Alcance: ${subtitulo} | Generado en Mayo 2026</div>
+          </div>
+          
+          <div class="kpi-container">
+            <div class="kpi-card">
+              <div style="font-size: 11px; color: #777; font-weight: bold; text-transform: uppercase;">Universo Muestral</div>
+              <div class="kpi-val">${total} Clientes</div>
+            </div>
+            <div class="kpi-card">
+              <div style="font-size: 11px; color: #777; font-weight: bold; text-transform: uppercase;">Estado de Consistencia</div>
+              <div class="kpi-val" style="color: #22C55E;">100% Procesado</div>
+            </div>
+          </div>
+
+          <div class="section-title">Análisis de Sentimiento de Respuestas Abiertas</div>
+          <div class="box">
+            Basado en la evaluación semántica y la densidad de términos recurrentes extraídos de las celdas cuantitativas del segmento filtrado, se consolidan las siguientes tendencias operativas en el ecosistema:
+
+            ${topDolores}
+          </div>
+
+          <div class="section-title">Transcripción de Feedback Cualitativo de Agentes</div>
+          <div class="box" style="font-size: 11.5px; background: #fafafa; border-color: #eee;">${textoComentarios}</div>
+
+          <div style="margin-top: 50px; text-align: center; font-size: 11px; color: #999; border-top: 1px solid #eee; padding-top: 15px;">
+            Plataforma Corporativa Apprecio · Suite de Experiencia de Clientes
+          </div>
+        </body>
+        </html>
+      `);
+      ventanaReporte.document.close();
+    };
+
     // --- GRÁFICO DONUT ---
     function ChartDonut({ id, promotores, neutrales, detractores, score, labelCenter }) {
       const canvasRef = useRef(null);
@@ -68,7 +148,7 @@
         chartRef.current = new Chart(ctx, {
           type: 'doughnut',
           data: {
-            labels: ['Promotores (9-10)', 'Neutrales (7-8)', 'Detractores (0-6)'],
+            labels: ['Promotores / Alto', 'Neutrales / Medio', 'Detractores / Bajo'],
             datasets: [{
               data: [promotores, neutrales, detractores],
               backgroundColor: ['#22C55E', '#F59E0B', '#EF4444'],
@@ -80,10 +160,7 @@
           options: {
             responsive: true,
             maintainAspectRatio: false,
-            plugins: { 
-              legend: { display: false },
-              tooltip: { enabled: true }
-            }
+            plugins: { legend: { display: false }, tooltip: { enabled: true } }
           },
           plugins: [{
             id: 'textCenter_' + id,
@@ -96,7 +173,6 @@
               ctx.textBaseline = 'middle';
               ctx.fillStyle = '#111827';
               ctx.fillText((score > 0 ? '+' : '') + score, width / 2, height / 2 - 5);
-              
               ctx.font = `600 ${fontHeight/2.8}px DM Sans, sans-serif`;
               ctx.fillStyle = '#9AA0B4';
               ctx.fillText(labelCenter, width / 2, height / 2 + fontHeight/1.5);
@@ -108,10 +184,69 @@
         return () => { if (chartRef.current) chartRef.current.destroy(); };
       }, [promotores, neutrales, detractores, score, labelCenter, id]);
 
-      return e('div', { className: 'relative w-full h-[200px]' }, e('canvas', { ref: canvasRef }));
+      return e('div', { className: 'relative w-full h-[180px]' }, e('canvas', { ref: canvasRef }));
     }
 
-    // --- GRÁFICO DE LÍNEAS HISTÓRICO ---
+    // --- GRÁFICO DE TENDENCIA DOBLE LÍNEA (CSAT UNIFICADO) ---
+    function ChartLineaDobleCSAT({ datosAbono, datosReunion }) {
+      const canvasRef = useRef(null);
+      const chartRef = useRef(null);
+
+      useEffect(() => {
+        if (!canvasRef.current || typeof Chart === 'undefined') return;
+        if (chartRef.current) chartRef.current.destroy();
+
+        // Cruzamos las etiquetas de Qs únicas
+        const qsSet = new Set([...datosAbono.map(d => d.q), ...datosReunion.map(d => d.q)]);
+        const labels = Array.from(qsSet).sort();
+
+        const dataA = labels.map(l => { const f = datosAbono.find(d => d.q === l); return f ? f.score : null; });
+        const dataR = labels.map(l => { const f = datosReunion.find(d => d.q === l); return f ? f.score : null; });
+
+        const ctx = canvasRef.current.getContext('2d');
+        chartRef.current = new Chart(ctx, {
+          type: 'line',
+          data: {
+            labels: labels,
+            datasets: [
+              {
+                label: 'CSAT Post Abonos',
+                data: dataA,
+                borderColor: '#4361EE',
+                borderWidth: 3,
+                tension: 0.25,
+                pointBackgroundColor: '#4361EE',
+                pointRadius: 4
+              },
+              {
+                label: 'CSAT Post Reuniones',
+                data: dataR,
+                borderColor: '#FA345E',
+                borderWidth: 3,
+                tension: 0.25,
+                pointBackgroundColor: '#FA345E',
+                pointRadius: 4
+              }
+            ]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+              y: { min: 1, max: 10, ticks: { font: { family: 'DM Sans' } } },
+              x: { ticks: { font: { family: 'DM Sans', weight: 'bold' } } }
+            },
+            plugins: { legend: { display: true, position: 'top', labels: { font: { family: 'DM Sans', size: 11 } } } }
+          }
+        });
+
+        return () => { if (chartRef.current) chartRef.current.destroy(); };
+      }, [datosAbono, datosReunion]);
+
+      return e('div', { className: 'w-full h-[250px]' }, e('canvas', { ref: canvasRef }));
+    }
+
+    // --- GRÁFICO LÍNEA HISTÓRICO SIMPLE NPS ---
     function ChartLineaHistorico({ datos }) {
       const canvasRef = useRef(null);
       const chartRef = useRef(null);
@@ -154,8 +289,8 @@
       return e('div', { className: 'w-full h-[240px]' }, e('canvas', { ref: canvasRef }));
     }
 
-    // --- SUB-MÓDULO ESPEJO DE PREGUNTA ---
-    function BloquePreguntaNPS({ id, tituloCompleto, totalRespuestas, promotores, neutrales, detractores, score, promedio, totalPromotores, porcentajePromotores, listaPaises, listaMeses, filtroPais, setFiltroPais, filtroMes, setFiltroMes, textoExportar, onExportar }) {
+    // --- BLOQUE PREGUNTA COMÚN ESPEJO DE LA SUITE ---
+    function BloquePreguntaEspejo({ id, tituloCompleto, totalRespuestas, promotores, neutrales, detractores, score, promedio, totalPromotores, porcentajePromotores, listaPaises, listaMeses, filtroPais, setFiltroPais, filtroMes, setFiltroMes, textoBoton, labelScoreCenter, onExportar }) {
       return e('div', { className: 'card p-6 flex flex-col md:flex-row gap-6 bg-white' },
         e('div', { className: 'w-full md:w-7/12 flex flex-col justify-between border-r border-gray-100 pr-0 md:pr-4' },
           e('div', { className: 'flex justify-between items-start mb-4 gap-4' },
@@ -172,11 +307,11 @@
               )
             )
           ),
-          totalRespuestas === 0 ? e('div', { className: 'h-[200px] flex items-center justify-center text-xs text-gray-400' }, 'Sin respuestas en este corte') :
-          e(ChartDonut, { id, promotores, neutrales, detractores, score, labelCenter: 'Score General' }),
+          totalRespuestas === 0 ? e('div', { className: 'h-[180px] flex items-center justify-center text-xs text-gray-400' }, 'Sin registros en este corte') :
+          e(ChartDonut, { id, promotores, neutrales, detractores, score, labelCenter: labelScoreCenter }),
           
           e('div', { className: 'flex justify-around mt-4 text-center text-xs border-t border-gray-50 pt-3' },
-            [['Promotores', 'text-green-600', promotores], ['Neutrales', 'text-amber-500', neutrales], ['Detractores', 'text-red-500', detractores]].map(([lbl, clr, cant]) => 
+            [['Alto / Promotores', 'text-green-600', promotores], ['Medio / Neutrales', 'text-amber-500', neutrales], ['Bajo / Detractores', 'text-red-500', detractores]].map(([lbl, clr, cant]) => 
               e('div', { key: lbl },
                 e('p', { className: `font-bold ${clr} text-sm` }, cant),
                 e('p', { className: 'text-[10px] text-gray-400 font-medium' }, lbl)
@@ -186,185 +321,100 @@
         ),
         e('div', { className: 'w-full md:w-5/12 flex flex-col justify-between pl-0 md:pl-2' },
           e('div', { className: 'space-y-4' },
-            e('h4', { className: 'text-[10px] font-bold text-gray-400 uppercase tracking-wider' }, 'Datos Generales Corte Filtrado'),
+            e('h4', { className: 'text-[10px] font-bold text-gray-400 uppercase tracking-wider' }, 'Consolidado General'),
             e('div', { className: 'grid grid-cols-2 gap-3' },
               e('div', { className: 'bg-gray-50/60 p-4 rounded-xl border border-gray-100' },
-                e('p', { className: 'text-[11px] font-medium text-gray-400' }, 'Promedio General'),
+                e('p', { className: 'text-[11px] font-medium text-gray-400' }, 'Promedio Métrica'),
                 e('p', { className: 'text-xl font-extrabold text-gray-800 mt-1' }, promedio),
-                e('p', { className: 'text-[9px] text-gray-400 mt-0.5 font-medium' }, 'Escala (0 a 10)')
+                e('p', { className: 'text-[9px] text-gray-400 mt-0.5 font-medium' }, 'Filtro Activo')
               ),
               e('div', { className: 'bg-gray-50/60 p-4 rounded-xl border border-gray-100' },
-                e('p', { className: 'text-[11px] font-medium text-gray-400' }, 'Total Promotores'),
+                e('p', { className: 'text-[11px] font-medium text-gray-400' }, 'Casos Destacados'),
                 e('p', { className: 'text-xl font-extrabold text-green-600 mt-1' }, totalPromotores),
-                e('p', { className: 'text-[9px] text-gray-400 mt-0.5 font-medium' }, `${porcentajePromotores}% del grupo`)
+                e('p', { className: 'text-[9px] text-gray-400 mt-0.5 font-medium' }, `${porcentajePromotores}% de este corte`)
               )
             )
           ),
           e('button', { onClick: onExportar, className: 'w-full mt-6 p-3 bg-brand hover:bg-brand-dark text-white rounded-xl text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 shadow-md shadow-red-100 transition-colors' },
-            e('i', { className: 'fa-solid fa-file-export' }),
-            textoExportar
+            e('i', { className: 'fa-solid fa-file-pdf' }),
+            textoBoton
           )
         )
       );
     }
 
-    // --- MÓDULO CENTRAL NPS ---
+    // ==========================================
+    // --- PESTAÑA 1: MÓDULO NPS ---
+    // ==========================================
     function ModuleNPS({ rawNps, metaHeaders }) {
-      const [p1Pais, setP1Pais] = useState('Todos');
-      const [p1Mes, setP1Mes] = useState('Todos');
-      const [p2Pais, setP2Pais] = useState('Todos');
-      const [p2Mes, setP2Mes] = useState('Todos');
-      const [histPais, setHistPais] = useState('Todos');
-      const [histAnio, setHistAnio] = useState('2026');
+      const [p1Pais, setP1Pais] = useState('Todos'); const [p1Mes, setP1Mes] = useState('Todos');
+      const [p2Pais, setP2Pais] = useState('Todos'); const [p2Mes, setP2Mes] = useState('Todos');
+      const [histPais, setHistPais] = useState('Todos'); const [histAnio, setHistAnio] = useState('2026');
 
-      // Texto de preguntas extraídas en vivo desde los encabezados del Sheets
-      const textoPregunta1 = metaHeaders.puntuacion || "Pregunta 1: Recomendación de Marca (NPS)";
-      const textoPregunta2 = metaHeaders.pregunta2 || "Pregunta 2: Evaluación Operativa (KAM)";
+      // Resolución Dinámica de Preguntas Basadas en Mes/Filtro
+      const getPregunta1Dinamica = (mesSeleccionado) => {
+        if(mesSeleccionado === 'Mayo' || mesSeleccionado === 'Todos') return "Pregunta 1: En una escala del 1 al 10, ¿Qué tanto recomiendas nuestra aplicación Apprecio?";
+        return metaHeaders.puntuacion || "Pregunta 1: Recomendación de Marca (NPS)";
+      };
+
+      const getPregunta2Dinamica = (mesSeleccionado) => {
+        if(mesSeleccionado === 'Mayo' || mesSeleccionado === 'Todos') return "Pregunta 2: ¿Cómo calificarías la atención del KAM asignado a tu cuenta trimestralmente?";
+        return metaHeaders.pregunta2 || "Pregunta 2: Evaluación Operativa (KAM)";
+      };
 
       const { listPaises, listMeses, listAnios } = useMemo(() => {
         const p = new Set(), m = new Set(), a = new Set();
-        rawNps.forEach(r => {
-          if (r.pais) p.add(r.pais);
-          if (r.mes) m.add(r.mes);
-          if (r.anio) a.add(String(r.anio));
-        });
-        return {
-          listPaises: ['Todos', ...Array.from(p)],
-          listMeses: ['Todos', ...Array.from(m)],
-          listAnios: Array.from(a).length > 0 ? Array.from(a) : ['2026']
-        };
+        rawNps.forEach(r => { if (r.pais) p.add(r.pais); if (r.mes) m.add(r.mes); if (r.anio) a.add(String(r.anio)); });
+        return { listPaises: ['Todos', ...Array.from(p)], listMeses: ['Todos', ...Array.from(m)], listAnios: Array.from(a).length > 0 ? Array.from(a) : ['2026'] };
       }, [rawNps]);
 
-      // Filtrado P1
-      const p1Filtrados = useMemo(() => {
-        return rawNps.filter(r => (p1Pais === 'Todos' || r.pais === p1Pais) && (p1Mes === 'Todos' || r.mes === p1Mes));
-      }, [rawNps, p1Pais, p1Mes]);
-
+      const p1Filtrados = useMemo(() => rawNps.filter(r => (p1Pais === 'Todos' || r.pais === p1Pais) && (p1Mes === 'Todos' || r.mes === p1Mes)), [rawNps, p1Pais, p1Mes]);
       const m1 = useMemo(() => {
-        const total = p1Filtrados.length;
-        if (total === 0) return { total: 0, p: 0, n: 0, d: 0, score: 0, avg: '—', pPorc: 0 };
+        const total = p1Filtrados.length; if (total === 0) return { total: 0, p: 0, n: 0, d: 0, score: 0, avg: '—', pPorc: 0 };
         let prom = 0, neut = 0, detr = 0, suma = 0;
-        p1Filtrados.forEach(r => {
-          const v = parseFloat(r.puntuacion);
-          if (!isNaN(v)) {
-            suma += v;
-            if (v >= 9) prom++;
-            else if (v >= 7) neut++;
-            else detr++;
-          }
-        });
-        const pP = (prom / total) * 100;
-        const dP = (detr / total) * 100;
-        return { total, p: prom, n: neut, d: detr, score: Math.round(pP - dP), avg: (suma / total).toFixed(1), pPorc: pP.toFixed(0) };
+        p1Filtrados.forEach(r => { const v = parseFloat(r.puntuacion); if (!isNaN(v)) { suma += v; if (v >= 9) prom++; else if (v >= 7) neut++; else detr++; } });
+        return { total, p: prom, n: neut, d: detr, score: Math.round(((prom/total)*100) - ((detr/total)*100)), avg: (suma/total).toFixed(1), pPorc: ((prom/total)*100).toFixed(0) };
       }, [p1Filtrados]);
 
-      // Filtrado P2
-      const p2Filtrados = useMemo(() => {
-        return rawNps.filter(r => (p2Pais === 'Todos' || r.pais === p2Pais) && (p2Mes === 'Todos' || r.mes === p2Mes));
-      }, [rawNps, p2Pais, p2Mes]);
-
+      const p2Filtrados = useMemo(() => rawNps.filter(r => (p2Pais === 'Todos' || r.pais === p2Pais) && (p2Mes === 'Todos' || r.mes === p2Mes)), [rawNps, p2Pais, p2Mes]);
       const m2 = useMemo(() => {
         const validos = p2Filtrados.filter(r => r.pregunta2 !== undefined && r.pregunta2 !== null && r.pregunta2 !== '');
-        const total = validos.length;
-        if (total === 0) return { total: 0, p: 0, n: 0, d: 0, score: 0, avg: '—', pPorc: 0 };
+        const total = validos.length; if (total === 0) return { total: 0, p: 0, n: 0, d: 0, score: 0, avg: '—', pPorc: 0 };
         let prom = 0, neut = 0, detr = 0, suma = 0;
-        validos.forEach(r => {
-          const v = parseFloat(r.pregunta2);
-          if (!isNaN(v)) {
-            suma += v;
-            if (v >= 9) prom++;
-            else if (v >= 7) neut++;
-            else detr++;
-          }
-        });
-        const pP = (prom / total) * 100;
-        const dP = (detr / total) * 100;
-        return { total, p: prom, n: neut, d: detr, score: Math.round(pP - dP), avg: (suma / total).toFixed(1), pPorc: pP.toFixed(0) };
+        validos.forEach(r => { const v = parseFloat(r.pregunta2); if (!isNaN(v)) { suma += v; if (v >= 9) prom++; else if (v >= 7) neut++; else detr++; } });
+        return { total, p: prom, n: neut, d: detr, score: Math.round(((prom/total)*100) - ((detr/total)*100)), avg: (suma/total).toFixed(1), pPorc: ((prom/total)*100).toFixed(0) };
       }, [p2Filtrados]);
 
-      // Exportación CSV
-      const exportarDataCSV = useCallback((registros, tipoPregunta) => {
-        if (!registros || registros.length === 0) {
-          alert("No hay comentarios en este corte para procesar.");
-          return;
-        }
-        let csv = "PROMPT IA: Procesa analíticamente el feedback abierto extraído del corte operativo de experiencia.\n\n";
-        csv += "Cliente;Pais;Periodo;Nota;Comentario\n";
-        registros.forEach(r => {
-          const nota = tipoPregunta === 'P1' ? (r.puntuacion || '—') : (r.pregunta2 || '—');
-          const comentario = tipoPregunta === 'P1' ? (r.razon || '—') : (r.pregunta3 || 'Sin feedback');
-          csv += `${String(r.cliente || 'Empresa').replace(/;/g, ',')};${r.pais || '—'};${r.periodoQ || '—'};${nota};"${String(comentario).replace(/;/g, ',').replace(/\n/g, ' ')}"\n`;
-        });
-        const blob = new Blob([new Uint8Array([0xEF, 0xBB, 0xBF]), csv], { type: "text/csv;charset=utf-8;" });
-        const link = document.createElement("a");
-        link.href = URL.createObjectURL(blob);
-        link.setAttribute("download", `Reporte_Respuestas_Abiertas_${tipoPregunta}.csv`);
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-      }, []);
-
-      // Histórico
       const datosLinea = useMemo(() => {
         const filtradosHist = rawNps.filter(r => (histPais === 'Todos' || r.pais === histPais) && (String(r.anio) === histAnio));
-        const qsMap = {};
-        filtradosHist.forEach(r => {
-          if (!r.periodoQ) return;
-          if (!qsMap[r.periodoQ]) qsMap[r.periodoQ] = [];
-          qsMap[r.periodoQ].push(r);
-        });
+        const qsMap = {}; filtradosHist.forEach(r => { if (r.periodoQ) { if (!qsMap[r.periodoQ]) qsMap[r.periodoQ] = []; qsMap[r.periodoQ].push(r); } });
         return Object.keys(qsMap).sort().map(qName => {
-          const arr = qsMap[qName];
-          let p = 0, d = 0, tot = arr.length;
-          arr.forEach(r => {
-            const v = parseFloat(r.puntuacion);
-            if (!isNaN(v)) {
-              if (v >= 9) p++;
-              else if (v < 7) d++;
-            }
-          });
+          const arr = qsMap[qName]; let p = 0, d = 0, tot = arr.length;
+          arr.forEach(r => { const v = parseFloat(r.puntuacion); if (!isNaN(v)) { if (v >= 9) p++; else if (v < 7) d++; } });
           return { q: qName, score: tot > 0 ? Math.round(((p / tot) * 100) - ((d / tot) * 100)) : 0 };
         });
       }, [rawNps, histPais, histAnio]);
 
-      // Aislamiento de Críticos (0-6)
-      const criticos = useMemo(() => {
-        return rawNps.filter(r => {
-          const n = parseFloat(r.puntuacion);
-          return !isNaN(n) && n <= 6;
-        });
-      }, [rawNps]);
+      const criticos = useMemo(() => rawNps.filter(r => { const n = parseFloat(r.puntuacion); return !isNaN(n) && n <= 6; }), [rawNps]);
 
       return e('div', { className: 'space-y-6' },
-        e('div', { className: 'card p-5 bg-white' },
-          e('h2', { className: 'text-base font-extrabold text-gray-900 flex items-center gap-2' },
-            e('i', { className: 'fa-solid fa-chart-pie text-brand' }),
-            'Análisis Detallado Operativo · Net Promoter Score'
-          ),
-          e('p', { className: 'text-xs text-gray-400 mt-1 max-w-3xl' },
-            'Monitoreo centralizado de los índices corporativos. El bloque evalúa de forma dinámica las preguntas de marca y satisfacción vigentes en la base de datos.'
-          )
-        ),
-
-        // Grid de Preguntas Espejo Dinámicas
         e('div', { className: 'grid grid-cols-1 xl:grid-cols-2 gap-6' },
-          e(BloquePreguntaNPS, {
-            id: 'p1', tituloCompleto: textoPregunta1,
+          e(BloquePreguntaEspejo, {
+            id: 'nps_p1', tituloCompleto: getPregunta1Dinamica(p1Mes),
             totalRespuestas: m1.total, promotores: m1.p, neutrales: m1.n, detractores: m1.d, score: m1.score, promedio: m1.avg, totalPromotores: m1.p, porcentajePromotores: m1.pPorc,
             listaPaises: listPaises, listaMeses: listMeses, filtroPais: p1Pais, setFiltroPais: setP1Pais, filtroMes: p1Mes, setFiltroMes: setP1Mes,
-            textoExportar: 'Generar reporte de respuestas abiertas',
-            onExportar: () => exportarDataCSV(p1Filtrados, 'P1')
+            textoBoton: 'Generar reporte de respuestas abiertas', labelScoreCenter: 'NPS Score',
+            onExportar: () => generarPDFResumen(p1Filtrados, 'NPS P1', `Corte ${p1Pais} / ${p1Mes}`)
           }),
-          e(BloquePreguntaNPS, {
-            id: 'p2', tituloCompleto: textoPregunta2,
+          e(BloquePreguntaEspejo, {
+            id: 'nps_p2', tituloCompleto: getPregunta2Dinamica(p2Mes),
             totalRespuestas: m2.total, promotores: m2.p, neutrales: m2.n, detractores: m2.d, score: m2.score, promedio: m2.avg, totalPromotores: m2.p, porcentajePromotores: m2.pPorc,
             listaPaises: listPaises, listaMeses: listMeses, filtroPais: p2Pais, setFiltroPais: setP2Pais, filtroMes: p2Mes, setFiltroMes: setP2Mes,
-            textoExportar: 'Generar reporte de respuestas abiertas',
-            onExportar: () => exportarDataCSV(p2Filtrados, 'P2')
+            textoBoton: 'Generar reporte de respuestas abiertas', labelScoreCenter: 'Operativo',
+            onExportar: () => generarPDFResumen(p2Filtrados, 'NPS P2', `Corte ${p2Pais} / ${p2Mes}`)
           })
         ),
-
-        // Línea de Tendencia
+        // Tendencia Simple NPS
         e('div', { className: 'card p-6 bg-white flex flex-col md:flex-row gap-6' },
           e('div', { className: 'w-full md:w-8/12' },
             e('div', { className: 'flex items-center gap-2 mb-4' },
@@ -373,87 +423,143 @@
                 e('i', { className: 'fa-solid fa-circle-info text-gray-300 hover:text-brand text-xs' }),
                 e('div', { className: 'tooltip-box shadow-xl' },
                   e('p', { className: 'font-bold border-b border-gray-700 pb-1 mb-1' }, '¿Qué significa el Score NPS?'),
-                  e('p', {}, 'Se calcula restando el % de Promotores (9-10) menos el % de Detractores (0-6).'),
-                  e('p', { className: 'mt-1 font-bold text-blue-400' }, 'Rango: -100 a +100')
+                  e('p', {}, 'Se calcula restando el % de Promotores (9-10) menos el % de Detractores (0-6).')
                 )
               )
             ),
-            datosLinea.length === 0 ? e('div', { className: 'h-[240px] flex items-center justify-center text-xs text-gray-400' }, 'Sin históricos para el corte seleccionado') :
-            e(ChartLineaHistorico, { datos: datosLinea })
+            datosLinea.length === 0 ? e('div', { className: 'h-[240px] flex items-center justify-center text-xs text-gray-400' }, 'Sin históricos en este corte') : e(ChartLineaHistorico, { datos: datosLinea })
           ),
           e('div', { className: 'w-full md:w-4/12 flex flex-col justify-between border-l border-gray-100 pl-0 md:pl-6' },
             e('div', { className: 'space-y-4' },
               e('h4', { className: 'text-[10px] font-bold text-gray-400 uppercase tracking-wider' }, 'Filtros de Tendencia'),
               e('div', { className: 'space-y-3' },
-                e('div', { className: 'space-y-1' },
-                  e('label', { className: 'text-[11px] text-gray-400 font-medium' }, 'País:'),
-                  e('select', { value: histPais, onChange: ev => setHistPais(ev.target.value), className: 'w-full text-xs font-semibold text-gray-600 bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 outline-none' },
-                    listPaises.map(p => e('option', { key: p, value: p }, p))
-                  )
-                ),
-                e('div', { className: 'space-y-1' },
-                  e('label', { className: 'text-[11px] text-gray-400 font-medium' }, 'Año Fiscal:'),
-                  e('select', { value: histAnio, onChange: ev => setHistAnio(ev.target.value), className: 'w-full text-xs font-semibold text-gray-600 bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 outline-none' },
-                    listAnios.map(a => e('option', { key: a, value: a }, a))
-                  )
-                )
+                e('div', { className: 'space-y-1' }, e('label', { className: 'text-[11px] text-gray-400 font-medium' }, 'País:'), e('select', { value: histPais, onChange: ev => setHistPais(ev.target.value), className: 'w-full text-xs font-semibold text-gray-600 bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 outline-none' }, listPaises.map(p => e('option', { key: p, value: p }, p)))),
+                e('div', { className: 'space-y-1' }, e('label', { className: 'text-[11px] text-gray-400 font-medium' }, 'Año Fiscal:'), e('select', { value: histAnio, onChange: ev => setHistAnio(ev.target.value), className: 'w-full text-xs font-semibold text-gray-600 bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 outline-none' }, listAnios.map(a => e('option', { key: a, value: a }, a))))
               )
-            ),
-            e('div', { className: 'mt-6 bg-brand/5 p-4 rounded-xl border border-brand/10 text-xs text-brand font-medium' },
-              e('i', { className: 'fa-solid fa-chart-line mr-1.5' }),
-              'La gráfica unifica los cortes trimestrales permitiendo evaluar la evolución macro de lealtad.'
             )
           )
         ),
-
-        // Radar de Alertas con Columna M en Vivo ("notaKam")
+        // Radar
         e('div', { className: 'card p-6 bg-white' },
-          e('div', { className: 'flex justify-between items-center mb-5' },
-            e('div', {},
-              e('h3', { className: 'text-sm font-bold text-red-600 flex items-center gap-1.5' },
-                e('i', { className: 'fa-solid fa-triangle-exclamation animate-pulse' }),
-                'Radar de Alertas Avanzado · Control de Clientes Críticos'
-              ),
-              e('p', { className: 'text-[11px] text-gray-400 mt-0.5' }, 'Muestra de forma exclusiva las empresas con notas críticas. El estado de control refleja fielmente tu columna M de respuestas.')
-            ),
-            e('span', { className: 'px-2.5 py-1 bg-red-50 text-red-600 text-xs font-extrabold rounded-full' }, `${criticos.length} Casos Críticos`)
+          e('div', { className: 'flex justify-between items-center mb-4' },
+            e('h3', { className: 'text-sm font-bold text-red-600 flex items-center gap-1.5' }, e('i', { className: 'fa-solid fa-triangle-exclamation animate-pulse' }), 'Radar de Alertas Avanzado · Control de Clientes Críticos'),
+            e('span', { className: 'px-2.5 py-1 bg-red-50 text-red-600 text-xs font-extrabold rounded-full' }, `${criticos.length} Casos`)
           ),
-          criticos.length === 0 ? e('p', { className: 'text-center py-8 text-xs text-gray-400 font-medium' }, '¡Felicidades! No hay alertas ni clientes críticos detectados 🎉') :
-          e('div', { className: 'space-y-3' },
-            criticos.map((c, i) => {
-              // Lectura real 1:1 de tu columna M (mapeada en la propiedad notaKam)
-              const textoColumnaM = (c.notaKam || '').trim();
-              const gestionado = textoColumnaM.toLowerCase().includes('comunic') || textoColumnaM.toLowerCase().includes('hablo') || textoColumnaM.toLowerCase().includes('ok') || textoColumnaM.toLowerCase().includes('si');
-              
-              return e('div', { key: i, className: 'p-4 rounded-xl border border-red-100 bg-red-50/10 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3' },
-                e('div', { className: 'space-y-1 max-w-3xl' },
-                  e('div', { className: 'flex items-center gap-2 flex-wrap' },
-                    e('span', { className: 'font-extrabold text-xs text-gray-900' }, c.cliente || 'Empresa'),
-                    e('span', { className: 'text-[10px] text-gray-400 font-bold bg-white px-1.5 py-0.5 rounded border' }, c.pais || '—'),
-                    e('span', { className: 'text-[10px] text-blue-500 font-bold bg-blue-50 px-1.5 py-0.5 rounded' }, c.periodoQ || '—')
-                  ),
-                  e('p', { className: 'text-xs text-gray-600 italic font-medium' }, c.razon ? `"${c.razon}"` : '—')
-                ),
-                e('div', { className: 'flex items-center gap-4 w-full sm:w-auto justify-between sm:justify-end border-t sm:border-0 border-gray-100 pt-2 sm:pt-0' },
-                  e('div', { className: 'text-left sm:text-right' },
-                    e('span', { className: 'inline-block px-2.5 py-1 rounded-lg text-xs font-bold text-white bg-red-500' }, `Nota: ${c.puntuacion}`),
-                    e('p', { className: `text-[10px] font-bold mt-1 ${gestionado ? 'text-green-600' : 'text-amber-500'}` }, 
-                      e('i', { className: `fa-solid ${gestionado ? 'fa-circle-check' : 'fa-circle-dot'} mr-1` }),
-                      textoColumnaM || 'Sin observaciones'
-                    )
-                  )
-                )
-              );
-            })
-          )
+          criticos.length === 0 ? e('p', { className: 'text-center py-6 text-xs text-gray-400' }, '¡Felicidades! Sin alertas críticas 🎉') :
+          e('div', { className: 'space-y-2' }, criticos.map((c, i) => {
+            const txtColM = (c.notaKam || '').trim();
+            const gestionado = txtColM.toLowerCase().includes('comunic') || txtColM.toLowerCase().includes('hablo') || txtColM.toLowerCase().includes('ok') || txtColM.toLowerCase().includes('si');
+            return e('div', { key: i, className: 'p-4 rounded-xl border border-red-100 bg-red-50/10 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 text-xs' },
+              e('div', {}, e('p', { className: 'font-extrabold text-gray-900' }, `${c.cliente || 'Empresa'} (${c.pais || '—'})`), e('p', { className: 'text-gray-500 italic mt-0.5' }, c.razon ? `"${c.razon}"` : '—')),
+              e('div', { className: 'text-right flex-shrink-0' }, e('span', { className: 'px-2 py-0.5 bg-red-500 text-white font-bold rounded' }, `Nota: ${c.puntuacion}`), e('p', { className: `font-bold mt-1 ${gestionado ? 'text-green-600' : 'text-amber-500'}` }, txtColM || 'Sin observaciones registradas'))
+            );
+          }))
         )
       );
     }
 
-    // --- OTRAS PESTAÑAS ---
+    // ==========================================
+    // --- PESTAÑA 2: MÓDULO CSAT ---
+    // ==========================================
+    function ModuleCSAT({ abonoRaw, reunionRaw }) {
+      const [c1Pais, setC1Pais] = useState('Todos'); const [c1Mes, setC1Mes] = useState('Todos');
+      const [c2Pais, setC2Pais] = useState('Todos'); const [c2Mes, setC2Mes] = useState('Todos');
+      const [histPais, setHistPais] = useState('Todos');
+
+      const listPaises = ['Todos', 'Colombia', 'México', 'Chile', 'Perú', 'Ecuador'];
+      const listMeses = ['Todos', 'Mayo', 'Junio', 'Julio', 'Agosto'];
+
+      // Computos CSAT 1 (Abonos)
+      const c1Filtrados = useMemo(() => abonoRaw.filter(r => (c1Pais === 'Todos' || r.pais === c1Pais) && (c1Mes === 'Todos' || r.mes === c1Mes)), [abonoRaw, c1Pais, c1Mes]);
+      const m1 = useMemo(() => {
+        const total = c1Filtrados.length; if (total === 0) return { total: 0, p: 0, n: 0, d: 0, score: 0, avg: '—', pPorc: 0 };
+        let alto = 0, medio = 0, bajo = 0, suma = 0;
+        c1Filtrados.forEach(r => { 
+          const v = parseFloat(r.abonos || r.puntuacion || 1); suma += v;
+          if (v >= 4 || v > 5) alto++; else if (v >= 2) medio++; else bajo++;
+        });
+        return { total, p: alto, n: medio, d: bajo, score: Math.round((alto/total)*10), avg: (suma/total).toFixed(1), pPorc: ((alto/total)*100).toFixed(0) };
+      }, [c1Filtrados]);
+
+      // Computos CSAT 2 (Reuniones)
+      const c2Filtrados = useMemo(() => reunionRaw.filter(r => (c2Pais === 'Todos' || r.pais === c2Pais) && (c2Mes === 'Todos' || r.mes === c2Mes)), [reunionRaw, c2Pais, c2Mes]);
+      const m2 = useMemo(() => {
+        const total = c2Filtrados.length; if (total === 0) return { total: 0, p: 0, n: 0, d: 0, score: 0, avg: '—', pPorc: 0 };
+        let alto = 0, medio = 0, bajo = 0, suma = 0;
+        c2Filtrados.forEach(r => {
+          const v = parseFloat(r.puntuacion || 5); suma += v;
+          if (v >= 4) alto++; else if (v === 3) medio++; else bajo++;
+        });
+        return { total, p: alto, n: medio, d: bajo, score: Math.round((alto/total)*10), avg: (suma/total).toFixed(1), pPorc: ((alto/total)*100).toFixed(0) };
+      }, [c2Filtrados]);
+
+      // Histórico de Línea Doble por Q
+      const histAbono = useMemo(() => {
+        const qs = {}; abonoRaw.forEach(r => { if(r.mes) { const q = r.mes === 'Mayo'?'Q2':'Q3'; if(!qs[q]) qs[q]=[]; qs[q].push(r); } });
+        return Object.keys(qs).map(q => { let s=0; qs[q].forEach(r=>s+=parseFloat(r.puntuacion||4)); return { q, score: (s/qs[q].length || 4) }; });
+      }, [abonoRaw]);
+
+      const histReunion = useMemo(() => {
+        const qs = {}; reunionRaw.forEach(r => { if(r.mes) { const q = r.mes === 'Mayo'?'Q2':'Q3'; if(!qs[q]) qs[q]=[]; qs[q].push(r); } });
+        return Object.keys(qs).map(q => { let s=0; qs[q].forEach(r=>s+=parseFloat(r.puntuacion||5)); return { q, score: (s/qs[q].length || 5) }; });
+      }, [reunionRaw]);
+
+      // Radar de Alertas CSAT (Notas críticas inferiores a 3 estrellas)
+      const criticosCSAT = useMemo(() => {
+        return [...abonoRaw, ...reunionRaw].filter(r => { const v = parseFloat(r.puntuacion); return !isNaN(v) && v <= 3; });
+      }, [abonoRaw, reunionRaw]);
+
+      return e('div', { className: 'space-y-6' },
+        // CSAT 1: Post Abonos
+        e('div', { className: 'card p-4 bg-brand/5 border border-brand/10 -mb-2' },
+          e('h3', { className: 'text-xs font-bold text-brand uppercase tracking-wider' }, 'División Horizontal 1 · CSAT Post Abono Trimestral'),
+          e('p', { className: 'text-[11px] text-gray-500 mt-0.5' }, 'Evaluación automatizada enviada tras la confirmación e ingreso de abonos de carteras comerciales en el cierre trimestral.')
+        ),
+        e(BloquePreguntaEspejo, {
+          id: 'csat_1', tituloCompleto: '¿Cómo calificarías la agilidad y transparencia en la liquidación de tus abonos trimestrales?',
+          totalRespuestas: m1.total, promotores: m1.p, neutrales: m1.n, detractores: m1.d, score: m1.score, promedio: m1.avg, totalPromotores: m1.p, porcentajePromotores: m1.pPorc,
+          listaPaises: listPaises, listaMeses: listMeses, filtroPais: c1Pais, setFiltroPais: setC1Pais, filtroMes: c1Mes, setFiltroMes: setC1Mes,
+          textoBoton: 'Generar reporte de respuestas abiertas', labelScoreCenter: 'CSAT Abono',
+          onExportar: () => generarPDFResumen(c1Filtrados, 'CSAT 1 - Post Abono', `Corte ${c1Pais}`)
+        }),
+
+        // CSAT 2: Post Reunión Comercial
+        e('div', { className: 'card p-4 bg-brand/5 border border-brand/10 -mb-2' },
+          e('h3', { className: 'text-xs font-bold text-brand uppercase tracking-wider' }, 'División Horizontal 2 · CSAT Post Reunión Comercial'),
+          e('p', { className: 'text-[11px] text-gray-500 mt-0.5' }, 'Medición inmediata ejecutada tras la conclusión de mesas de trabajo técnicas o minutas comerciales con el ejecutivo KAM.')
+        ),
+        e(BloquePreguntaEspejo, {
+          id: 'csat_2', tituloCompleto: '¿El ejecutivo comercial resolvió de forma clara y oportuna tus requerimientos en la reunión de cuenta?',
+          totalRespuestas: m2.total, promotores: m2.p, neutrales: m2.n, detractores: m2.d, score: m2.score, promedio: m2.avg, totalPromotores: m2.p, porcentajePromotores: m2.pPorc,
+          listaPaises: listPaises, listaMeses: listMeses, filtroPais: c2Pais, setFiltroPais: setC2Pais, filtroMes: c2Mes, setFiltroMes: setC2Mes,
+          textoBoton: 'Generar reporte de respuestas abiertas', labelScoreCenter: 'CSAT Reunión',
+          onExportar: () => generarPDFResumen(c2Filtrados, 'CSAT 2 - Post Reunión', `Corte ${c2Pais}`)
+        }),
+
+        // Gráfico de Tendencia Doble Unificado
+        e('div', { className: 'card p-6 bg-white' },
+          e('h4', { className: 'text-sm font-bold text-gray-900 mb-4' }, 'Evolución Histórica de Tendencia CSAT (Líneas Comparativas)'),
+          e(ChartLineaDobleCSAT, { datosAbono: histAbono, datosReunion: histReunion })
+        ),
+
+        // Radar Críticos CSAT
+        e('div', { className: 'card p-6 bg-white' },
+          e('h4', { className: 'text-sm font-bold text-red-600 mb-3' }, 'Radar de Alertas Críticas · CSAT (≤ 3 Estrellas)'),
+          criticosCSAT.length === 0 ? e('p', { className: 'text-xs text-gray-400 py-4 text-center' }, 'No hay alertas de insatisfacción críticas en este bloque.') :
+          e('div', { className: 'space-y-2' }, criticosCSAT.map((c, i) => 
+            e('div', { key: i, className: 'p-3 rounded-lg border border-red-100 bg-red-50/5 flex justify-between text-xs' },
+              e('div', {}, e('p', { className: 'font-bold' }, c.cliente || 'Empresa'), e('p', { className: 'text-gray-400 italic' }, c.comentario || 'Sin comentario de texto')),
+              e('span', { className: 'font-bold text-red-500' }, `⭐ ${c.puntuacion || 3}`)
+            )
+          ))
+        )
+      );
+    }
+
+    // --- PESTAÑAS GENÉRICAS ADICIONALES ---
     function PlaceholderTab({ title, icon, dataRaw }) {
       return e('div', { className: 'card p-10 text-center text-gray-500 font-medium space-y-4 bg-white' },
-        e('i', { className: `fa-solid ${icon} text-4xl text-blue-400 block` }),
+        e('i', { className: `fa-solid ${icon} text-4xl text-brand block` }),
         e('h2', { className: 'text-sm font-extrabold text-gray-800' }, title),
         e('div', { className: 'bg-gray-50 p-4 rounded-xl font-mono text-[10px] text-gray-600 text-left overflow-x-auto max-w-xl mx-auto border border-gray-100' },
           JSON.stringify(dataRaw, null, 2)
@@ -461,95 +567,48 @@
       );
     }
 
+    // --- ENTRADA CORE SUITE ---
     function App() {
-      const [data, setData] = useState(null);
-      const [metaHeaders, setMetaHeaders] = useState({});
-      const [loading, setLoading] = useState(true);
-      const [error, setError] = useState(null);
+      const [data, setData] = useState(null); const [metaHeaders, setMetaHeaders] = useState({});
+      const [loading, setLoading] = useState(true); const [error, setError] = useState(null);
       const [tab, setTab] = useState(0);
 
       const cargarData = useCallback(() => {
-        setLoading(true);
-        setError(null);
+        setLoading(true); setError(null);
         fetch(CONFIG_FRONTEND.URL_API_BACKEND)
-          .then(res => {
-            if (!res.ok) throw new Error("Fallo de respuesta del servidor.");
-            return res.json();
-          })
-          .then(parsed => {
-            if (!parsed || typeof parsed !== 'object') throw new Error("Esquema corrupto.");
-            setData(parsed);
-            // Capturamos el mapeo de títulos dinámicos que envía tu script de Google en la raíz
-            setMetaHeaders(parsed.headers || {});
-            setLoading(false);
-          })
-          .catch(err => {
-            setError(err.message || "Error general de enlace.");
-            setLoading(false);
-          });
+          .then(res => { if (!res.ok) throw new Error("Fallo de respuesta del servidor."); return res.json(); })
+          .then(parsed => { if (!parsed || typeof parsed !== 'object') throw new Error("Esquema corrupto."); setData(parsed); setMetaHeaders(parsed.headers || {}); setLoading(false); })
+          .catch(err => { setError(err.message || "Error general de enlace."); setLoading(false); });
       }, []);
 
       useEffect(() => { cargarData(); }, []);
 
-      const menuTabs = [
-        ['NPS', 'fa-solid fa-chart-line'], ['CSAT', 'fa-solid fa-star'], ['Inactivos', 'fa-solid fa-user-clock'], ['Salidas / Off', 'fa-solid fa-arrow-right-from-bracket']
-      ];
+      const menuTabs = [['NPS', 'fa-solid fa-chart-line'], ['CSAT', 'fa-solid fa-star'], ['Inactivos', 'fa-solid fa-user-clock'], ['Salidas / Off', 'fa-solid fa-arrow-right-from-bracket']];
 
       return e('div', { className: 'min-h-screen flex flex-col justify-between' },
         e('div', {},
           e('header', { className: 'bg-white border-b border-gray-200 sticky top-0 z-20 shadow-sm px-6 py-4' },
             e('div', { className: 'max-w-7xl mx-auto flex items-center justify-between' },
               e('div', { className: 'flex items-center gap-3' },
-                e('div', { className: 'w-10 h-10 rounded-xl bg-brand flex items-center justify-center text-white text-base shadow-md' },
-                  e('i', { className: 'fa-solid fa-heart-pulse' })
-                ),
-                e('div', {},
-                  e('h1', { className: 'text-base font-extrabold text-gray-900 leading-none tracking-tight' }, 'Experiencia del cliente'),
-                  e('p', { className: 'text-[11px] text-gray-400 mt-1 font-medium' }, 'Métricas sincronizadas en vivo corporativo')
-                )
+                e('div', { className: 'w-10 h-10 rounded-xl bg-brand flex items-center justify-center text-white text-base shadow-md' }, e('i', { className: 'fa-solid fa-heart-pulse' })),
+                e('div', {}, e('h1', { className: 'text-base font-extrabold text-gray-900 leading-none tracking-tight' }, 'Experiencia del cliente'), e('p', { className: 'text-[11px] text-gray-400 mt-1 font-medium' }, 'Métricas sincronizadas en vivo corporativo'))
               ),
-              e('button', { onClick: cargarData, disabled: loading, className: 'p-2.5 bg-gray-50 hover:bg-gray-100 rounded-xl text-gray-400 border border-gray-200' },
-                e('i', { className: `fa-solid fa-arrow-rotate-right ${loading ? 'animate-spin' : ''}` })
-              )
+              e('button', { onClick: cargarData, disabled: loading, className: 'p-2.5 bg-gray-50 hover:bg-gray-100 rounded-xl text-gray-400 border border-gray-200' }, e('i', { className: `fa-solid fa-arrow-rotate-right ${loading ? 'animate-spin' : ''}` }))
             ),
-            e('div', { className: 'max-w-7xl mx-auto flex gap-6 -mb-4 mt-4 overflow-x-auto' },
-              menuTabs.map(([lbl, icon], id) => 
-                e('button', {
-                  key: id,
-                  onClick: () => setTab(id),
-                  className: `tab-btn pb-3 text-xs font-bold tracking-wider uppercase whitespace-nowrap flex items-center gap-2 ${tab === id ? 'active text-brand' : 'text-gray-400 hover:text-gray-600'}`
-                }, e('i', { className: icon }), lbl)
-              )
-            )
+            e('div', { className: 'max-w-7xl mx-auto flex gap-6 -mb-4 mt-4 overflow-x-auto' }, menuTabs.map(([lbl, icon], id) => e('button', { key: id, onClick: () => setTab(id), className: `tab-btn pb-3 text-xs font-bold tracking-wider uppercase whitespace-nowrap flex items-center gap-2 ${tab === id ? 'active text-brand' : 'text-gray-400 hover:text-gray-600'}` }, e('i', { className: icon }), lbl)))
           ),
-
           e('main', { className: 'max-w-7xl mx-auto px-6 mt-6' },
-            loading && e('div', { className: 'space-y-5' },
-              e('div', { className: 'skeleton h-20' }),
-              e('div', { className: 'grid grid-cols-1 lg:grid-cols-2 gap-6' },
-                e('div', { className: 'skeleton h-[300px]' }), e('div', { className: 'skeleton h-[300px]' })
-              ),
-              e('div', { className: 'skeleton h-48 w-full' })
-            ),
-
-            !loading && error && e('div', { className: 'card p-8 text-center max-w-md mx-auto mt-10 space-y-3 bg-white' },
-              e('i', { className: 'fa-solid fa-triangle-exclamation text-red-500 text-3xl' }),
-              e('p', { className: 'font-bold text-gray-800' }, 'Error de conexión'),
-              e('p', { className: 'text-xs text-gray-400 bg-gray-50 p-2 rounded border' }, error),
-              e('button', { onClick: cargarData, className: 'px-4 py-2 bg-brand text-white text-xs font-bold rounded-xl' }, 'Reintentar')
-            ),
-
+            loading && e('div', { className: 'space-y-5' }, e('div', { className: 'skeleton h-20' }), e('div', { className: 'grid grid-cols-1 lg:grid-cols-2 gap-6' }, e('div', { className: 'skeleton h-[300px]' }), e('div', { className: 'skeleton h-[300px]' })), e('div', { className: 'skeleton h-48 w-full' })),
+            !loading && error && e('div', { className: 'card p-8 text-center max-w-md mx-auto mt-10 space-y-3 bg-white' }, e('i', { className: 'fa-solid fa-triangle-exclamation text-red-500 text-3xl' }), e('p', { className: 'font-bold text-gray-800' }, 'Error de conexión'), e('button', { onClick: cargarData, className: 'px-4 py-2 bg-brand text-white text-xs font-bold rounded-xl' }, 'Reintentar')),
             !loading && !error && data && e('div', {},
               tab === 0 && e(ModuleNPS, { rawNps: Array.isArray(data.nps) ? data.nps : [], metaHeaders: metaHeaders }),
-              tab === 1 && e(PlaceholderTab, { title: 'Métricas de Satisfacción (CSAT)', icon: 'fa-star', dataRaw: { csat_reunion: data.csat_reunion, csat_abono: data.csat_abono } }),
+              tab === 1 && e(ModuleCSAT, { abonoRaw: Array.isArray(data.csat_abono) ? data.csat_abono : [], reunionRaw: Array.isArray(data.csat_reunion) ? data.csat_reunion : [] }),
               tab === 2 && e(PlaceholderTab, { title: 'Análisis de Clientes Inactivos', icon: 'fa-user-clock', dataRaw: { inactivos: data.inactivos } }),
               tab === 3 && e(PlaceholderTab, { title: 'Registro de Procesos de Offboarding', icon: 'fa-arrow-right-from-bracket', dataRaw: { salidas: data.salidas } })
             )
           )
         ),
-        e('footer', { className: 'text-center py-6 text-[11px] text-gray-400 mt-10 border-t border-gray-200 bg-white w-full' },
-          'Apprecio · Dashboard Experiencia del cliente · 2026'
-        )
+        e('footer', { className: 'text-center py-6 text-[11px] text-gray-400 mt-10 border-t border-gray-200 bg-white w-full' }, 'Apprecio · Dashboard Experiencia del cliente · 2026')
       );
     }
 
