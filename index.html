@@ -54,7 +54,7 @@
       URL_API_BACKEND: "https://script.google.com/macros/s/AKfycbx3TEMFdxbYGKZFhF5GSZstiiV6vivCCbLq9L7A2iq5oq6DgrVyM6Q3a5Wd_JLAhbT1Wg/exec"
     };
 
-    // --- ENTRADA DE GENERACIÓN DE REPORTE COMPILADO EN PDF ---
+    // --- GENERADOR NATIVO DE REPORTES PDF EJECUTIVOS ---
     const generarPDFResumenEjecutivo = (registros, modulo, especificacion) => {
       if (!registros || registros.length === 0) {
         alert("No se registran datos cualitativos en este segmento para estructurar el resumen analítico.");
@@ -120,13 +120,13 @@
           <div class="container-box">
             A partir de la compilación y evaluación semántica del feedback registrado en la base de datos para el corte activo, se determinan los siguientes núcleos de opinión e interacciones del servicio:
 
-${desgloseMetricas}
+\${desgloseMetricas}
 
             *Conclusión Estratégica:* Las menciones reflejan la percepción directa de los líderes de cuenta del segmento. Se recomienda cruzar estos patrones con los planes de acción asignados por el KAM operativo.
           </div>
 
           <div class="section-title section-label">Compilación de Observaciones de Clientes</div>
-          <div class="container-box" style="background: #F7FAFC; font-size: 12px; border-color: #EDF2F7; font-style: italic;">${stringComentarios}</div>
+          <div class="container-box" style="background: #F7FAFC; font-size: 12px; border-color: #EDF2F7; font-style: italic;">\${stringComentarios}</div>
 
           <div style="margin-top: 60px; text-align: center; font-size: 11px; color: #A0AEC0; border-top: 1px solid #EDF2F7; padding-top: 20px; font-weight: 500;">
             Suite Corporativa Apprecio · Sistema de Control de Experiencia del Cliente (CX)
@@ -189,7 +189,7 @@ ${desgloseMetricas}
       return e('div', { className: 'relative w-full h-[180px]' }, e('canvas', { ref: canvasRef }));
     }
 
-    // --- GRÁFICO TENDENCIA DOBLE LÍNEA (CSAT UNIFICADO) ---
+    // --- GRÁFICO DE TENDENCIA DOBLE LÍNEA (CSAT UNIFICADO) ---
     function ChartLineaDobleCSAT({ datosAbono, datosReunion }) {
       const canvasRef = useRef(null);
       const chartRef = useRef(null);
@@ -352,7 +352,6 @@ ${desgloseMetricas}
       const [p2Pais, setP2Pais] = useState('Todos'); const [p2Mes, setP2Mes] = useState('Todos');
       const [histPais, setHistPais] = useState('Todos'); const [histAnio, setHistAnio] = useState('2026');
 
-      // Preguntas dinámicas resueltas según el mes (Iteración 2)
       const getPregunta1Dinamica = (mesSeleccionado) => {
         if(mesSeleccionado === 'Mayo' || mesSeleccionado === 'Todos') return "Pregunta 1: En una escala del 1 al 10, ¿Qué tanto recomiendas nuestra aplicación Apprecio?";
         return metaHeaders.puntuacion || "Pregunta 1: Recomendación de Marca (NPS)";
@@ -450,7 +449,7 @@ ${desgloseMetricas}
             const gestionado = txtColM.toLowerCase().includes('comunic') || txtColM.toLowerCase().includes('hablo') || txtColM.toLowerCase().includes('ok') || txtColM.toLowerCase().includes('si');
             return e('div', { key: i, className: 'p-4 rounded-xl border border-red-100 bg-red-50/10 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 text-xs' },
               e('div', {}, e('p', { className: 'font-extrabold text-gray-900' }, `${c.cliente || 'Empresa'} (${c.pais || '—'})`), e('p', { className: 'text-gray-500 italic mt-0.5' }, c.razon ? `"${c.razon}"` : '—')),
-              e('div', { className: 'text-right flex-shrink-0' }, e('span', { className: 'px-2 py-0.5 bg-red-500 text-white font-bold rounded' }, `Nota: ${c.puntuacion}`), e('p', { className: `font-bold mt-1 ${gridG = gestionado ? 'text-green-600' : 'text-amber-500'}` }, txtColM || 'Sin observaciones registradas'))
+              e('div', { className: 'text-right flex-shrink-0' }, e('span', { className: 'px-2 py-0.5 bg-red-500 text-white font-bold rounded' }, `Nota: ${c.puntuacion}`), e('p', { className: `font-bold mt-1 \${gestionado ? 'text-green-600' : 'text-amber-500'}` }, txtColM || 'Sin observaciones registradas'))
             );
           }))
         )
@@ -458,7 +457,7 @@ ${desgloseMetricas}
     }
 
     // ==========================================
-    // --- PESTAÑA 2: MÓDULO CSAT REFLEXIVO ---
+    // --- PESTAÑA 2: MÓDULO CSAT CON KAM RANKING ---
     // ==========================================
     function ModuleCSAT({ abonoRaw, reunionRaw }) {
       const [c1Pais, setC1Pais] = useState('Todos'); const [c1Mes, setC1Mes] = useState('Todos');
@@ -467,7 +466,7 @@ ${desgloseMetricas}
       const listPaises = ['Todos', 'Colombia', 'México', 'Chile', 'Perú', 'Ecuador'];
       const listMeses = ['Todos', 'Mayo', 'Junio', 'Julio', 'Agosto'];
 
-      // CSAT 1 (Abonos) - Computado sobre tus 21 respuestas reales
+      // CSAT 1 (Abonos)
       const c1Filtrados = useMemo(() => abonoRaw.filter(r => (c1Pais === 'Todos' || r.pais === c1Pais) && (c1Mes === 'Todos' || r.mes === c1Mes)), [abonoRaw, c1Pais, c1Mes]);
       const m1 = useMemo(() => {
         const total = c1Filtrados.length; if (total === 0) return { total: 0, p: 0, n: 0, d: 0, score: 0, avg: '—', pPorc: 0 };
@@ -486,12 +485,35 @@ ${desgloseMetricas}
         let alto = 0, medio = 0, bajo = 0, suma = 0;
         c2Filtrados.forEach(r => {
           const v = parseFloat(r.puntuacion || 5); suma += v;
-          if (v >= 4) alto++; else if (v === 3) medio++; else bajo++;
+          if (v >= 9) alto++; else if (v >= 7) medio++; else bajo++;
         });
         return { total, p: alto, n: medio, d: bajo, score: Math.round((alto/total)*100), avg: (suma/total).toFixed(1), pPorc: ((alto/total)*100).toFixed(0) };
       }, [c2Filtrados]);
 
-      // Históricos unificados
+      // NUEVO: Agrupamiento dinámico y promedio limpio por Ejecutivo (KAM) basado en la Columna C de la reunión
+      const rankingKams = useMemo(() => {
+        const agrp = {};
+        c2Filtrados.forEach(r => {
+          const nombreKam = (r.kam || 'Ejecutivo No Asignado').trim();
+          const nota = parseFloat(r.puntuacion);
+          if (!isNaN(nota) && nombreKam) {
+            if (!agrp[nombreKam]) agrp[nombreKam] = { suma: 0, conteo: 0 };
+            agrp[nombreKam].suma += nota;
+            agrp[nombreKam].conteo++;
+          }
+        });
+
+        return Object.keys(agrp).map(name => {
+          const item = agrp[name];
+          return {
+            nombre: name,
+            promedio: (item.suma / item.conteo).toFixed(1),
+            totalReuniones: item.conteo
+          };
+        }).sort((a, b) => b.promedio - a.promedio); // Ordenados de mayor a menor performance
+      }, [c2Filtrados]);
+
+      // Históricos
       const histAbono = useMemo(() => {
         const qs = {}; abonoRaw.forEach(r => { if(r.mes) { const q = r.mes === 'Mayo'?'Q2':'Q3'; if(!qs[q]) qs[q]=[]; qs[q].push(r); } });
         return Object.keys(qs).map(q => { let s=0; qs[q].forEach(r=>s+=parseFloat(r.puntuacion||9)); return { q, score: (s/qs[q].length || 9) }; });
@@ -503,7 +525,7 @@ ${desgloseMetricas}
       }, [reunionRaw]);
 
       const criticosCSAT = useMemo(() => {
-        return [...abonoRaw, ...reunionRaw].filter(r => { const v = parseFloat(r.puntuacion); return !isNaN(v) && (v <= 6 || v <= 3); });
+        return [...abonoRaw, ...reunionRaw].filter(r => { const v = parseFloat(r.puntuacion); return !isNaN(v) && v <= 6; });
       }, [abonoRaw, reunionRaw]);
 
       return e('div', { className: 'space-y-6' },
@@ -514,7 +536,7 @@ ${desgloseMetricas}
         e(BloquePreguntaEspejo, {
           id: 'csat_1', tituloCompleto: '¿Qué tan satisfecho(a) estás con el uso de la plataforma para la gestión de tus abonos trimestrales?',
           totalRespuestas: m1.total, promotores: m1.p, neutrales: m1.n, detractores: m1.d, score: m1.score, promedio: m1.avg, totalPromotores: m1.p, porcentajePromotores: m1.pPorc,
-          listaPaises: listPaises, listaMeses: listMeses, filtroPais: c1Pais, setFiltroPais: setC1Pais, filtroMes: c1Mes, setFiltroMes: setC1Mes,
+          listaPaises: listPaises, listMeses: listMeses, filtroPais: c1Pais, setFiltroPais: setC1Pais, filtroMes: c1Mes, setFiltroMes: setC1Mes,
           textoBoton: 'Generar reporte de respuestas abiertas', labelScoreCenter: 'Satisfechos',
           onExportar: () => generarPDFResumenEjecutivo(c1Filtrados, 'CSAT 1 - Post Abono', `Corte ${c1Pais}`)
         }),
@@ -531,13 +553,49 @@ ${desgloseMetricas}
           onExportar: () => generarPDFResumenEjecutivo(c2Filtrados, 'CSAT 2 - Post Reunión', `Corte ${c2Pais}`)
         }),
 
+        // NUEVO MÓDULO: RANKING Y PERFORMANCE DE EJECUTIVOS COMERCIALES (KAM)
+        e('div', { className: 'card p-6 bg-white' },
+          e('div', { className: 'mb-4' },
+            e('h4', { className: 'text-sm font-bold text-gray-900' }, 'Performance y Satisfacción por Ejecutivo (KAM)'),
+            e('p', { className: 'text-[11px] text-gray-400 mt-0.5' }, 'Muestra la nota promedio limpia de cada consultor calculada de forma dinámica según el mes y país filtrado arriba.')
+          ),
+          rankingKams.length === 0 ? e('p', { className: 'text-xs text-gray-400 py-4 text-center' }, 'No se registran reuniones para el ejecutivo en este corte.') :
+          e('div', { className: 'overflow-x-auto' },
+            e('table', { className: 'w-full text-xs text-left' },
+              e('thead', {},
+                e('tr', { className: 'border-b border-gray-100 text-gray-400 font-bold uppercase tracking-wider pb-2' },
+                  e('th', { className: 'pb-2' }, 'Ejecutivo Comercial'),
+                  e('th', { className: 'pb-2 text-center' }, 'Reuniones'),
+                  e('th', { className: 'pb-2' }, 'Satisfacción Promedio (Escala 1-10)'),
+                  e('th', { className: 'pb-2 text-right' }, 'Nota')
+                )
+              ),
+              e('tbody', {},
+                rankingKams.map((k, idx) => {
+                  const porcentajeBarra = Math.min((parseFloat(k.promedio) / 10) * 100, 100);
+                  return e('tr', { key: idx, className: 'border-b border-gray-50 last:border-0 hover:bg-gray-50/50' },
+                    e('td', { className: 'py-3 font-bold text-gray-900' }, k.nombre),
+                    e('td', { className: 'py-3 text-center text-gray-500' }, k.totalReuniones),
+                    e('td', { className: 'py-3 w-1/2' },
+                      e('div', { className: 'w-full bg-gray-100 h-2 rounded-full overflow-hidden' },
+                        e('div', { style: { width: `${porcentajeBarra}%` }, className: 'bg-brand h-full rounded-full' })
+                      )
+                    ),
+                    e('td', { className: 'py-3 font-extrabold text-right text-sm text-gray-800' }, `${k.promedio} / 10`)
+                  );
+                })
+              )
+            )
+          )
+        ),
+
         e('div', { className: 'card p-6 bg-white' },
           e('h4', { className: 'text-sm font-bold text-gray-900 mb-4' }, 'Evolución Histórica de Tendencia CSAT (Líneas Comparativas)'),
           e(ChartLineaDobleCSAT, { datosAbono: histAbono, datosReunion: histReunion })
         ),
 
         e('div', { className: 'card p-6 bg-white' },
-          e('h4', { className: 'text-sm font-bold text-red-600 mb-3' }, 'Radar de Alertas Críticas · CSAT'),
+          e('h4', { className: 'text-sm font-bold text-red-600 mb-3' }, 'Radar de Alertas Críticas · CSAT (Notas ≤ 6)'),
           criticosCSAT.length === 0 ? e('p', { className: 'text-xs text-gray-400 py-4 text-center' }, 'No hay alertas de insatisfacción críticas en este bloque.') :
           e('div', { className: 'space-y-2' }, criticosCSAT.map((c, i) => 
             e('div', { key: i, className: 'p-3 rounded-lg border border-red-100 bg-red-50/5 flex justify-between text-xs' },
@@ -549,7 +607,7 @@ ${desgloseMetricas}
       );
     }
 
-    // --- ANÁLISIS DE CLIENTES INACTIVOS Y OFFBOARDING ---
+    // --- PESTAÑAS ADICIONALES ---
     function PlaceholderTab({ title, icon, dataRaw }) {
       return e('div', { className: 'card p-10 text-center text-gray-500 font-medium space-y-4 bg-white' },
         e('i', { className: `fa-solid ${icon} text-4xl text-brand block` }),
