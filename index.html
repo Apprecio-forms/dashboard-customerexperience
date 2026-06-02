@@ -295,11 +295,76 @@ Responde en español, de forma ejecutiva, directa y profesional.`;
 
       } catch (error) {
         console.error(error);
-        document.getElementById('modal-body').innerHTML = `
-          <div style="padding:20px; background:#FEF2F2; border:1px solid #EF4444/20; color:#EF4444; border-radius:12px; font-size:13px;">
-            <strong>⚠️ Error de conexión:</strong> No se pudo obtener el análisis automático. (Paso 3 del plan de respaldo listo para ser implementado).
+        
+        // Mensaje de advertencia sutil arriba indicando que se usa el motor local
+        let htmlFallback = `
+          <div style="margin-bottom:16px; padding:12px 16px; background:#FEF2F2; border:1px solid #FECACA; border-radius:12px; font-size:12px; color:#DC2626; font-weight:500;">
+            ⚠️ No se pudo conectar con el servidor de IA. Mostrando análisis condensado local del corte activo.
           </div>
         `;
+
+        // Si hay respuestas negativas, las inyectamos agrupadas con estilo rojo
+        if (neg.length > 0) {
+          htmlFallback += `
+            <div class="report-section">
+              <h3>🔴 Respuestas Críticas / Detractores (${neg.length})</h3>
+              <div class="report-group">
+                ${neg.map(r => `
+                  <div class="report-item negative">
+                    <strong>${r.empresa}</strong> · <span style="color:#EF4444; font-weight:700;">Nota: ${r.puntuacion}</span><br>
+                    <span style="font-style:italic; color:#4A5568;">"${r.comentario}"</span>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+          `;
+        }
+
+        // Si hay respuestas neutras, las inyectamos agrupadas con estilo amarillo
+        if (neu.length > 0) {
+          htmlFallback += `
+            <div class="report-section">
+              <h3>🟡 Respuestas Neutrales (${neu.length})</h3>
+              <div class="report-group">
+                ${neu.map(r => `
+                  <div class="report-item neutral">
+                    <strong>${r.empresa}</strong> · <span style="color:#D97706; font-weight:700;">Nota: ${r.puntuacion}</span><br>
+                    <span style="font-style:italic; color:#4A5568;">"${r.comentario}"</span>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+          `;
+        }
+
+        // Si hay respuestas positivas, las inyectamos agrupadas con estilo verde
+        if (pos.length > 0) {
+          htmlFallback += `
+            <div class="report-section">
+              <h3>🟢 Respuestas Destacadas / Promotores (${pos.length})</h3>
+              <div class="report-group">
+                ${pos.map(r => `
+                  <div class="report-item positive">
+                    <strong>${r.empresa}</strong> · <span style="color:#16A34A; font-weight:700;">Nota: ${r.puntuacion}</span><br>
+                    <span style="font-style:italic; color:#4A5568;">"${r.comentario}"</span>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+          `;
+        }
+
+        // Si por casualidad el filtro actual no tiene ningún comentario escrito
+        if (comentariosData.length === 0) {
+          htmlFallback += `
+            <div style="text-align:center; padding:40px; color:#9AA0B4; font-size:13px;">
+              No hay respuestas abiertas escritas disponibles para este corte en particular.
+            </div>
+          `;
+        }
+
+        // Inyectamos todo el HTML estructurado dentro del modal
+        document.getElementById('modal-body').innerHTML = htmlFallback;
       }
     };
 
