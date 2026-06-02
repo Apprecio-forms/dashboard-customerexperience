@@ -568,7 +568,7 @@ if (estadoRespondido !== 'RESPONDIDO') return false;
       const promExperiencia = calcularPromedio('puntuacionExperiencia');
       const promEjecutivo = calcularPromedio('puntuacionEjecutivo');
 
-      const cuentasConIntencion = datosFiltrados.filter(r => r.volveria && r.volveria.toLowerCase().includes('Si')).length;
+      const cuentasConIntencion = datosFiltrados.filter(r => r.volveria && r.volveria.includes('SI')).length;
       const pctRetorno = totalCuentasOff > 0 ? Math.round((cuentasConIntencion / totalCuentasOff) * 100) : 0;
 
       const conteoMotivos = {};
