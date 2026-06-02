@@ -268,7 +268,7 @@ Responde en español, de forma ejecutiva, directa y profesional.`;
 
       // 4. DISPARO DEL WEBHOOK: Enviamos todo el paquete estructurado a tu n8n
       try {
-        const respuestaN8N = await fetch("TU_URL_DE_WEBHOOK_N8N", {
+        const respuestaN8N = await fetch("https://n8n.openip.cl/webhook/apprecio-cx-analisis", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ 
