@@ -623,19 +623,30 @@ const valoresFallas = Object.values(conteoFallas);
           )
         ),
 
-        // Gráfico causas
-        e('div', { className: 'bg-white p-6 rounded-2xl border border-gray-100 shadow-sm' },
-          e('div', { className: 'text-xs font-bold uppercase tracking-wider text-gray-400 mb-1' }, 'Distribución de Causas'),
-          e('div', { className: 'text-sm font-extrabold text-gray-900 mb-4' }, '¿Principal motivo por el que decidiste dejar de trabajar con nosotros?'),
-          totalCuentasOff > 0 && listaMotivosLabels.length > 0 ? e(ChartHorizontalBars, { id: 'motivos-salida', dataLabels: listaMotivosLabels, dataValues: listaMotivosValores }) : e('div', { className: 'text-center py-10 text-xs text-gray-400' }, 'Sin registros válidos para este corte.')
+        // ── FILA CON LOS DOS CUADRANTES DE GRÁFICOS LADO A LADO ──
+        e('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-6 mb-6' },
+          
+          // Cuadrante 1: Principal motivo
+          e('div', { className: 'bg-white p-6 rounded-2xl border border-gray-100 shadow-sm' },
+            e('div', { className: 'text-xs font-bold uppercase tracking-wider text-gray-400 mb-1' }, 'Distribución de Causas'),
+            e('div', { className: 'text-sm font-extrabold text-gray-900 mb-4' }, '¿Principal motivo por el que decidiste dejar de trabajar con nosotros?'),
+            totalCuentasOff > 0 && listaMotivosLabels.length > 0 
+              ? e(ChartHorizontalBars, { id: 'motivos-salida', dataLabels: listaMotivosLabels, dataValues: listaMotivosValores }) 
+              : e('div', { className: 'text-center py-10 text-xs text-gray-400' }, 'Sin registros válidos para este corte.')
+          ),
+
+          // Cuadrante 2: Qué falló principalmente
+          e('div', { className: 'bg-white p-6 rounded-2xl border border-gray-100 shadow-sm' },
+            e('div', { className: 'text-xs font-bold uppercase tracking-wider text-gray-400 mb-1' }, 'Fallas Detectadas'),
+            e('div', { className: 'text-sm font-extrabold text-gray-900 mb-4' }, '¿Qué falló principalmente en tu experiencia?'),
+            totalCuentasOff > 0 && labelsFallas.length > 0 
+              ? e(ChartHorizontalBars, { id: 'fallas-experiencia', dataLabels: labelsFallas, dataValues: valoresFallas }) 
+              : e('div', { className: 'text-center py-10 text-xs text-gray-400' }, 'Sin registros de fallas.')
+          )
         ),
 
-        // Bloque de Preguntas Abiertas con Enlace IA
-        e('div', { className: 'grid grid-cols-1 md:grid-cols-3 gap-5' },
-          e('div', { className: 'bg-white p-5 rounded-2xl border border-gray-100 shadow-sm flex flex-col justify-between' },
-            e('div', null, e('div', { className: 'text-[10px] font-bold text-brand uppercase tracking-wider mb-1' }, 'Pregunta Abierta'), e('div', { className: 'text-xs font-extrabold text-gray-900 leading-tight' }, '¿Qué falló principalmente en tu experiencia?')),
-            e('button', { className: 'mt-4 w-full py-2 bg-brand text-white font-bold rounded-xl text-[11px] uppercase tracking-wide transition-transform active:scale-95', onClick: () => generarPDFResumenEjecutivo(datosFiltrados, 'OFF - Fallas de Experiencia (Col I)', `Corte ${filtroPais}`) }, '🔍 Analizar Fallas')
-          ),
+        // ── FILA CON LAS DOS PREGUNTAS ABIERTAS (SE ELIMINÓ LA PRIMERA DE LA "X") ──
+        e('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-6 mb-6' },
           e('div', { className: 'bg-white p-5 rounded-2xl border border-gray-100 shadow-sm flex flex-col justify-between' },
             e('div', null, e('div', { className: 'text-[10px] font-bold text-brand uppercase tracking-wider mb-1' }, 'Pregunta Abierta'), e('div', { className: 'text-xs font-extrabold text-gray-900 leading-tight' }, '¿Qué podríamos haber hecho diferente para que te quedaras?')),
             e('button', { className: 'mt-4 w-full py-2 bg-brand text-white font-bold rounded-xl text-[11px] uppercase tracking-wide transition-transform active:scale-95', onClick: () => generarPDFResumenEjecutivo(datosFiltrados, 'OFF - Estrategias de Retención (Col L)', `Corte ${filtroPais}`) }, '🔍 Analizar Retención')
