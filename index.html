@@ -979,7 +979,7 @@ if (estadoRespondido !== 'RESPONDIDO') return false;
                   puntuacionFalla: obj.puntuacionFalla || obj["queFallo"] || obj["Qué falló"] || "",
                   puntuacionExperiencia: obj.experiencia || "",
 puntuacionEjecutivo: obj.notaKam || "",
-                  volveria: obj.volveria || obj["volveriasATrabajar"] || obj["¿Volverías a trabajar con nosotros?"] || "",
+                  volveria: obj.volveria ? String(obj.volveria).toUpperCase().replace('Í', 'I').trim() : "",
                   estado: obj.estado || obj["estadoDeEncuesta"] || obj["Estado de encuesta"] || obj["estado"] || "",
                   fecha: obj.fecha || obj["fechaDeRespuesta"] || obj["Fecha de respuesta"] || null
                 })) : [],
