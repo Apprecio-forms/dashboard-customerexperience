@@ -536,8 +536,8 @@ Responde en español, de forma ejecutiva, directa y profesional.`;
       
       const datosFiltrados = datosSalidas.filter(r => {
         // Regla 1: Solo registros confirmados con "Respondido" en la columna O
-        const estadoRespondido = r.estado ? r.estado.toLowerCase().trim() : '';
-        if (estadoRespondido !== 'respondido') return false;
+        const estadoRespondido = r.estado ? r.estado.toUpperCase().trim() : '';
+if (estadoRespondido !== 'RESPONDIDO') return false;
 
         // Regla 2: Filtro de País con tolerancia ortográfica
         const paisNormalizado = r.pais === 'Peru' ? 'Perú' : r.pais;
