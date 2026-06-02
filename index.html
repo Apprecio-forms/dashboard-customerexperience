@@ -266,29 +266,32 @@ TAREA: Basándote EXCLUSIVAMENTE en los comentarios reales anteriores:
 
 Responde en español, de forma ejecutiva, directa y profesional.`;
 
-      // 4. DISPARO DEL WEBHOOK: Enviamos todo el paquete estructurado a tu n8n
+     // 4. DISPARO DEL WEBHOOK: Enviamos todo el paquete estructurado a tu n8n
       try {
-        const respuestaN8N = await fetch("https://n8n.openip.cl/webhook/apprecio-cx-analisis", {
+        const respuestaN8N = await fetch("TU_URL_DE_WEBHOOK_N8N", { // <-- Pon aquí tu URL real de n8n
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ 
             modulo: modulo,
-            corte: especificacion,
-            prompt: promptContextual,
-            total_encuestas: comentariosData.length,
-            score: scoreActual
+            tipo: "REPORTE_RESPUESTAS_ABIERTAS",
+            datos: {
+              instrucciones: promptContextual // <-- Esto activa el BYPASS de tu n8n automáticamente
+            }
           })
         });
 
         if (!respuestaN8N.ok) throw new Error("Error en la respuesta del servidor de IA");
 
         const datos = await respuestaN8N.json();
-        const textoResumenIA = datos.resumen || datos.respuesta || "No se recibió una respuesta válida de la IA.";
+        
+        // Adaptamos la lectura de la respuesta según lo que devuelva tu nodo final de n8n
+        // Buscamos text, resumen, respuesta o promptFinal
+        const textoResumenIA = datos.output || datos.text || datos.resumen || datos.respuesta || datos.promptFinal || "No se recibió una respuesta válida de la IA.";
 
         // Inyectamos el texto de la IA en el cuerpo del modal de forma limpia
         document.getElementById('modal-body').innerHTML = `
           <div style="margin-bottom:20px; padding:16px; background:#FFF0F3; border:1px solid #FFF0F3; border-radius:12px;">
-            <div style="font-size:11px; font-weight:800; text-transform:uppercase; color:#FA345E; margin-bottom:8px; tracking-wider">Análisis Sintetizado por IA</div>
+            <div style="font-size:11px; font-weight:800; text-transform:uppercase; color:#FA345E; margin-bottom:8px; letter-spacing: 0.05em;">Análisis Sintetizado por IA</div>
             <div style="font-size:13px; line-height:1.6; color:#1F2937; white-space:pre-wrap;">${textoResumenIA}</div>
           </div>
         `;
