@@ -41,7 +41,7 @@
     .tooltip-box { display: none; position: absolute; z-index: 50; width: 280px; background: #111827; color: #ffffff; padding: 12px; border-radius: 12px; font-size: 11px; box-shadow: 0 10px 25px rgba(0,0,0,0.15); line-height: 1.4; }
     .tooltip-container:hover .tooltip-box { display: block; }
 
-    /* ── MODAL REPORTE PDF (MEJORA AGREGADA) ── */
+    /* ── MODAL REPORTE PDF ── */
     .modal-overlay {
       display: none; 
       position: fixed; 
@@ -148,20 +148,6 @@
       border-left: 3px solid #10B981; 
       background: #F0FDF4;
     }
-    .action-item {
-      padding: 12px 16px; 
-      border-radius: 8px; 
-      border: 1px solid #FFF0F3; 
-      background: #FFF0F3; 
-      font-size: 13px; 
-      line-height: 1.6; 
-      color: #111827;
-    }
-    .action-item::before {
-      content: '→ '; 
-      color: #FA345E; 
-      font-weight: 700;
-    }
     .spinner-dark {
       display: inline-block; 
       width: 13px; 
@@ -204,10 +190,8 @@
       URL_API_BACKEND: "https://script.google.com/macros/s/AKfycbx3TEMFdxbYGKZFhF5GSZstiiV6vivCCbLq9L7A2iq5oq6DgrVyM6Q3a5Wd_JLAhbT1Wg/exec"
     };
 
-    // --- ENTRADA DE GENERACIÓN DE REPORTE COMPILADO EN PDF ---
-// --- NUEVO MOTOR DE PROCESAMIENTO Y CONFIGURACIÓN DEL MODAL CON IA ---
+    // --- MOTOR DE PROCESAMIENTO Y CONFIGURACIÓN DEL MODAL CON IA ---
     const generarPDFResumenEjecutivo = async (datosFiltrados, modulo, especificacion) => {
-      // 1. Abrimos el modal de inmediato y le ponemos el estado de "Cargando..."
       document.getElementById('modal-title').textContent = `Reporte de Respuestas Abiertas · ${modulo}`;
       document.getElementById('modal-body').innerHTML = `
         <div style="text-align:center; padding:40px; color:#6B7280;">
@@ -216,12 +200,9 @@
       `;
       openModal();
 
-      // 2. PRE-PROCESAMIENTO: Clasificamos las respuestas abiertas del filtro actual
-      // Mapeamos los datos para estandarizar las columnas que vengan de tu Apps Script
       const comentariosData = datosFiltrados.map(r => {
         const notaColG = parseFloat(r.puntuacion);
         const notaColH = parseFloat(r.pregunta2);
-        // Si el módulo es P2 usamos la nota de la pregunta 2, si no, la de puntuación principal
         const notaFinal = modulo.includes('P2') ? notaColH : notaColG;
 
         return {
@@ -230,17 +211,14 @@
           puntuacion: !isNaN(notaFinal) ? notaFinal : 10,
           comentario: r.razon || r.comentario || ''
         };
-      }).filter(r => r.comentario.trim() !== ''); // Solo tomamos los que tengan comentarios escritos
+      }).filter(r => r.comentario.trim() !== '');
 
-      // Separamos en Positivos, Neutros y Negativos según las notas reales
       const neg = comentariosData.filter(r => r.puntuacion <= 6);
       const neu = comentariosData.filter(r => r.puntuacion >= 7 && r.puntuacion <= 8);
       const pos = comentariosData.filter(r => r.puntuacion >= 9);
       
-      // Calculamos el score neto de este corte específico
       const scoreActual = comentariosData.length ? Math.round(((pos.length - neg.length) / comentariosData.length) * 100) : 0;
 
-      // 3. INGENIERÍA DE PROMPTS: Creamos el contexto exacto para Ollama / IA
       const resumenComentarios = (arr, tipo) => {
         if (!arr.length) return `No hay comentarios ${tipo.toLowerCase()}s en este corte.\n`;
         return `\n[COMENTARIOS ${tipo}S - ${arr.length} casos]:\n` + 
@@ -266,32 +244,26 @@ TAREA: Basándote EXCLUSIVAMENTE en los comentarios reales anteriores:
 
 Responde en español, de forma ejecutiva, directa y profesional.`;
 
-     // 4. DISPARO DEL WEBHOOK: Enviamos todo el paquete estructurado a tu n8n
       try {
-        const respuestaN8N = await fetch("https://n8n.openip.cl/webhook/apprecio-cx-analisis-v2", { // <-- Aquí ya debes tener tu URL real
+        const respuestaN8N = await fetch("https://n8n.openip.cl/webhook/apprecio-cx-analisis-v2", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ 
             modulo: modulo,
             tipo: "REPORTE_RESPUESTAS_ABIERTAS",
-            datos: {
-              instrucciones: promptContextual // Activa el bypass de tu nodo "Preparar Prompt CX"
-            }
+            datos: { instrucciones: promptContextual }
           })
         });
 
         if (!respuestaN8N.ok) throw new Error("Error en la respuesta del servidor de IA");
 
         const datos = await respuestaN8N.json();
-        
-        // Mapeo exacto con el "Response Body" de tu n8n (lee la propiedad .respuesta)
         const textoResumenIA = datos.respuesta || "No se recibió una respuesta válida de la IA.";
 
-        // Inyectamos el texto estructurado de la IA de forma limpia y elegante
         document.getElementById('modal-body').innerHTML = `
           <div style="margin-bottom:20px; padding:26px; background:#FFFBFB; border:1px solid rgba(250,52,94,0.15); border-radius:14px; box-shadow: 0 4px 12px rgba(0,0,0,0.02);">
             <div style="font-size:11px; font-weight:800; text-transform:uppercase; color:#FA345E; margin-bottom:12px; letter-spacing: 0.08em; display:flex; align-items:center; gap:6px;">
-              <span style="display:inline-block; width:8px; height:8px; background:#FA345E; border-radius:50%; animate: pulse 2s infinite;"></span>
+              <span style="display:inline-block; width:8px; height:8px; background:#FA345E; border-radius:50%;"></span>
               Análisis Sintetizado por Inteligencia Artificial
             </div>
             <div style="font-size:13.5px; line-height:1.7; color:#2D3748; white-space:pre-wrap; font-weight: 500;">${textoResumenIA}</div>
@@ -300,15 +272,12 @@ Responde en español, de forma ejecutiva, directa y profesional.`;
 
       } catch (error) {
         console.error(error);
-        
-        // Mensaje de advertencia sutil arriba indicando que se usa el motor local
         let htmlFallback = `
           <div style="margin-bottom:16px; padding:12px 16px; background:#FEF2F2; border:1px solid #FECACA; border-radius:12px; font-size:12px; color:#DC2626; font-weight:500;">
             ⚠️ No se pudo conectar con el servidor de IA. Mostrando análisis condensado local del corte activo.
           </div>
         `;
 
-        // Si hay respuestas negativas, las inyectamos agrupadas con estilo rojo
         if (neg.length > 0) {
           htmlFallback += `
             <div class="report-section">
@@ -325,7 +294,6 @@ Responde en español, de forma ejecutiva, directa y profesional.`;
           `;
         }
 
-        // Si hay respuestas neutras, las inyectamos agrupadas con estilo amarillo
         if (neu.length > 0) {
           htmlFallback += `
             <div class="report-section">
@@ -342,7 +310,6 @@ Responde en español, de forma ejecutiva, directa y profesional.`;
           `;
         }
 
-        // Si hay respuestas positivas, las inyectamos agrupadas con estilo verde
         if (pos.length > 0) {
           htmlFallback += `
             <div class="report-section">
@@ -359,7 +326,6 @@ Responde en español, de forma ejecutiva, directa y profesional.`;
           `;
         }
 
-        // Si por casualidad el filtro actual no tiene ningún comentario escrito
         if (comentariosData.length === 0) {
           htmlFallback += `
             <div style="text-align:center; padding:40px; color:#9AA0B4; font-size:13px;">
@@ -367,13 +333,10 @@ Responde en español, de forma ejecutiva, directa y profesional.`;
             </div>
           `;
         }
-
-        // Inyectamos todo el HTML estructurado dentro del modal
         document.getElementById('modal-body').innerHTML = htmlFallback;
       }
     };
 
-    // --- GRÁFICO DONUT ---
     // --- GRÁFICO DONUT (VERSION MODERNIZADA Y ESTILIZADA) ---
     function ChartDonut({ id, promotores, neutrales, detractores, score, labelCenter }) {
       const canvasRef = useRef(null);
@@ -390,18 +353,17 @@ Responde en español, de forma ejecutiva, directa y profesional.`;
             labels: ['Alto / Promotores', 'Medio / Neutrales', 'Bajo / Detractores'],
             datasets: [{
               data: [promotores, neutrales, detractores],
-              // Paleta Apprecio refinada con colores vivos
               backgroundColor: ['#22C55E', '#F59E0B', '#FA345E'],
               hoverBackgroundColor: ['#16A34A', '#D97706', '#D61F47'],
-              borderWidth: 0, // Quitamos el borde blanco grueso original
-              spacing: 2,     // Agrega un sutil espacio/gap estético entre segmentos
+              borderWidth: 0,
+              spacing: 2, 
               hoverOffset: 4
             }]
           },
           options: {
             responsive: true,
             maintainAspectRatio: false,
-            cutout: '76%', // Anillo más delgado y estilizado que el original
+            cutout: '76%',
             plugins: { legend: { display: false }, tooltip: { enabled: true } }
           },
           plugins: [{
@@ -529,11 +491,8 @@ Responde en español, de forma ejecutiva, directa y profesional.`;
 
       return e('div', { className: 'w-full h-[240px]' }, e('canvas', { ref: canvasRef }));
     }
-// =================================================================
-    // ── NUEVOS COMPONENTES ADAPTADOS PARA LA HOJA "SALIDAS / OFF" ──
-    // =================================================================
 
-    // A. GRÁFICO DE BARRAS HORIZONTALES PARA MOTIVOS DE SALIDA (COLUMNA H)
+    // ── NUEVOS COMPONENTES ADAPTADOS PARA LA HOJA "SALIDAS / OFF" ──
     function ChartHorizontalBars({ id, dataLabels, dataValues }) {
       const canvasRef = useRef(null);
       const chartRef = useRef(null);
@@ -572,15 +531,10 @@ Responde en español, de forma ejecutiva, directa y profesional.`;
       return e('div', { className: 'relative w-full h-[220px]' }, e('canvas', { ref: canvasRef }));
     }
 
-    // B. COMPONENTE PRINCIPAL: INTERFAZ EJECUTIVA SALIDAS / OFF
     function RenderSalidasOff({ datosSalidas, filtroPais, setFiltroPais, filtroAnio, setFiltroAnio, filtroMes, setFiltroMes }) {
-      
-      // 1. FILTRADO MULTIDIMENSIONAL EN VIVO
       const datosFiltrados = datosSalidas.filter(r => {
-        // Filtro de País (Columna B)
         if (filtroPais !== 'Todos' && r.pais !== filtroPais) return false;
         
-        // Filtro de Tiempo (Procesando la Fecha de la Columna P)
         const fechaObj = r.fecha ? new Date(r.fecha) : null;
         if (fechaObj && !isNaN(fechaObj.getTime())) {
           const anioStr = fechaObj.getFullYear().toString();
@@ -601,14 +555,12 @@ Responde en español, de forma ejecutiva, directa y profesional.`;
         return validos.length ? (validos.reduce((a, b) => a + b, 0) / validos.length).toFixed(1) : '—';
       };
       
-      const promExperiencia = calcularPromedio('puntuacionExperiencia'); // Columna J
-      const promEjecutivo = calcularPromedio('puntuacionEjecutivo');     // Columna K
+      const promExperiencia = calcularPromedio('puntuacionExperiencia');
+      const promEjecutivo = calcularPromedio('puntuacionEjecutivo');
 
-      // 2. CÁLCULO DEL % DE INTENCIÓN DE RETORNO (COLUMNA N)
       const cuentasConIntencion = datosFiltrados.filter(r => r.volveria && r.volveria.toLowerCase().includes('sí')).length;
       const pctRetorno = totalCuentasOff > 0 ? Math.round((cuentasConIntencion / totalCuentasOff) * 100) : 0;
 
-      // 3. CONTEO DE OPCIONES MÚLTIPLES (MOTIVOS DE SALIDA - COLUMNA H)
       const conteoMotivos = {};
       datosFiltrados.forEach(r => {
         if (r.motivoSalida) {
@@ -623,131 +575,68 @@ Responde en español, de forma ejecutiva, directa y profesional.`;
       const listaMotivosValores = Object.values(conteoMotivos);
 
       return e('div', { className: 'space-y-6 animate-fade-in' },
-        
-        // ── BARRA DE FILTROS AVANZADOS ──
         e('div', { className: 'bg-white p-4 rounded-2xl border border-gray-100 flex flex-wrap gap-4 items-center justify-between shadow-sm' },
           e('div', { className: 'text-sm font-bold text-gray-800' }, 'Filtros de Auditoría Churn (Col B / Col P)'),
           e('div', { className: 'flex gap-3' },
-            e('select', { 
-              className: 'p-2 bg-gray-50 border border-gray-200 rounded-xl text-xs font-semibold text-gray-700 outline-none',
-              value: filtroPais, onChange: (e) => setFiltroPais(e.target.value)
-            }, ['Todos', 'Chile', 'Perú', 'Colombia', 'Ecuador'].map(p => e('option', { value: p }, p))),
-            e('select', { 
-              className: 'p-2 bg-gray-50 border border-gray-200 rounded-xl text-xs font-semibold text-gray-700 outline-none',
-              value: filtroAnio, onChange: (e) => setFiltroAnio(e.target.value)
-            }, ['Todos', '2025', '2026'].map(a => e('option', { value: a }, `Año ${a}`))),
-            e('select', { 
-              className: 'p-2 bg-gray-50 border border-gray-200 rounded-xl text-xs font-semibold text-gray-700 outline-none',
-              value: filtroMes, onChange: (e) => setFiltroMes(e.target.value)
-            }, [
-              { v: 'Todos', l: 'Todos los Meses' }, { v: '1', l: 'Enero' }, { v: '2', l: 'Febrero' },
-              { v: '3', l: 'Marzo' }, { v: '4', l: 'Abril' }, { v: '5', l: 'Mayo' }, { v: '6', l: 'Junio' },
-              { v: '7', l: 'Julio' }, { v: '8', l: 'Agosto' }, { v: '9', l: 'Septiembre' },
-              { v: '10', l: 'Octubre' }, { v: '11', l: 'Noviembre' }, { v: '12', l: 'Diciembre' }
+            e('select', { className: 'p-2 bg-gray-50 border border-gray-200 rounded-xl text-xs font-semibold text-gray-700 outline-none', value: filtroPais, onChange: (e) => setFiltroPais(e.target.value) }, ['Todos', 'Chile', 'Perú', 'Colombia', 'Ecuador'].map(p => e('option', { value: p }, p))),
+            e('select', { className: 'p-2 bg-gray-50 border border-gray-200 rounded-xl text-xs font-semibold text-gray-700 outline-none', value: filtroAnio, onChange: (e) => setFiltroAnio(e.target.value) }, ['Todos', '2025', '2026'].map(a => e('option', { value: a }, `Año ${a}`))),
+            e('select', { className: 'p-2 bg-gray-50 border border-gray-200 rounded-xl text-xs font-semibold text-gray-700 outline-none', value: filtroMes, onChange: (e) => setFiltroMes(e.target.value) }, [
+              { v: 'Todos', l: 'Todos los Meses' }, { v: '1', l: 'Enero' }, { v: '2', l: 'Febrero' }, { v: '3', l: 'Marzo' }, { v: '4', l: 'Abril' }, { v: '5', l: 'Mayo' }, { v: '6', l: 'Junio' }, { v: '7', l: 'Julio' }, { v: '8', l: 'Agosto' }, { v: '9', l: 'Septiembre' }, { v: '10', l: 'Octubre' }, { v: '11', l: 'Noviembre' }, { v: '12', l: 'Diciembre' }
             ].map(m => e('option', { value: m.v }, m.l)))
           )
         ),
 
-        // ── TARJETAS DE KPIs CUANTITATIVOS ──
         e('div', { className: 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5' },
-          e('div', { className: 'bg-white p-5 rounded-2xl border border-gray-100 shadow-sm' },
-            e('div', { className: 'text-[11px] font-bold text-gray-400 uppercase tracking-wider' }, 'Total Cuentas Off'),
-            e('div', { className: 'text-2xl font-extrabold text-gray-900 mt-1' }, totalCuentasOff)
-          ),
-          e('div', { className: 'bg-white p-5 rounded-2xl border border-gray-100 shadow-sm' },
-            e('div', { className: 'text-[11px] font-bold text-gray-400 uppercase tracking-wider' }, 'Nota Experiencia (Col J)'),
-            e('div', { className: 'text-2xl font-extrabold mt-1 text-brand' }, promExperiencia)
-          ),
-          e('div', { className: 'bg-white p-5 rounded-2xl border border-gray-100 shadow-sm' },
-            e('div', { className: 'text-[11px] font-bold text-gray-400 uppercase tracking-wider' }, 'Nota Ejecutivo (Col K)'),
-            e('div', { className: 'text-2xl font-extrabold text-gray-900 mt-1' }, promEjecutivo)
-          ),
-          e('div', { className: 'bg-white p-5 rounded-2xl border border-gray-100 shadow-sm' },
-            e('div', { className: 'text-[11px] font-bold text-gray-400 uppercase tracking-wider' }, 'Intención de Retorno (Col N)'),
-            e('div', { className: 'text-2xl font-extrabold text-green-600 mt-1' }, totalCuentasOff > 0 ? `${pctRetorno}%` : '—'),
-            e('div', { className: 'text-[9px] text-gray-400 mt-0.5' }, 'Marcaron "Sí" volverían')
-          )
+          e('div', { className: 'bg-white p-5 rounded-2xl border border-gray-100 shadow-sm' }, e('div', { className: 'text-[11px] font-bold text-gray-400 uppercase tracking-wider' }, 'Total Cuentas Off'), e('div', { className: 'text-2xl font-extrabold text-gray-900 mt-1' }, totalCuentasOff)),
+          e('div', { className: 'bg-white p-5 rounded-2xl border border-gray-100 shadow-sm' }, e('div', { className: 'text-[11px] font-bold text-gray-400 uppercase tracking-wider' }, 'Nota Experiencia (Col J)'), e('div', { className: 'text-2xl font-extrabold mt-1 text-brand' }, promExperiencia)),
+          e('div', { className: 'bg-white p-5 rounded-2xl border border-gray-100 shadow-sm' }, e('div', { className: 'text-[11px] font-bold text-gray-400 uppercase tracking-wider' }, 'Nota Ejecutivo (Col K)'), e('div', { className: 'text-2xl font-extrabold text-gray-900 mt-1' }, promEjecutivo)),
+          e('div', { className: 'bg-white p-5 rounded-2xl border border-gray-100 shadow-sm' }, e('div', { className: 'text-[11px] font-bold text-gray-400 uppercase tracking-wider' }, 'Intención de Retorno (Col N)'), e('div', { className: 'text-2xl font-extrabold text-green-600 mt-1' }, totalCuentasOff > 0 ? `${pctRetorno}%` : '—'), e('div', { className: 'text-[9px] text-gray-400 mt-0.5' }, 'Marcaron "Sí" volverían'))
         ),
 
-        // ── GRÁFICO HORIZONTAL DE CAUSAS MULTIPLE CHOICE ──
         e('div', { className: 'bg-white p-6 rounded-2xl border border-gray-100 shadow-sm' },
           e('div', { className: 'text-xs font-bold uppercase tracking-wider text-gray-400 mb-1' }, 'Distribución de Causas (Col H)'),
           e('div', { className: 'text-sm font-extrabold text-gray-900 mb-4' }, '¿Principal motivo por el que decidiste dejar de trabajar con nosotros?'),
-          totalCuentasOff > 0 && listaMotivosLabels.length > 0
-            ? e(ChartHorizontalBars, { id: 'motivos-salida', dataLabels: listaMotivosLabels, dataValues: listaMotivosValores })
-            : e('div', { className: 'text-center py-10 text-xs text-gray-400' }, 'Sin registros para este corte.')
+          totalCuentasOff > 0 && listaMotivosLabels.length > 0 ? e(ChartHorizontalBars, { id: 'motivos-salida', dataLabels: listaMotivosLabels, dataValues: listaMotivosValores }) : e('div', { className: 'text-center py-10 text-xs text-gray-400' }, 'Sin registros para este corte.')
         ),
 
-        // ── SECCIÓN DE PREGUNTAS ABIERTAS CON BOTONES INDEPENDIENTES DE IA ──
         e('div', { className: 'grid grid-cols-1 md:grid-cols-3 gap-5' },
-          
           e('div', { className: 'bg-white p-5 rounded-2xl border border-gray-100 shadow-sm flex flex-col justify-between' },
-            e('div', null,
-              e('div', { className: 'text-[10px] font-bold text-brand uppercase tracking-wider mb-1' }, 'Pregunta Abierta · Columna I'),
-              e('div', { className: 'text-xs font-extrabold text-gray-900 leading-tight' }, '¿Qué falló principalmente en tu experiencia?')
-            ),
-            e('button', { 
-              className: 'mt-4 w-full py-2 bg-brand text-white font-bold rounded-xl text-[11px] uppercase tracking-wide transition-transform active:scale-95',
-              onClick: () => generarPDFResumenEjecutivo(datosFiltrados, 'OFF - Fallas de Experiencia (Col I)', `Corte ${filtroPais}`)
-            }, '🔍 Analizar Fallas')
+            e('div', null, e('div', { className: 'text-[10px] font-bold text-brand uppercase tracking-wider mb-1' }, 'Pregunta Abierta · Columna I'), e('div', { className: 'text-xs font-extrabold text-gray-900 leading-tight' }, '¿Qué falló principalmente en tu experiencia?')),
+            e('button', { className: 'mt-4 w-full py-2 bg-brand text-white font-bold rounded-xl text-[11px] uppercase tracking-wide transition-transform active:scale-95', onClick: () => generarPDFResumenEjecutivo(datosFiltrados, 'OFF - Fallas de Experiencia (Col I)', `Corte ${filtroPais}`) }, '🔍 Analizar Fallas')
           ),
-
           e('div', { className: 'bg-white p-5 rounded-2xl border border-gray-100 shadow-sm flex flex-col justify-between' },
-            e('div', null,
-              e('div', { className: 'text-[10px] font-bold text-brand uppercase tracking-wider mb-1' }, 'Pregunta Abierta · Columna L'),
-              e('div', { className: 'text-xs font-extrabold text-gray-900 leading-tight' }, '¿Qué podríamos haber hecho diferente para que te quedaras?')
-            ),
-            e('button', { 
-              className: 'mt-4 w-full py-2 bg-brand text-white font-bold rounded-xl text-[11px] uppercase tracking-wide transition-transform active:scale-95',
-              onClick: () => generarPDFResumenEjecutivo(datosFiltrados, 'OFF - Estrategias de Retención (Col L)', `Corte ${filtroPais}`)
-            }, '🔍 Analizar Retención')
+            e('div', null, e('div', { className: 'text-[10px] font-bold text-brand uppercase tracking-wider mb-1' }, 'Pregunta Abierta · Columna L'), e('div', { className: 'text-xs font-extrabold text-gray-900 leading-tight' }, '¿Qué podríamos haber hecho diferente para que te quedaras?')),
+            e('button', { className: 'mt-4 w-full py-2 bg-brand text-white font-bold rounded-xl text-[11px] uppercase tracking-wide transition-transform active:scale-95', onClick: () => generarPDFResumenEjecutivo(datosFiltrados, 'OFF - Estrategias de Retención (Col L)', `Corte ${filtroPais}`) }, '🔍 Analizar Retención')
           ),
-
           e('div', { className: 'bg-white p-5 rounded-2xl border border-gray-100 shadow-sm flex flex-col justify-between' },
-            e('div', null,
-              e('div', { className: 'text-[10px] font-bold text-brand uppercase tracking-wider mb-1' }, 'Pregunta Abierta · Columna M'),
-              e('div', { className: 'text-xs font-extrabold text-gray-900 leading-tight' }, '¿Hay algo adicional que quieras compartir sobre tu experiencia?')
-            ),
-            e('button', { 
-              className: 'mt-4 w-full py-2 bg-brand text-white font-bold rounded-xl text-[11px] uppercase tracking-wide transition-transform active:scale-95',
-              onClick: () => generarPDFResumenEjecutivo(datosFiltrados, 'OFF - Comentarios Adicionales (Col M)', `Corte ${filtroPais}`)
-            }, '🔍 Analizar Adicionales')
+            e('div', null, e('div', { className: 'text-[10px] font-bold text-brand uppercase tracking-wider mb-1' }, 'Pregunta Abierta · Columna M'), e('div', { className: 'text-xs font-extrabold text-gray-900 leading-tight' }, '¿Hay algo adicional que quieras compartir sobre tu experiencia?')),
+            e('button', { className: 'mt-4 w-full py-2 bg-brand text-white font-bold rounded-xl text-[11px] uppercase tracking-wide transition-transform active:scale-95', onClick: () => generarPDFResumenEjecutivo(datosFiltrados, 'OFF - Comentarios Adicionales (Col M)', `Corte ${filtroPais}`) }, '🔍 Analizar Adicionales')
           )
         ),
 
-        // ── CRONOLOGÍA DE PROGRAMAS QUE SALIERON ──
         e('div', { className: 'bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden' },
           e('div', { className: 'p-5 border-b border-gray-50 bg-gray-50/50 flex justify-between items-center' },
-            e('div', null,
-              e('div', { className: 'text-sm font-extrabold text-gray-900' }, 'Programas que Salieron'),
-              e('div', { className: 'text-[11px] text-gray-400 mt-0.5' }, 'Control cronológico indexado de desvinculaciones')
-            ),
+            e('div', null, e('div', { className: 'text-sm font-extrabold text-gray-900' }, 'Programas que Salieron'), e('div', { className: 'text-[11px] text-gray-400 mt-0.5' }, 'Control cronológico indexado de desvinculaciones')),
             e('span', { className: 'px-2.5 py-1 bg-gray-100 text-gray-600 rounded-full text-[10px] font-bold' }, `${totalCuentasOff} Programas`)
           ),
           e('div', { className: 'overflow-x-auto' },
             e('table', { className: 'w-full text-left border-collapse' },
               e('thead', { className: 'bg-gray-50 text-[11px] font-bold text-gray-400 uppercase tracking-wider border-b border-gray-100' },
-                e('tr', null,
-                  e('th', { className: 'p-4 pl-6' }, 'Fecha Salida (Col P)'),
-                  e('th', { className: 'p-4' }, 'Nombre del Programa (Col C)'),
-                  e('th', { className: 'p-4 pr-6' }, 'Correo de Contacto (Col E)')
-                )
+                e('tr', null, e('th', { className: 'p-4 pl-6' }, 'Fecha Salida (Col P)'), e('th', { className: 'p-4' }, 'Nombre del Programa (Col C)'), e('th', { className: 'p-4 pr-6' }, 'Correo de Contacto (Col E)'))
               ),
               e('tbody', { className: 'divide-y divide-gray-50 text-xs text-gray-700' },
-                totalCuentasOff > 0 
-                  ? datosFiltrados.map((r, index) => e('tr', { key: index, className: 'hover:bg-gray-50/80 transition-colors' },
-                      e('td', { className: 'p-4 pl-6 font-medium text-gray-500' }, r.fecha ? new Date(r.fecha).toLocaleDateString('es-CL') : '—'),
-                      e('td', { className: 'p-4 font-bold text-gray-900' }, r.programa || '—'),
-                      e('td', { className: 'p-4 text-gray-600 font-mono' }, r.correo || '—')
-                    ))
-                  : e('tr', null, e('td', { colSpan: 3, className: 'p-8 text-center text-gray-400 italic' }, 'No hay desvinculaciones registradas para este corte.'))
+                totalCuentasOff > 0 ? datosFiltrados.map((r, index) => e('tr', { key: index, className: 'hover:bg-gray-50/80 transition-colors' },
+                  e('td', { className: 'p-4 pl-6 font-medium text-gray-500' }, r.fecha ? new Date(r.fecha).toLocaleDateString('es-CL') : '—'),
+                  e('td', { className: 'p-4 font-bold text-gray-900' }, r.programa || '—'),
+                  e('td', { className: 'p-4 text-gray-600 font-mono' }, r.correo || '—')
+                )) : e('tr', null, e('td', { colSpan: 3, className: 'p-8 text-center text-gray-400 italic' }, 'No hay desvinculaciones registradas para este corte.'))
               )
             )
           )
         )
-
       );
     }
+
     // --- RECUADRO ESPEJO DE CONTROL OPERATIVO ---
     function BloquePreguntaEspejo({ id, tituloCompleto, totalRespuestas, promotores, neutrales, detractores, score, promedio, totalPromotores, porcentajePromotores, listaPaises, listaMeses, filtroPais, setFiltroPais, filtroMes, setFiltroMes, textoBoton, labelScoreCenter, onExportar }) {
       return e('div', { className: 'card p-6 flex flex-col md:flex-row gap-6 bg-white' },
@@ -810,7 +699,6 @@ Responde en español, de forma ejecutiva, directa y profesional.`;
       const [p2Pais, setP2Pais] = useState('Todos'); const [p2Mes, setP2Mes] = useState('Todos');
       const [histPais, setHistPais] = useState('Todos'); const [histAnio, setHistAnio] = useState('2026');
 
-      // Preguntas dinámicas resueltas según el mes (Iteración 2)
       const getPregunta1Dinamica = (mesSeleccionado) => {
         if(mesSeleccionado === 'Mayo' || mesSeleccionado === 'Todos') return "Pregunta 1: En una escala del 1 al 10, ¿Qué tanto recomiendas nuestra aplicación Apprecio?";
         return metaHeaders.puntuacion || "Pregunta 1: Recommendation de Marca (NPS)";
@@ -925,7 +813,6 @@ Responde en español, de forma ejecutiva, directa y profesional.`;
       const listPaises = ['Todos', 'Colombia', 'México', 'Chile', 'Perú', 'Ecuador'];
       const listMeses = ['Todos', 'Mayo', 'Junio', 'Julio', 'Agosto'];
 
-      // CSAT 1 (Abonos) - Computado sobre tus 21 respuestas reales
       const c1Filtrados = useMemo(() => abonoRaw.filter(r => (c1Pais === 'Todos' || r.pais === c1Pais) && (c1Mes === 'Todos' || r.mes === c1Mes)), [abonoRaw, c1Pais, c1Mes]);
       const m1 = useMemo(() => {
         const total = c1Filtrados.length; if (total === 0) return { total: 0, p: 0, n: 0, d: 0, score: 0, avg: '—', pPorc: 0 };
@@ -937,7 +824,6 @@ Responde en español, de forma ejecutiva, directa y profesional.`;
         return { total, p: alto, n: medio, d: bajo, score: Math.round((alto/total)*100), avg: (suma/total).toFixed(1), pPorc: ((alto/total)*100).toFixed(0) };
       }, [c1Filtrados]);
 
-      // CSAT 2 (Reuniones)
       const c2Filtrados = useMemo(() => reunionRaw.filter(r => (c2Pais === 'Todos' || r.pais === c2Pais) && (c2Mes === 'Todos' || r.mes === c2Mes)), [reunionRaw, c2Pais, c2Mes]);
       const m2 = useMemo(() => {
         const total = c2Filtrados.length; if (total === 0) return { total: 0, p: 0, n: 0, d: 0, score: 0, avg: '—', pPorc: 0 };
@@ -949,7 +835,6 @@ Responde en español, de forma ejecutiva, directa y profesional.`;
         return { total, p: alto, n: medio, d: bajo, score: Math.round((alto/total)*100), avg: (suma/total).toFixed(1), pPorc: ((alto/total)*100).toFixed(0) };
       }, [c2Filtrados]);
 
-      // Históricos unificados
       const histAbono = useMemo(() => {
         const qs = {}; abonoRaw.forEach(r => { if(r.mes) { const q = r.mes === 'Mayo'?'Q2':'Q3'; if(!qs[q]) qs[q]=[]; qs[q].push(r); } });
         return Object.keys(qs).map(q => { let s=0; qs[q].forEach(r=>s+=parseFloat(r.puntuacion||9)); return { q, score: (s/qs[q].length || 9) }; });
@@ -1007,7 +892,7 @@ Responde en español, de forma ejecutiva, directa y profesional.`;
       );
     }
 
-    // --- ANÁLISIS DE CLIENTES INACTIVOS Y OFFBOARDING ---
+    // --- ANÁLISIS DE CLIENTES INACTIVOS ---
     function PlaceholderTab({ title, icon, dataRaw }) {
       return e('div', { className: 'card p-10 text-center text-gray-500 font-medium space-y-4 bg-white' },
         e('i', { className: `fa-solid ${icon} text-4xl text-brand block` }),
@@ -1019,20 +904,16 @@ Responde en español, de forma ejecutiva, directa y profesional.`;
     }
 
     function App() {
-      const [data, setData] = useState(null); const [metaHeaders, setMetaHeaders] = useState({});
-      const [loading, setLoading] = useState(true); const [error, setError] = useState(null);
+      const [data, setData] = useState(null); 
+      const [metaHeaders, setMetaHeaders] = useState({});
+      const [loading, setLoading] = useState(true); 
+      const [error, setError] = useState(null);
       const [tab, setTab] = useState(0);
 
-      const [data, setData] = useState(null); const [metaHeaders, setMetaHeaders] = useState({});
-const [loading, setLoading] = useState(true); const [error, setError] = useState(null);
-const [tab, setTab] = useState(0);
-
-   // Estados para los selectores temporales y geográficos de Salidas
+      // Estados para los selectores temporales y geográficos de Salidas
       const [filtroPais, setFiltroPais] = useState('Todos');
       const [filtroAnio, setFiltroAnio] = useState('Todos');
       const [filtroMes, setFiltroMes] = useState('Todos');
-
-      
 
       const cargarData = useCallback(() => {
         setLoading(true); setError(null);
@@ -1065,7 +946,12 @@ const [tab, setTab] = useState(0);
               tab === 0 && e(ModuleNPS, { rawNps: Array.isArray(data.nps) ? data.nps : [], metaHeaders: metaHeaders }),
               tab === 1 && e(ModuleCSAT, { abonoRaw: Array.isArray(data.csat_abono) ? data.csat_abono : [], reunionRaw: Array.isArray(data.csat_reunion) ? data.csat_reunion : [] }),
               tab === 2 && e(PlaceholderTab, { title: 'Análisis de Clientes Inactivos', icon: 'fa-user-clock', dataRaw: { inactivos: data.inactivos } }),
-             tab === 3 && e(PlaceholderTab, { title: 'Registro de Procesos de Offboarding', icon: 'fa-arrow-right-from-bracket', dataRaw: { salidas: data.salidas } })
+              tab === 3 && e(RenderSalidasOff, {
+                datosSalidas: Array.isArray(data.salidas) ? data.salidas : [],
+                filtroPais, setFiltroPais,
+                filtroAnio, setFiltroAnio,
+                filtroMes, setFiltroMes
+              })
             )
           )
         ),
@@ -1078,8 +964,6 @@ const [tab, setTab] = useState(0);
     function printReport() {
       const title = document.getElementById('modal-title').textContent;
       const body = document.getElementById('modal-body').innerHTML;
-      
-      // Abrimos una ventana temporal en el navegador con estilos limpios para impresión
       const w = window.open('', '_blank', 'width=900,height=700');
       w.document.write(`
         <!DOCTYPE html>
@@ -1109,12 +993,9 @@ const [tab, setTab] = useState(0);
         </html>
       `);
       w.document.close();
-      
-      // Esperamos un instante a que cargue el diseño y lanzamos el menú de guardado PDF
       setTimeout(() => w.print(), 500);
     }
 
-    // ── FUNCIONES COMPLEMENTARIAS DEL MODAL (AGREGADAS) ──
     function openModal() {
       document.getElementById('report-modal').classList.add('open');
     }
