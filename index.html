@@ -970,19 +970,19 @@ Responde en español, de forma ejecutiva, directa y profesional.`;
               tab === 1 && e(ModuleCSAT, { abonoRaw: Array.isArray(data.csat_abono) ? data.csat_abono : [], reunionRaw: Array.isArray(data.csat_reunion) ? data.csat_reunion : [] }),
               tab === 2 && e(PlaceholderTab, { title: 'Análisis de Clientes Inactivos', icon: 'fa-user-clock', dataRaw: { inactivos: data.inactivos } }),
               tab === 3 && e(RenderSalidasOff, {
-                datosSalidas: Array.isArray(data.salidas) ? data.salidas.map(fila => ({
-  // Mapeamos cada propiedad con el índice de columna correcto del Sheet (Empezando desde 0)
-  pais: fila.pais || fila[1] || '',                  // Columna B (Índice 1)
-  programa: fila.programa || fila[2] || '',              // Columna C (Índice 2)
-  correo: fila.correo || fila[4] || '',                // Columna E (Índice 4)
-  motivoSalida: fila.motivoSalida || fila[7] || '',          // Columna H (Índice 7)
-  puntuacionFalla: fila.puntuacionFalla || fila[8] || '',       // Columna I (Índice 8)
-  puntuacionExperiencia: fila.puntuacionExperiencia || fila[9] || '', // Columna J (Índice 9)
-  puntuacionEjecutivo: fila.puntuacionEjecutivo || fila[10] || '',   // Columna K (Índice 10)
-  volveria: fila.volveria || fila[13] || '',              // Columna N (Índice 13)
-  estado: fila.estado || fila[14] || '',                // Columna O (Índice 14) -> "RESPONDIDO"
-  fecha: fila.fecha || fila[15] || null                // Columna P (Índice 15)
-})) : [],
+                datosSalidas: Array.isArray(data.salidas) ? data.salidas.map(obj => ({
+                  // Leemos las propiedades con los nombres exactos que envía tu Google Sheet
+                  pais: obj.pais || obj["país"] || obj["País"] || "",
+                  programa: obj.programa || obj["nombreDelPrograma"] || obj["Nombre del programa"] || "",
+                  correo: obj.correo || obj["correoDeContacto"] || obj["Correo de contacto"] || "",
+                  motivoSalida: obj.motivoSalida || obj["principalMotivo"] || obj["Principal motivo"] || "",
+                  puntuacionFalla: obj.puntuacionFalla || obj["queFallo"] || obj["Qué falló"] || "",
+                  puntuacionExperiencia: obj.puntuacionExperiencia || obj["comoTuExperiencia"] || obj["¿Cómo tu experiencia en Apprecio?"] || obj["nps"] || "",
+                  puntuacionEjecutivo: obj.puntuacionEjecutivo || obj["atencionDeTuEjecutivo"] || obj["¿Cómo calificarías la atención de tu ejecutivo comercial?"] || "",
+                  volveria: obj.volveria || obj["volveriasATrabajar"] || obj["¿Volverías a trabajar con nosotros?"] || "",
+                  estado: obj.estado || obj["estadoDeEncuesta"] || obj["Estado de encuesta"] || obj["estado"] || "",
+                  fecha: obj.fecha || obj["fechaDeRespuesta"] || obj["Fecha de respuesta"] || null
+                })) : [],
                 filtroPais, setFiltroPais,
                 filtroAnio, setFiltroAnio,
                 filtroMes, setFiltroMes
