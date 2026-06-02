@@ -1023,6 +1023,17 @@ Responde en español, de forma ejecutiva, directa y profesional.`;
       const [loading, setLoading] = useState(true); const [error, setError] = useState(null);
       const [tab, setTab] = useState(0);
 
+      const [data, setData] = useState(null); const [metaHeaders, setMetaHeaders] = useState({});
+const [loading, setLoading] = useState(true); const [error, setError] = useState(null);
+const [tab, setTab] = useState(0);
+
+   // Estados para los selectores temporales y geográficos de Salidas
+      const [filtroPais, setFiltroPais] = useState('Todos');
+      const [filtroAnio, setFiltroAnio] = useState('Todos');
+      const [filtroMes, setFiltroMes] = useState('Todos');
+
+      
+
       const cargarData = useCallback(() => {
         setLoading(true); setError(null);
         fetch(CONFIG_FRONTEND.URL_API_BACKEND)
@@ -1054,7 +1065,7 @@ Responde en español, de forma ejecutiva, directa y profesional.`;
               tab === 0 && e(ModuleNPS, { rawNps: Array.isArray(data.nps) ? data.nps : [], metaHeaders: metaHeaders }),
               tab === 1 && e(ModuleCSAT, { abonoRaw: Array.isArray(data.csat_abono) ? data.csat_abono : [], reunionRaw: Array.isArray(data.csat_reunion) ? data.csat_reunion : [] }),
               tab === 2 && e(PlaceholderTab, { title: 'Análisis de Clientes Inactivos', icon: 'fa-user-clock', dataRaw: { inactivos: data.inactivos } }),
-              tab === 3 && e(PlaceholderTab, { title: 'Registro de Procesos de Offboarding', icon: 'fa-arrow-right-from-bracket', dataRaw: { salidas: data.salidas } })
+             tab === 3 && e(PlaceholderTab, { title: 'Registro de Procesos de Offboarding', icon: 'fa-arrow-right-from-bracket', dataRaw: { salidas: data.salidas } })
             )
           )
         ),
