@@ -531,18 +531,33 @@ Responde en español, de forma ejecutiva, directa y profesional.`;
       return e('div', { className: 'relative w-full h-[220px]' }, e('canvas', { ref: canvasRef }));
     }
 
+    // B. COMPONENTE PRINCIPAL: INTERFAZ EJECUTIVA DE CLIENTES DESVINCULADOS
+   // B. COMPONENTE PRINCIPAL: INTERFAZ EJECUTIVA DE CLIENTES DESVINCULADOS
     function RenderSalidasOff({ datosSalidas, filtroPais, setFiltroPais, filtroAnio, setFiltroAnio, filtroMes, setFiltroMes }) {
+      
+      // 1. FILTRADO MULTIDIMENSIONAL EN VIVO (CON FILTRO DE ESTADO 'RESPONDIDO')
       const datosFiltrados = datosSalidas.filter(r => {
-        if (filtroPais !== 'Todos' && r.pais !== filtroPais) return false;
+        // CRÍTICO: Solo procesar registros cuya columna O sea "Respondido"
+        const estadoRespondido = r.estado ? r.estado.toLowerCase().trim() : '';
+        if (estadoRespondido !== 'respondido') return false;
+
+        // Filtro de País (Mapeando 'Peru' con tilde para compatibilidad)
+        const paisNormalizado = r.pais === 'Peru' ? 'Perú' : r.pais;
+        if (filtroPais !== 'Todos' && paisNormalizado !== filtroPais) return false;
         
+        // Procesando la Fecha (Columna P) para extraer Año y Mes
         const fechaObj = r.fecha ? new Date(r.fecha) : null;
         if (fechaObj && !isNaN(fechaObj.getTime())) {
           const anioStr = fechaObj.getFullYear().toString();
-          const mesStr = (fechaObj.getMonth() + 1).toString();
+          
+          // Mapeo del número de mes al nombre exacto que usa el selector
+          const mesesNombres = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+          const mesNombreStr = mesesNombres[fechaObj.getMonth()];
           
           if (filtroAnio !== 'Todos' && anioStr !== filtroAnio) return false;
-          if (filtroMes !== 'Todos' && mesStr !== filtroMes) return false;
+          if (filtroMes !== 'Todos' && mesNombreStr !== filtroMes) return false;
         } else if (filtroAnio !== 'Todos' || filtroMes !== 'Todos') {
+          // Si el usuario busca un Año/Mes específico pero la fecha está rota o vacía, no pasa el filtro
           return false;
         }
         return true;
@@ -555,12 +570,14 @@ Responde en español, de forma ejecutiva, directa y profesional.`;
         return validos.length ? (validos.reduce((a, b) => a + b, 0) / validos.length).toFixed(1) : '—';
       };
       
-      const promExperiencia = calcularPromedio('puntuacionExperiencia');
-      const promEjecutivo = calcularPromedio('puntuacionEjecutivo');
+      const promExperiencia = calcularPromedio('puntuacionExperiencia'); // Columna J
+      const promEjecutivo = calcularPromedio('puntuacionEjecutivo');     // Columna K
 
+      // Cálculo del % de Intención de Retorno (Columna N)
       const cuentasConIntencion = datosFiltrados.filter(r => r.volveria && r.volveria.toLowerCase().includes('sí')).length;
       const pctRetorno = totalCuentasOff > 0 ? Math.round((cuentasConIntencion / totalCuentasOff) * 100) : 0;
 
+      // Conteo de opciones múltiples para motivos de salida (Columna H)
       const conteoMotivos = {};
       datosFiltrados.forEach(r => {
         if (r.motivoSalida) {
@@ -575,68 +592,13 @@ Responde en español, de forma ejecutiva, directa y profesional.`;
       const listaMotivosValores = Object.values(conteoMotivos);
 
       return e('div', { className: 'space-y-6 animate-fade-in' },
+        
+        // ── BARRA DE FILTROS LIMPIA ──
         e('div', { className: 'bg-white p-4 rounded-2xl border border-gray-100 flex flex-wrap gap-4 items-center justify-between shadow-sm' },
-          e('div', { className: 'text-sm font-bold text-gray-800' }, 'Filtros de Auditoría Churn (Col B / Col P)'),
+          e('div', { className: 'text-sm font-bold text-gray-800' }, 'Clientes Desvinculados'),
           e('div', { className: 'flex gap-3' },
-            e('select', { className: 'p-2 bg-gray-50 border border-gray-200 rounded-xl text-xs font-semibold text-gray-700 outline-none', value: filtroPais, onChange: (e) => setFiltroPais(e.target.value) }, ['Todos', 'Chile', 'Perú', 'Colombia', 'Ecuador'].map(p => e('option', { value: p }, p))),
-            e('select', { className: 'p-2 bg-gray-50 border border-gray-200 rounded-xl text-xs font-semibold text-gray-700 outline-none', value: filtroAnio, onChange: (e) => setFiltroAnio(e.target.value) }, ['Todos', '2025', '2026'].map(a => e('option', { value: a }, `Año ${a}`))),
-            e('select', { className: 'p-2 bg-gray-50 border border-gray-200 rounded-xl text-xs font-semibold text-gray-700 outline-none', value: filtroMes, onChange: (e) => setFiltroMes(e.target.value) }, [
-              { v: 'Todos', l: 'Todos los Meses' }, { v: '1', l: 'Enero' }, { v: '2', l: 'Febrero' }, { v: '3', l: 'Marzo' }, { v: '4', l: 'Abril' }, { v: '5', l: 'Mayo' }, { v: '6', l: 'Junio' }, { v: '7', l: 'Julio' }, { v: '8', l: 'Agosto' }, { v: '9', l: 'Septiembre' }, { v: '10', l: 'Octubre' }, { v: '11', l: 'Noviembre' }, { v: '12', l: 'Diciembre' }
-            ].map(m => e('option', { value: m.v }, m.l)))
-          )
-        ),
-
-        e('div', { className: 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5' },
-          e('div', { className: 'bg-white p-5 rounded-2xl border border-gray-100 shadow-sm' }, e('div', { className: 'text-[11px] font-bold text-gray-400 uppercase tracking-wider' }, 'Total Cuentas Off'), e('div', { className: 'text-2xl font-extrabold text-gray-900 mt-1' }, totalCuentasOff)),
-          e('div', { className: 'bg-white p-5 rounded-2xl border border-gray-100 shadow-sm' }, e('div', { className: 'text-[11px] font-bold text-gray-400 uppercase tracking-wider' }, 'Nota Experiencia (Col J)'), e('div', { className: 'text-2xl font-extrabold mt-1 text-brand' }, promExperiencia)),
-          e('div', { className: 'bg-white p-5 rounded-2xl border border-gray-100 shadow-sm' }, e('div', { className: 'text-[11px] font-bold text-gray-400 uppercase tracking-wider' }, 'Nota Ejecutivo (Col K)'), e('div', { className: 'text-2xl font-extrabold text-gray-900 mt-1' }, promEjecutivo)),
-          e('div', { className: 'bg-white p-5 rounded-2xl border border-gray-100 shadow-sm' }, e('div', { className: 'text-[11px] font-bold text-gray-400 uppercase tracking-wider' }, 'Intención de Retorno (Col N)'), e('div', { className: 'text-2xl font-extrabold text-green-600 mt-1' }, totalCuentasOff > 0 ? `${pctRetorno}%` : '—'), e('div', { className: 'text-[9px] text-gray-400 mt-0.5' }, 'Marcaron "Sí" volverían'))
-        ),
-
-        e('div', { className: 'bg-white p-6 rounded-2xl border border-gray-100 shadow-sm' },
-          e('div', { className: 'text-xs font-bold uppercase tracking-wider text-gray-400 mb-1' }, 'Distribución de Causas (Col H)'),
-          e('div', { className: 'text-sm font-extrabold text-gray-900 mb-4' }, '¿Principal motivo por el que decidiste dejar de trabajar con nosotros?'),
-          totalCuentasOff > 0 && listaMotivosLabels.length > 0 ? e(ChartHorizontalBars, { id: 'motivos-salida', dataLabels: listaMotivosLabels, dataValues: listaMotivosValores }) : e('div', { className: 'text-center py-10 text-xs text-gray-400' }, 'Sin registros para este corte.')
-        ),
-
-        e('div', { className: 'grid grid-cols-1 md:grid-cols-3 gap-5' },
-          e('div', { className: 'bg-white p-5 rounded-2xl border border-gray-100 shadow-sm flex flex-col justify-between' },
-            e('div', null, e('div', { className: 'text-[10px] font-bold text-brand uppercase tracking-wider mb-1' }, 'Pregunta Abierta · Columna I'), e('div', { className: 'text-xs font-extrabold text-gray-900 leading-tight' }, '¿Qué falló principalmente en tu experiencia?')),
-            e('button', { className: 'mt-4 w-full py-2 bg-brand text-white font-bold rounded-xl text-[11px] uppercase tracking-wide transition-transform active:scale-95', onClick: () => generarPDFResumenEjecutivo(datosFiltrados, 'OFF - Fallas de Experiencia (Col I)', `Corte ${filtroPais}`) }, '🔍 Analizar Fallas')
-          ),
-          e('div', { className: 'bg-white p-5 rounded-2xl border border-gray-100 shadow-sm flex flex-col justify-between' },
-            e('div', null, e('div', { className: 'text-[10px] font-bold text-brand uppercase tracking-wider mb-1' }, 'Pregunta Abierta · Columna L'), e('div', { className: 'text-xs font-extrabold text-gray-900 leading-tight' }, '¿Qué podríamos haber hecho diferente para que te quedaras?')),
-            e('button', { className: 'mt-4 w-full py-2 bg-brand text-white font-bold rounded-xl text-[11px] uppercase tracking-wide transition-transform active:scale-95', onClick: () => generarPDFResumenEjecutivo(datosFiltrados, 'OFF - Estrategias de Retención (Col L)', `Corte ${filtroPais}`) }, '🔍 Analizar Retención')
-          ),
-          e('div', { className: 'bg-white p-5 rounded-2xl border border-gray-100 shadow-sm flex flex-col justify-between' },
-            e('div', null, e('div', { className: 'text-[10px] font-bold text-brand uppercase tracking-wider mb-1' }, 'Pregunta Abierta · Columna M'), e('div', { className: 'text-xs font-extrabold text-gray-900 leading-tight' }, '¿Hay algo adicional que quieras compartir sobre tu experiencia?')),
-            e('button', { className: 'mt-4 w-full py-2 bg-brand text-white font-bold rounded-xl text-[11px] uppercase tracking-wide transition-transform active:scale-95', onClick: () => generarPDFResumenEjecutivo(datosFiltrados, 'OFF - Comentarios Adicionales (Col M)', `Corte ${filtroPais}`) }, '🔍 Analizar Adicionales')
-          )
-        ),
-
-        e('div', { className: 'bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden' },
-          e('div', { className: 'p-5 border-b border-gray-50 bg-gray-50/50 flex justify-between items-center' },
-            e('div', null, e('div', { className: 'text-sm font-extrabold text-gray-900' }, 'Programas que Salieron'), e('div', { className: 'text-[11px] text-gray-400 mt-0.5' }, 'Control cronológico indexado de desvinculaciones')),
-            e('span', { className: 'px-2.5 py-1 bg-gray-100 text-gray-600 rounded-full text-[10px] font-bold' }, `${totalCuentasOff} Programas`)
-          ),
-          e('div', { className: 'overflow-x-auto' },
-            e('table', { className: 'w-full text-left border-collapse' },
-              e('thead', { className: 'bg-gray-50 text-[11px] font-bold text-gray-400 uppercase tracking-wider border-b border-gray-100' },
-                e('tr', null, e('th', { className: 'p-4 pl-6' }, 'Fecha Salida (Col P)'), e('th', { className: 'p-4' }, 'Nombre del Programa (Col C)'), e('th', { className: 'p-4 pr-6' }, 'Correo de Contacto (Col E)'))
-              ),
-              e('tbody', { className: 'divide-y divide-gray-50 text-xs text-gray-700' },
-                totalCuentasOff > 0 ? datosFiltrados.map((r, index) => e('tr', { key: index, className: 'hover:bg-gray-50/80 transition-colors' },
-                  e('td', { className: 'p-4 pl-6 font-medium text-gray-500' }, r.fecha ? new Date(r.fecha).toLocaleDateString('es-CL') : '—'),
-                  e('td', { className: 'p-4 font-bold text-gray-900' }, r.programa || '—'),
-                  e('td', { className: 'p-4 text-gray-600 font-mono' }, r.correo || '—')
-                )) : e('tr', null, e('td', { colSpan: 3, className: 'p-8 text-center text-gray-400 italic' }, 'No hay desvinculaciones registradas para este corte.'))
-              )
-            )
-          )
-        )
-      );
-    }
-
+            e('select', { className: 'p-2 bg-gray-50 border border-gray-200 rounded-xl text-xs font-semibold text-gray-700 outline-none', value: filtroPais, onChange: (e) => setFiltroPais(e.target.value) }, ['Todos', 'Perú', 'Chile', 'Colombia', 'Ecuador'].map(p => e('option', { value: p }, p === 'Todos' ? 'Todos los Países' : p))),
+            e('select', { className: 'p-2 bg-gray-50 border border-gray-200 rounded-xl text-xs font-semibold text-gray-700 outline-none', value: filtroAnio, onChange: (e) => setFiltroAnio(e.target.value) }, ['Todos', '2025', '2026'].map(a => e
     // --- RECUADRO ESPEJO DE CONTROL OPERATIVO ---
     function BloquePreguntaEspejo({ id, tituloCompleto, totalRespuestas, promotores, neutrales, detractores, score, promedio, totalPromotores, porcentajePromotores, listaPaises, listaMeses, filtroPais, setFiltroPais, filtroMes, setFiltroMes, textoBoton, labelScoreCenter, onExportar }) {
       return e('div', { className: 'card p-6 flex flex-col md:flex-row gap-6 bg-white' },
