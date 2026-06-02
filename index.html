@@ -583,6 +583,17 @@ if (estadoRespondido !== 'RESPONDIDO') return false;
       
       const listaMotivosLabels = Object.keys(conteoMotivos);
       const listaMotivosValores = Object.values(conteoMotivos);
+      const conteoFallas = {};
+datosFiltrados.forEach(r => {
+  if (r.puntuacionFalla) {
+    r.puntuacionFalla.split(',').forEach(f => {
+      const fallaLimpia = f.trim();
+      if (fallaLimpia) conteoFallas[fallaLimpia] = (conteoFallas[fallaLimpia] || 0) + 1;
+    });
+  }
+});
+const labelsFallas = Object.keys(conteoFallas);
+const valoresFallas = Object.values(conteoFallas);
 
       return e('div', { className: 'space-y-6 animate-fade-in' },
         
