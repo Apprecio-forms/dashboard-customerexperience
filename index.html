@@ -369,6 +369,7 @@ Responde en español, de forma ejecutiva, directa y profesional.`;
     };
 
     // --- GRÁFICO DONUT ---
+    // --- GRÁFICO DONUT (VERSION MODERNIZADA Y ESTILIZADA) ---
     function ChartDonut({ id, promotores, neutrales, detractores, score, labelCenter }) {
       const canvasRef = useRef(null);
       const chartRef = useRef(null);
@@ -384,15 +385,18 @@ Responde en español, de forma ejecutiva, directa y profesional.`;
             labels: ['Alto / Promotores', 'Medio / Neutrales', 'Bajo / Detractores'],
             datasets: [{
               data: [promotores, neutrales, detractores],
-              backgroundColor: ['#22C55E', '#F59E0B', '#EF4444'],
-              borderWidth: 3,
-              borderColor: '#ffffff',
+              // Paleta Apprecio refinada con colores vivos
+              backgroundColor: ['#22C55E', '#F59E0B', '#FA345E'],
+              hoverBackgroundColor: ['#16A34A', '#D97706', '#D61F47'],
+              borderWidth: 0, // Quitamos el borde blanco grueso original
+              spacing: 2,     // Agrega un sutil espacio/gap estético entre segmentos
               hoverOffset: 4
             }]
           },
           options: {
             responsive: true,
             maintainAspectRatio: false,
+            cutout: '76%', // Anillo más delgado y estilizado que el original
             plugins: { legend: { display: false }, tooltip: { enabled: true } }
           },
           plugins: [{
