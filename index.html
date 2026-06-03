@@ -362,14 +362,15 @@ TAREA: 1) Qué genera insatisfacción 2) Qué es indiferente 3) Qué valoran 4) 
     useEffect(()=>{
       if(!ref.current||typeof Chart==='undefined') return;
       if(chart.current) chart.current.destroy();
-      const qs=Array.from(new Set([...datosAbono.map(d=>d.q),...datosReunion.map(d=>d.q)])).sort();
+      const ordenMeses = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+const qs=Array.from(new Set([...datosAbono.map(d=>d.q),...datosReunion.map(d=>d.q)])).sort((a,b) => ordenMeses.indexOf(a) - ordenMeses.indexOf(b));
       chart.current=new Chart(ref.current.getContext('2d'),{
         type:'line',
         data:{ labels:qs, datasets:[
           { label:'CSAT Post Abonos', data:qs.map(q=>{const f=datosAbono.find(d=>d.q===q);return f?f.score:null;}), borderColor:'#4361EE', borderWidth:3, tension:.25, pointBackgroundColor:'#4361EE', pointRadius:4 },
           { label:'CSAT Post Reuniones', data:qs.map(q=>{const f=datosReunion.find(d=>d.q===q);return f?f.score:null;}), borderColor:'#FA345E', borderWidth:3, tension:.25, pointBackgroundColor:'#FA345E', pointRadius:4 }
         ]},
-        options:{ responsive:true, maintainAspectRatio:false, scales:{ y:{min:1,max:5,grid:{color:'#F1F3F7'},ticks:{font:{family:'DM Sans'}}}, x:{grid:{display:false},ticks:{font:{family:'DM Sans',weight:'bold'}}} }, plugins:{legend:{display:true,position:'top',labels:{font:{family:'DM Sans',size:11,weight:'bold'}}}} }
+        options:{ responsive:true, maintainAspectRatio:false, scales:{ y:{min:1,max:10,grid:{color:'#F1F3F7'},ticks:{font:{family:'DM Sans'}}}, x:{grid:{display:false},ticks:{font:{family:'DM Sans',weight:'bold'}}} }, plugins:{legend:{display:true,position:'top',labels:{font:{family:'DM Sans',size:11,weight:'bold'}}}} }
       });
       return ()=>{ if(chart.current) chart.current.destroy(); };
     },[datosAbono,datosReunion]);
