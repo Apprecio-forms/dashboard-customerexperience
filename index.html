@@ -623,7 +623,7 @@ const valoresFallas = Object.values(conteoFallas);
           )
         ),
 
-        // ── FILA CON LOS DOS CUADRANTES DE GRÁFICOS LADO A LADO ──
+      // ── FILA CON LOS DOS CUADRANTES DE GRÁFICOS LADO A LADO ──
         e('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-6 mb-6' },
           
           // Cuadrante 1: Principal motivo
@@ -633,18 +633,20 @@ const valoresFallas = Object.values(conteoFallas);
             (() => {
               const conteo = {};
               datosFiltrados.forEach(r => {
-                const texto = r.motivoBaja || '';
-                if (texto.includes('Cambio interno')) conteo['Cambio interno'] = (conteo['Cambio interno'] || 0) + 1;
-                else if (texto.includes('Precio')) conteo['Precio'] = (conteo['Precio'] || 0) + 1;
-                else if (texto.includes('No cumplió')) conteo['No cumplió nuestras expectativas'] = (conteo['No cumplió'] || 0) + 1;
-                else if (texto.includes('Falta de uso')) conteo['Falta de uso'] = (conteo['Falta de uso'] || 0) + 1;
-                else if (texto.includes('Problemas técnicos')) conteo['Problemas técnicos'] = (conteo['Problemas técnicos'] || 0) + 1;
-                else if (texto.includes('Otro')) conteo['Otro'] = (conteo['Otro'] || 0) + 1;
+                if (r.motivoBaja) {
+                  // Separamos por comas por si marcaron varias opciones o incluyeron texto libre
+                  r.motivoBaja.split(',').forEach(opcion => {
+                    const opcionLimpia = opcion.trim();
+                    if (opcionLimpia) {
+                      conteo[opcionLimpia] = (conteo[opcionLimpia] || 0) + 1;
+                    }
+                  });
+                }
               });
               const labels = Object.keys(conteo);
               const valores = Object.values(conteo).map(v => totalCuentasOff > 0 ? Math.round((v / totalCuentasOff) * 100) : 0);
               return labels.length > 0 
-                ? e(ChartHorizontalBars, { id: 'motivos-salida-directo', dataLabels: labels, dataValues: valores }) 
+                ? e(ChartHorizontalBars, { id: 'motivos-salida-dinamico', dataLabels: labels, dataValues: valores }) 
                 : e('div', { className: 'text-center py-10 text-xs text-gray-400' }, 'Sin registros válidos para este corte.');
             })()
           ),
@@ -656,23 +658,24 @@ const valoresFallas = Object.values(conteoFallas);
             (() => {
               const conteo = {};
               datosFiltrados.forEach(r => {
-                const texto = r.puntuacionFalla || '';
-                if (texto.includes('Producto')) conteo['Producto'] = (conteo['Producto'] || 0) + 1;
-                else if (texto.includes('Soporte')) conteo['Soporte'] = (conteo['Soporte'] || 0) + 1;
-                else if (texto.includes('Reportería')) conteo['Reportería'] = (conteo['Reportería'] || 0) + 1;
-                else if (texto.includes('Acompañamiento')) conteo['Acompañamiento comercial'] = (conteo['Acompañamiento'] || 0) + 1;
-                else if (texto.includes('Costo')) conteo['Costo del servicio'] = (conteo['Costo'] || 0) + 1;
-                else if (texto.includes('Otro')) conteo['Otro'] = (conteo['Otro'] || 0) + 1;
+                if (r.puntuacionFalla) {
+                  // Separamos por comas para mapear las opciones múltiples de forma individual
+                  r.puntuacionFalla.split(',').forEach(opcion => {
+                    const opcionLimpia = opcion.trim();
+                    if (opcionLimpia) {
+                      conteo[opcionLimpia] = (conteo[opcionLimpia] || 0) + 1;
+                    }
+                  });
+                }
               });
               const labels = Object.keys(conteo);
               const valores = Object.values(conteo).map(v => totalCuentasOff > 0 ? Math.round((v / totalCuentasOff) * 100) : 0);
               return labels.length > 0 
-                ? e(ChartHorizontalBars, { id: 'fallas-experiencia-directo', dataLabels: labels, dataValues: valores }) 
+                ? e(ChartHorizontalBars, { id: 'fallas-experiencia-dinamico', dataLabels: labels, dataValues: valores }) 
                 : e('div', { className: 'text-center py-10 text-xs text-gray-400' }, 'Sin registros de fallas.');
             })()
           )
         ),
-
         // ── FILA CON LAS DOS PREGUNTAS ABIERTAS (SE ELIMINÓ LA PRIMERA DE LA "X") ──
         e('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-6 mb-6' },
           e('div', { className: 'bg-white p-5 rounded-2xl border border-gray-100 shadow-sm flex flex-col justify-between' },
