@@ -630,18 +630,46 @@ const valoresFallas = Object.values(conteoFallas);
           e('div', { className: 'bg-white p-6 rounded-2xl border border-gray-100 shadow-sm' },
             e('div', { className: 'text-xs font-bold uppercase tracking-wider text-gray-400 mb-1' }, 'Distribución de Causas'),
             e('div', { className: 'text-sm font-extrabold text-gray-900 mb-4' }, '¿Principal motivo por el que decidiste dejar de trabajar con nosotros?'),
-            totalCuentasOff > 0 && listaMotivosLabels.length > 0 
-              ? e(ChartHorizontalBars, { id: 'motivos-salida', dataLabels: listaMotivosLabels, dataValues: listaMotivosValores }) 
-              : e('div', { className: 'text-center py-10 text-xs text-gray-400' }, 'Sin registros válidos para este corte.')
+            (() => {
+              const conteo = {};
+              datosFiltrados.forEach(r => {
+                const texto = r.motivoBaja || '';
+                if (texto.includes('Cambio interno')) conteo['Cambio interno'] = (conteo['Cambio interno'] || 0) + 1;
+                else if (texto.includes('Precio')) conteo['Precio'] = (conteo['Precio'] || 0) + 1;
+                else if (texto.includes('No cumplió')) conteo['No cumplió nuestras expectativas'] = (conteo['No cumplió'] || 0) + 1;
+                else if (texto.includes('Falta de uso')) conteo['Falta de uso'] = (conteo['Falta de uso'] || 0) + 1;
+                else if (texto.includes('Problemas técnicos')) conteo['Problemas técnicos'] = (conteo['Problemas técnicos'] || 0) + 1;
+                else if (texto.includes('Otro')) conteo['Otro'] = (conteo['Otro'] || 0) + 1;
+              });
+              const labels = Object.keys(conteo);
+              const valores = Object.values(conteo).map(v => totalCuentasOff > 0 ? Math.round((v / totalCuentasOff) * 100) : 0);
+              return labels.length > 0 
+                ? e(ChartHorizontalBars, { id: 'motivos-salida-directo', dataLabels: labels, dataValues: valores }) 
+                : e('div', { className: 'text-center py-10 text-xs text-gray-400' }, 'Sin registros válidos para este corte.');
+            })()
           ),
 
           // Cuadrante 2: Qué falló principalmente
           e('div', { className: 'bg-white p-6 rounded-2xl border border-gray-100 shadow-sm' },
             e('div', { className: 'text-xs font-bold uppercase tracking-wider text-gray-400 mb-1' }, 'Fallas Detectadas'),
             e('div', { className: 'text-sm font-extrabold text-gray-900 mb-4' }, '¿Qué falló principalmente en tu experiencia?'),
-            totalCuentasOff > 0 && labelsFallas.length > 0 
-              ? e(ChartHorizontalBars, { id: 'fallas-experiencia', dataLabels: labelsFallas, dataValues: valoresFallas }) 
-              : e('div', { className: 'text-center py-10 text-xs text-gray-400' }, 'Sin registros de fallas.')
+            (() => {
+              const conteo = {};
+              datosFiltrados.forEach(r => {
+                const texto = r.puntuacionFalla || '';
+                if (texto.includes('Producto')) conteo['Producto'] = (conteo['Producto'] || 0) + 1;
+                else if (texto.includes('Soporte')) conteo['Soporte'] = (conteo['Soporte'] || 0) + 1;
+                else if (texto.includes('Reportería')) conteo['Reportería'] = (conteo['Reportería'] || 0) + 1;
+                else if (texto.includes('Acompañamiento')) conteo['Acompañamiento comercial'] = (conteo['Acompañamiento'] || 0) + 1;
+                else if (texto.includes('Costo')) conteo['Costo del servicio'] = (conteo['Costo'] || 0) + 1;
+                else if (texto.includes('Otro')) conteo['Otro'] = (conteo['Otro'] || 0) + 1;
+              });
+              const labels = Object.keys(conteo);
+              const valores = Object.values(conteo).map(v => totalCuentasOff > 0 ? Math.round((v / totalCuentasOff) * 100) : 0);
+              return labels.length > 0 
+                ? e(ChartHorizontalBars, { id: 'fallas-experiencia-directo', dataLabels: labels, dataValues: valores }) 
+                : e('div', { className: 'text-center py-10 text-xs text-gray-400' }, 'Sin registros de fallas.');
+            })()
           )
         ),
 
