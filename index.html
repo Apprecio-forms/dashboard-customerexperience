@@ -502,4 +502,569 @@ Responde en español, de forma ejecutiva, directa y profesional.`;
         if (chartRef.current) chartRef.current.destroy();
 
         const ctx = canvasRef.current.getContext('2d');
-        chartRef.current
+        chartRef.current = new Chart(ctx, {
+          type: 'bar',
+          data: {
+            labels: dataLabels,
+            datasets: [{
+              data: dataValues,
+              backgroundColor: '#FA345E',
+              borderRadius: 6,
+              barThickness: 16
+            }]
+          },
+          options: {
+            indexAxis: 'y',
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+              x: { beginAtZero: true, grid: { display: false }, ticks: { color: '#9AA0B4' } },
+              y: { grid: { display: false }, ticks: { color: '#111827', font: { weight: '600' } } }
+            }
+          }
+        });
+
+        return () => { if (chartRef.current) chartRef.current.destroy(); };
+      }, [dataLabels, dataValues, id]);
+
+      return e('div', { className: 'relative w-full h-[220px]' }, e('canvas', { ref: canvasRef }));
+    }
+
+    // ── VISTA PRINCIPAL: COMPONENTE CLIENTES DESVINCULADOS ──
+    function RenderSalidasOff({ datosSalidas, filtroPais, setFiltroPais, filtroAnio, setFiltroAnio, filtroMes, setFiltroMes }) {
+      
+      const datosFiltrados = datosSalidas.filter(r => {
+        const estadoRespondido = r.estado ? r.estado.toUpperCase().trim() : '';
+        if (estadoRespondido !== 'RESPONDIDO') return false;
+
+        const paisNormalizado = r.pais === 'Peru' ? 'Perú' : r.pais;
+        if (filtroPais !== 'Todos' && paisNormalizado !== filtroPais) return false;
+        
+        const fechaObj = r.fecha ? new Date(r.fecha) : null;
+        if (fechaObj && !isNaN(fechaObj.getTime())) {
+          const anioStr = fechaObj.getFullYear().toString();
+          const mesesNombres = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+          const mesNombreStr = mesesNombres[fechaObj.getMonth()];
+          
+          if (filtroAnio !== 'Todos' && anioStr !== filtroAnio) return false;
+          if (filtroMes !== 'Todos' && mesNombreStr !== filtroMes) return false;
+        } else if (filtroAnio !== 'Todos' || filtroMes !== 'Todos') {
+          return false;
+        }
+        return true;
+      });
+
+      const totalCuentasOff = datosFiltrados.length;
+      
+      const calcularPromedio = (campo) => {
+        const validos = datosFiltrados.map(r => parseFloat(r[campo])).filter(n => !isNaN(n));
+        return validos.length ? (validos.reduce((a, b) => a + b, 0) / validos.length).toFixed(1) : '—';
+      };
+      
+      const promExperiencia = calcularPromedio('puntuacionExperiencia');
+      const promEjecutivo = calcularPromedio('puntuacionEjecutivo');
+
+      const cuentasConIntencion = datosFiltrados.filter(r => r.volveria && r.volveria.includes('SI')).length;
+      const pctRetorno = totalCuentasOff > 0 ? Math.round((cuentasConIntencion / totalCuentasOff) * 100) : 0;
+
+      // ── CALCULO DINÁMICO DE OPCIONES MULTIPLES ──
+      const conteoMotivosDirecto = {};
+      const conteoFallasDirecto = {};
+
+      datosFiltrados.forEach(r => {
+        if (r.motivoSalida) {
+          r.motivoSalida.split(',').forEach(opcion => {
+            const opLimpia = opcion.trim();
+            if (opLimpia) conteoMotivosDirecto[opLimpia] = (conteoMotivosDirecto[opLimpia] || 0) + 1;
+          });
+        }
+        if (r.puntuacionFalla) {
+          r.puntuacionFalla.split(',').forEach(opcion => {
+            const opLimpia = opcion.trim();
+            if (opLimpia) conteoFallasDirecto[opLimpia] = (conteoFallasDirecto[opLimpia] || 0) + 1;
+          });
+        }
+      });
+
+      const labelsMotivosFinal = Object.keys(conteoMotivosDirecto);
+      const valoresMotivosFinal = Object.values(conteoMotivosDirecto).map(v => 
+        totalCuentasOff > 0 ? Math.round((v / totalCuentasOff) * 100) : 0
+      );
+
+      const labelsFallasFinal = Object.keys(conteoFallasDirecto);
+      const valoresFallasFinal = Object.values(conteoFallasDirecto).map(v => 
+        totalCuentasOff > 0 ? Math.round((v / totalCuentasOff) * 100) : 0
+      );
+
+      return e('div', { className: 'space-y-6 animate-fade-in' },
+        
+        // Barra de Filtros Ejecutiva
+        e('div', { className: 'bg-white p-4 rounded-2xl border border-gray-100 flex flex-wrap gap-4 items-center justify-between shadow-sm' },
+          e('div', { className: 'text-sm font-bold text-gray-800' }, 'Cuentas que salieron'),
+          e('div', { className: 'flex gap-3' },
+            e('select', { className: 'p-2 bg-gray-50 border border-gray-200 rounded-xl text-xs font-semibold text-gray-700 outline-none', value: filtroPais, onChange: (e) => setFiltroPais(e.target.value) }, ['Todos', 'Perú', 'Chile', 'Colombia', 'Ecuador'].map(p => e('option', { value: p }, p === 'Todos' ? 'Todos los Países' : p))),
+            e('select', { className: 'p-2 bg-gray-50 border border-gray-200 rounded-xl text-xs font-semibold text-gray-700 outline-none', value: filtroAnio, onChange: (e) => setFiltroAnio(e.target.value) }, ['Todos', '2025', '2026'].map(a => e('option', { value: a }, a === 'Todos' ? 'Todos los Años' : `Año ${a}`))),
+            e('select', { className: 'p-2 bg-gray-50 border border-gray-200 rounded-xl text-xs font-semibold text-gray-700 outline-none', value: filtroMes, onChange: (e) => setFiltroMes(e.target.value) }, [
+              'Todos', 'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
+            ].map(m => e('option', { value: m }, m === 'Todos' ? 'Todos los Meses' : m)))
+          )
+        ),
+
+        // Tarjetas KPIs con Barra de Progreso
+        e('div', { className: 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5' },
+          e('div', { className: 'bg-white p-5 rounded-2xl border border-gray-100 shadow-sm' }, e('div', { className: 'text-[11px] font-bold text-gray-400 uppercase tracking-wider' }, 'Total Cuentas Off'), e('div', { className: 'text-2xl font-extrabold text-gray-900 mt-1' }, totalCuentasOff), e('div', { className: 'text-[9px] text-gray-400 mt-0.5' }, 'Respuestas válidas')),
+          e('div', { className: 'bg-white p-5 rounded-2xl border border-gray-100 shadow-sm' }, e('div', { className: 'text-[11px] font-bold text-gray-400 uppercase tracking-wider' }, 'Promedio Experiencia Base'), e('div', { className: 'text-2xl font-extrabold mt-1 text-brand' }, promExperiencia), e('div', { className: 'text-[9px] text-gray-400 mt-0.5' }, 'Escala del 1 al 10')),
+          e('div', { className: 'bg-white p-5 rounded-2xl border border-gray-100 shadow-sm' }, e('div', { className: 'text-[11px] font-bold text-gray-400 uppercase tracking-wider' }, 'Promedio Atención KAM'), e('div', { className: 'text-2xl font-extrabold text-gray-900 mt-1' }, promEjecutivo), e('div', { className: 'text-[9px] text-gray-400 mt-0.5' }, 'Evaluación del servicio')),
+          e('div', { className: 'bg-white p-5 rounded-2xl border border-gray-100 shadow-sm flex flex-col justify-between' },
+            e('div', null, e('div', { className: 'text-[11px] font-bold text-gray-400 uppercase tracking-wider' }, 'Intención de Retorno'), e('div', { className: 'text-2xl font-extrabold text-green-600 mt-1' }, totalCuentasOff > 0 ? `${pctRetorno}%` : '—')),
+            totalCuentasOff > 0 ? e('div', { className: 'w-full bg-gray-100 rounded-full h-1.5 mt-2 overflow-hidden flex' },
+              e('div', { style: { width: `${pctRetorno}%` }, className: 'bg-green-500 h-full' }),
+              e('div', { style: { width: `${100 - pctRetorno}%` }, className: 'bg-red-400 h-full' })
+            ) : e('div', { className: 'text-[9px] text-gray-400 mt-1' }, 'Esperando datos...')
+          )
+        ),
+
+        // ── FILA CON LOS DOS CUADRANTES DE GRÁFICOS LADO A LADO ──
+        e('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-6 mb-6' },
+          
+          // Cuadrante 1: Principal motivo
+          e('div', { className: 'bg-white p-6 rounded-2xl border border-gray-100 shadow-sm' },
+            e('div', { className: 'text-xs font-bold uppercase tracking-wider text-gray-400 mb-1' }, 'Distribución de Causas'),
+            e('div', { className: 'text-sm font-extrabold text-gray-900 mb-4' }, '¿Principal motivo por el que decidiste dejar de trabajar con nosotros?'),
+            labelsMotivosFinal.length > 0 
+              ? e(ChartHorizontalBars, { id: 'motivos-salida-final', dataLabels: labelsMotivosFinal, dataValues: valoresMotivosFinal }) 
+              : e('div', { className: 'text-center py-10 text-xs text-gray-400 bg-gray-50 rounded-xl p-4' }, 'Sin registros válidos para este corte.')
+          ),
+
+          // Cuadrante 2: Qué falló principalmente
+          e('div', { className: 'bg-white p-6 rounded-2xl border border-gray-100 shadow-sm' },
+            e('div', { className: 'text-xs font-bold uppercase tracking-wider text-gray-400 mb-1' }, 'Fallas Detectadas'),
+            e('div', { className: 'text-sm font-extrabold text-gray-900 mb-4' }, '¿Qué falló principalmente en tu experiencia?'),
+            labelsFallasFinal.length > 0 
+              ? e(ChartHorizontalBars, { id: 'fallas-experiencia-final', dataLabels: labelsFallasFinal, dataValues: valoresFallasFinal }) 
+              : e('div', { className: 'text-center py-10 text-xs text-gray-400 bg-gray-50 rounded-xl p-4' }, 'Sin registros de fallas.')
+          )
+        ),
+               
+        // ── FILA CON LAS DOS PREGUNTAS ABIERTAS ──
+        e('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-6 mb-6' },
+          e('div', { className: 'bg-white p-5 rounded-2xl border border-gray-100 shadow-sm flex flex-col justify-between' },
+            e('div', null, e('div', { className: 'text-[10px] font-bold text-brand uppercase tracking-wider mb-1' }, 'Pregunta Abierta'), e('div', { className: 'text-xs font-extrabold text-gray-900 leading-tight' }, '¿Qué podríamos haber hecho diferente para que te quedaras?')),
+            e('button', { className: 'mt-4 w-full py-2 bg-brand text-white font-bold rounded-xl text-[11px] uppercase tracking-wide transition-transform active:scale-95', onClick: () => generarPDFResumenEjecutivo(datosFiltrados, 'OFF - Estrategias de Retención (Col L)', `Corte ${filtroPais}`) }, '🔍 Analizar Retención')
+          ),
+          e('div', { className: 'bg-white p-5 rounded-2xl border border-gray-100 shadow-sm flex flex-col justify-between' },
+            e('div', null, e('div', { className: 'text-[10px] font-bold text-brand uppercase tracking-wider mb-1' }, 'Pregunta Abierta'), e('div', { className: 'text-xs font-extrabold text-gray-900 leading-tight' }, '¿Hay algo adicional que quieras compartir sobre tu experiencia?')),
+            e('button', { className: 'mt-4 w-full py-2 bg-brand text-white font-bold rounded-xl text-[11px] uppercase tracking-wide transition-transform active:scale-95', onClick: () => generarPDFResumenEjecutivo(datosFiltrados, 'OFF - Comentarios Adicionales (Col M)', `Corte ${filtroPais}`) }, '🔍 Analizar Adicionales')
+          )
+        ),
+
+        // Tabla de programas
+        e('div', { className: 'bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden' },
+          e('div', { className: 'p-5 border-b border-gray-50 bg-gray-50/50 flex justify-between items-center' },
+            e('div', null, e('div', { className: 'text-sm font-extrabold text-gray-900' }, 'Programas que Salieron'), e('div', { className: 'text-[11px] text-gray-400 mt-0.5' }, 'Control cronológico de desvinculaciones')),
+            e('span', { className: 'px-2.5 py-1 bg-gray-100 text-gray-600 rounded-full text-[10px] font-bold' }, `${totalCuentasOff} Programas`)
+          ),
+          e('div', { className: 'overflow-x-auto' },
+            e('table', { className: 'w-full text-left border-collapse' },
+              e('thead', { className: 'bg-gray-50 text-[11px] font-bold text-gray-400 uppercase tracking-wider border-b border-gray-100' },
+                e('tr', null, e('th', { className: 'p-4 pl-6' }, 'Fecha Salida'), e('th', { className: 'p-4' }, 'Nombre del Programa'), e('th', { className: 'p-4 pr-6' }, 'Correo de Contacto'))
+              ),
+              e('tbody', { className: 'divide-y divide-gray-50 text-xs text-gray-700' },
+                totalCuentasOff > 0 ? datosFiltrados.map((r, index) => e('tr', { key: index, className: 'hover:bg-gray-50/80 transition-colors' },
+                  e('td', { className: 'p-4 pl-6 font-medium text-gray-500' }, r.fecha ? new Date(r.fecha).toLocaleDateString('es-CL') : '—'),
+                  e('td', { className: 'p-4 font-bold text-gray-900' }, r.programa || '—'),
+                  e('td', { className: 'p-4 text-gray-600 font-mono' }, r.correo || '—')
+                )) : e('tr', null, e('td', { colSpan: 3, className: 'p-8 text-center text-gray-400 italic' }, 'No hay desvinculaciones con respuestas registradas.'))
+              )
+            )
+          )
+        )
+      );
+    }
+
+    // --- RECUADRO ESPEJO DE CONTROL OPERATIVO ---
+    function BloquePreguntaEspejo({ id, tituloCompleto, totalRespuestas, promotores, neutrales, detractores, score, promedio, totalPromotores, porcentajePromotores, listaPaises, listaMeses, filtroPais, setFiltroPais, filtroMes, setFiltroMes, textoBoton, labelScoreCenter, onExportar }) {
+      return e('div', { className: 'card p-6 flex flex-col md:flex-row gap-6 bg-white' },
+        e('div', { className: 'w-full md:w-7/12 flex flex-col justify-between border-r border-gray-100 pr-0 md:pr-4' },
+          e('div', { className: 'flex justify-between items-start mb-4 gap-4' },
+            e('div', { className: 'flex-1 min-w-0' },
+              e('h3', { className: 'text-sm font-bold text-gray-900 leading-snug break-words' }, tituloCompleto),
+              e('p', { className: 'text-[11px] font-semibold text-gray-400 uppercase mt-1' }, `Basado en ${totalRespuestas} respuestas reales`)
+            ),
+            e('div', { className: 'flex gap-1.5 flex-shrink-0' },
+              e('select', { value: filtroPais, onChange: ev => setFiltroPais(ev.target.value), className: 'text-[10px] font-bold text-gray-500 bg-gray-50 border border-gray-200 rounded-lg px-2 py-1 outline-none' },
+                listaPaises.map(p => e('option', { key: p, value: p }, p === 'Todos' ? 'País: Todos' : p))
+              ),
+              e('select', { value: filtroMes, onChange: ev => setFiltroMes(ev.target.value), className: 'text-[10px] font-bold text-gray-500 bg-gray-50 border border-gray-200 rounded-lg px-2 py-1 outline-none' },
+                listaMeses.map(m => e('option', { key: m, value: m }, m === 'Todos' ? 'Mes: Todos' : m))
+              )
+            )
+          ),
+          totalRespuestas === 0 ? e('div', { className: 'h-[180px] flex items-center justify-center text-xs text-gray-400' }, 'Sin registros en este corte') :
+          e(ChartDonut, { id, promotores, neutrales, detractores, score, labelCenter: labelScoreCenter }),
+          
+          e('div', { className: 'flex justify-around mt-4 text-center text-xs border-t border-gray-50 pt-3' },
+            [['Alto / Satisfecho', 'text-green-600', promotores], ['Medio / Neutral', 'text-amber-500', neutrales], ['Bajo / Crítico', 'text-red-500', detractores]].map(([lbl, clr, cant]) => 
+              e('div', { key: lbl },
+                e('p', { className: `font-bold ${cl} text-sm` }, cant),
+                e('p', { className: 'text-[10px] text-gray-400 font-medium' }, lbl)
+              )
+            )
+          )
+        ),
+        e('div', { className: 'w-full md:w-5/12 flex flex-col justify-between pl-0 md:pl-2' },
+          e('div', { className: 'space-y-4' },
+            e('h4', { className: 'text-[10px] font-bold text-gray-400 uppercase tracking-wider' }, 'Consolidado General'),
+            e('div', { className: 'grid grid-cols-2 gap-3' },
+              e('div', { className: 'bg-gray-50/60 p-4 rounded-xl border border-gray-100' },
+                e('p', { className: 'text-[11px] font-medium text-gray-400' }, 'Promedio Métrica'),
+                e('p', { className: 'text-xl font-extrabold text-gray-800 mt-1' }, promedio),
+                e('p', { className: 'text-[9px] text-gray-400 mt-0.5' }, 'Filtro Activo')
+              ),
+              e('div', { className: 'bg-gray-50/60 p-4 rounded-xl border border-gray-100' },
+                e('p', { className: 'text-[11px] font-medium text-gray-400' }, 'Casos Destacados'),
+                e('p', { className: 'text-xl font-extrabold text-green-600 mt-1' }, totalPromotores),
+                e('p', { className: 'text-[9px] text-gray-400 mt-0.5' }, `${porcentajePromotores}% de este corte`)
+              )
+            )
+          ),
+          e('button', { onClick: onExportar, className: 'w-full mt-6 p-3 bg-brand hover:bg-brand-dark text-white rounded-xl text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 shadow-md shadow-red-100 transition-colors' },
+            e('i', { className: 'fa-solid fa-file-pdf' }),
+            textoBoton
+          )
+        )
+      );
+    }
+
+    // ==========================================
+    // --- PESTAÑA 1: MÓDULO CENTRAL NPS ---
+    // ==========================================
+    function ModuleNPS({ rawNps, metaHeaders }) {
+      const [p1Pais, setP1Pais] = useState('Todos'); const [p1Mes, setP1Mes] = useState('Todos');
+      const [p2Pais, setP2Pais] = useState('Todos'); const [p2Mes, setP2Mes] = useState('Todos');
+      const [histPais, setHistPais] = useState('Todos'); const [histAnio, setHistAnio] = useState('2026');
+
+      const getPregunta1Dinamica = (mesSeleccionado) => {
+        if(mesSeleccionado === 'Mayo' || mesSeleccionado === 'Todos') return "Pregunta 1: En una escala del 1 al 10, ¿Qué tanto recomiendas nuestra aplicación Apprecio?";
+        return metaHeaders.puntuacion || "Pregunta 1: Recommendation de Marca (NPS)";
+      };
+
+      const getPregunta2Dinamica = (mesSeleccionado) => {
+        if(mesSeleccionado === 'Mayo' || mesSeleccionado === 'Todos') return "Pregunta 2: ¿Cómo calificarías la atención del KAM asignado a tu cuenta trimestralmente?";
+        return metaHeaders.pregunta2 || "Pregunta 2: Evaluación Operativa (KAM)";
+      };
+
+      const { listPaises, listMeses, listAnios } = useMemo(() => {
+        const p = new Set(), m = new Set(), a = new Set();
+        rawNps.forEach(r => { if (r.pais) p.add(r.pais); if (r.mes) m.add(r.mes); if (r.anio) a.add(String(r.anio)); });
+        return { listPaises: ['Todos', ...Array.from(p)], listMeses: ['Todos', ...Array.from(m)], listAnios: Array.from(a).length > 0 ? Array.from(a) : ['2026'] };
+      }, [rawNps]);
+
+      const p1Filtrados = useMemo(() => rawNps.filter(r => (p1Pais === 'Todos' || r.pais === p1Pais) && (p1Mes === 'Todos' || r.mes === p1Mes)), [rawNps, p1Pais, p1Mes]);
+      const m1 = useMemo(() => {
+        const total = p1Filtrados.length; if (total === 0) return { total: 0, p: 0, n: 0, d: 0, score: 0, avg: '—', pPorc: 0 };
+        let prom = 0, neut = 0, detr = 0, suma = 0;
+        p1Filtrados.forEach(r => { const v = parseFloat(r.puntuacion); if (!isNaN(v)) { suma += v; if (v >= 9) prom++; else if (v >= 7) neut++; else detr++; } });
+        return { total, p: prom, n: neut, d: detr, score: Math.round(((prom/total)*100) - ((detr/total)*100)), avg: (suma/total).toFixed(1), pPorc: ((prom/total)*100).toFixed(0) };
+      }, [p1Filtrados]);
+
+      const p2Filtrados = useMemo(() => rawNps.filter(r => (p2Pais === 'Todos' || r.pais === p2Pais) && (p2Mes === 'Todos' || r.mes === p2Mes)), [rawNps, p2Pais, p2Mes]);
+      const m2 = useMemo(() => {
+        const validos = p2Filtrados.filter(r => r.pregunta2 !== undefined && r.pregunta2 !== null && r.pregunta2 !== '');
+        const total = validos.length; if (total === 0) return { total: 0, p: 0, n: 0, d: 0, score: 0, avg: '—', pPorc: 0 };
+        let prom = 0, neut = 0, detr = 0, suma = 0;
+        validos.forEach(r => { const v = parseFloat(r.pregunta2); if (!isNaN(v)) { suma += v; if (v >= 9) prom++; else if (v >= 7) neut++; else detr++; } });
+        return { total, p: prom, n: neut, d: detr, score: Math.round(((prom/total)*100) - ((detr/total)*100)), avg: (suma/total).toFixed(1), pPorc: ((prom/total)*100).toFixed(0) };
+      }, [p2Filtrados]);
+
+      const datosLinea = useMemo(() => {
+        const filtradosHist = rawNps.filter(r => (histPais === 'Todos' || r.pais === histPais) && (String(r.anio) === histAnio));
+        const qsMap = {}; filtradosHist.forEach(r => { if (r.periodoQ) { if (!qsMap[r.periodoQ]) qsMap[r.periodoQ] = []; qsMap[r.periodoQ].push(r); } });
+        return Object.keys(qsMap).sort().map(qName => {
+          const arr = qsMap[qName]; let p = 0, d = 0, tot = arr.length;
+          arr.forEach(r => { const v = parseFloat(r.puntuacion); if (!isNaN(v)) { if (v >= 9) p++; else if (v < 7) d++; } });
+          return { q: qName, score: tot > 0 ? Math.round(((p / tot) * 100) - ((d / tot) * 100)) : 0 };
+        });
+      }, [rawNps, histPais, histAnio]);
+
+      const criticos = useMemo(() => rawNps.filter(r => { const n = parseFloat(r.puntuacion); return !isNaN(n) && n <= 6; }), [rawNps]);
+
+      return e('div', { className: 'space-y-6' },
+        e('div', { className: 'grid grid-cols-1 xl:grid-cols-2 gap-6' },
+          e(BloquePreguntaEspejo, {
+            id: 'nps_p1', tituloCompleto: getPregunta1Dinamica(p1Mes),
+            totalRespuestas: m1.total, promotores: m1.p, neutrales: m1.n, detractores: m1.d, score: m1.score, promedio: m1.avg, totalPromotores: m1.p, porcentajePromotores: m1.pPorc,
+            listaPaises: listPaises, listaMeses: listMeses, filtroPais: p1Pais, setFiltroPais: setP1Pais, filtroMes: p1Mes, setFiltroMes: setP1Mes,
+            textoBoton: 'Generar reporte de respuestas abiertas', labelScoreCenter: 'NPS Score',
+            onExportar: () => generarPDFResumenEjecutivo(p1Filtrados, 'NPS P1', `Corte ${p1Pais} / ${p1Mes}`)
+          }),
+          e(BloquePreguntaEspejo, {
+            id: 'nps_p2', tituloCompleto: getPregunta2Dinamica(p2Mes),
+            totalRespuestas: m2.total, promotores: m2.p, neutrales: m2.n, detractores: m2.d, score: m2.score, promedio: m2.avg, totalPromotores: m2.p, porcentajePromotores: m2.pPorc,
+            listaPaises: listPaises, listaMeses: listMeses, filtroPais: p2Pais, setFiltroPais: setP2Pais, filtroMes: p2Mes, setFiltroMes: setP2Mes,
+            textoBoton: 'Generar reporte de respuestas abiertas', labelScoreCenter: 'Operativo',
+            onExportar: () => generarPDFResumenEjecutivo(p2Filtrados, 'NPS P2', `Corte ${p2Pais} / ${p2Mes}`)
+          })
+        ),
+        e('div', { className: 'card p-6 bg-white flex flex-col md:flex-row gap-6' },
+          e('div', { className: 'w-full md:w-8/12' },
+            e('div', { className: 'flex items-center gap-2 mb-4' },
+              e('h3', { className: 'text-sm font-bold text-gray-900' }, 'Evolución Histórica de Tendencia por Trimestre (Qs)'),
+              e('div', { className: 'tooltip-container relative inline-block cursor-help' },
+                e('i', { className: 'fa-solid fa-circle-info text-gray-300 hover:text-brand text-xs' }),
+                e('div', { className: 'tooltip-box shadow-xl' },
+                  e('p', { className: 'font-bold border-b border-gray-700 pb-1 mb-1' }, '¿Qué significa el Score NPS?'),
+                  e('p', {}, 'Se calcula restando el % de Promotores (9-10) menos el % de Detractores (0-6).')
+                )
+              )
+            ),
+            datosLinea.length === 0 ? e('div', { className: 'h-[240px] flex items-center justify-center text-xs text-gray-400' }, 'Sin históricos en este corte') : e(ChartLineaHistorico, { datos: datosLinea })
+          ),
+          e('div', { className: 'w-full md:w-4/12 flex flex-col justify-between border-l border-gray-100 pl-0 md:pl-6' },
+            e('div', { className: 'space-y-4' },
+              e('h4', { className: 'text-[10px] font-bold text-gray-400 uppercase tracking-wider' }, 'Filtros de Tendencia'),
+              e('div', { className: 'space-y-3' },
+                e('div', { className: 'space-y-1' }, e('label', { className: 'text-[11px] text-gray-400 font-medium' }, 'País:'), e('select', { value: histPais, onChange: ev => setHistPais(ev.target.value), className: 'w-full text-xs font-semibold text-gray-600 bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 outline-none' }, listPaises.map(p => e('option', { key: p, value: p }, p)))),
+                e('div', { className: 'space-y-1' }, e('label', { className: 'text-[11px] text-gray-400 font-medium' }, 'Año Fiscal:'), e('select', { value: histAnio, onChange: ev => setHistAnio(ev.target.value), className: 'w-full text-xs font-semibold text-gray-600 bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 outline-none' }, listAnios.map(a => e('option', { key: a, value: a }, a))))
+              )
+            )
+          )
+        ),
+        e('div', { className: 'card p-6 bg-white' },
+          e('div', { className: 'flex justify-between items-center mb-4' },
+            e('h3', { className: 'text-sm font-bold text-red-600 flex items-center gap-1.5' }, e('i', { className: 'fa-solid fa-triangle-exclamation animate-pulse' }), 'Radar de Alertas Avanzado · Control de Clientes Críticos'),
+            e('span', { className: 'px-2.5 py-1 bg-red-50 text-red-600 text-xs font-extrabold rounded-full' }, `${criticos.length} Casos`)
+          ),
+          criticos.length === 0 ? e('p', { className: 'text-center py-6 text-xs text-gray-400' }, '¡Felicidades! Sin alertas críticas 🎉') :
+          e('div', { className: 'space-y-2' }, criticos.map((c, i) => {
+            const txtColM = (c.notaKam || '').trim();
+            const gestionado = txtColM.toLowerCase().includes('comunic') || txtColM.toLowerCase().includes('hablo') || txtColM.toLowerCase().includes('ok') || txtColM.toLowerCase().includes('si');
+            return e('div', { key: i, className: 'p-4 rounded-xl border border-red-100 bg-red-50/10 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 text-xs' },
+              e('div', {}, e('p', { className: 'font-extrabold text-gray-900' }, `${c.cliente || 'Empresa'} (${c.pais || '—'})`), e('p', { className: 'text-gray-500 italic mt-0.5' }, c.razon ? `"${c.razon}"` : '—')),
+              e('div', { className: 'text-right flex-shrink-0' }, e('span', { className: 'px-2 py-0.5 bg-red-500 text-white font-bold rounded' }, `Nota: ${c.puntuacion}`), e('p', { className: `font-bold mt-1 ${gestionado ? 'text-green-600' : 'text-amber-500'}` }, txtColM || 'Sin observaciones registradas'))
+            );
+          }))
+        )
+      );
+    }
+
+    // ==========================================
+    // --- PESTAÑA 2: MÓDULO CSAT REFLEXIVO ---
+    // ==========================================
+    function ModuleCSAT({ abonoRaw, reunionRaw }) {
+      const [c1Pais, setC1Pais] = useState('Todos'); const [c1Mes, setC1Mes] = useState('Todos');
+      const [c2Pais, setC2Pais] = useState('Todos'); const [c2Mes, setC2Mes] = useState('Todos');
+
+      const listPaises = ['Todos', 'Colombia', 'México', 'Chile', 'Perú', 'Ecuador'];
+      const listMeses = ['Todos', 'Mayo', 'Junio', 'Julio', 'Agosto'];
+
+      const c1Filtrados = useMemo(() => abonoRaw.filter(r => (c1Pais === 'Todos' || r.pais === c1Pais) && (c1Mes === 'Todos' || r.mes === c1Mes)), [abonoRaw, c1Pais, c1Mes]);
+      const m1 = useMemo(() => {
+        const total = c1Filtrados.length; if (total === 0) return { total: 0, p: 0, n: 0, d: 0, score: 0, avg: '—', pPorc: 0 };
+        let alto = 0, medio = 0, bajo = 0, suma = 0;
+        c1Filtrados.forEach(r => { 
+          const v = parseFloat(r.puntuacion || 10); suma += v;
+          if (v >= 9) alto++; else if (v >= 7) medio++; else bajo++;
+        });
+        return { total, p: alto, n: medio, d: bajo, score: Math.round((alto/total)*100), avg: (suma/total).toFixed(1), pPorc: ((alto/total)*100).toFixed(0) };
+      }, [c1Filtrados]);
+
+      const c2Filtrados = useMemo(() => reunionRaw.filter(r => (c2Pais === 'Todos' || r.pais === c2Pais) && (c2Mes === 'Todos' || r.mes === c2Mes)), [reunionRaw, c2Pais, c2Mes]);
+      const m2 = useMemo(() => {
+        const total = c2Filtrados.length; if (total === 0) return { total: 0, p: 0, n: 0, d: 0, score: 0, avg: '—', pPorc: 0 };
+        let alto = 0, medio = 0, bajo = 0, suma = 0;
+        c2Filtrados.forEach(r => {
+          const v = parseFloat(r.puntuacion || 5); suma += v;
+          if (v >= 4) alto++; else if (v === 3) medio++; else bajo++;
+        });
+        return { total, p: alto, n: medio, d: bajo, score: Math.round((alto/total)*100), avg: (suma/total).toFixed(1), pPorc: ((alto/total)*100).toFixed(0) };
+      }, [c2Filtrados]);
+
+      const histAbono = useMemo(() => {
+        const qs = {}; abonoRaw.forEach(r => { if(r.mes) { const q = r.mes === 'Mayo'?'Q2':'Q3'; if(!qs[q]) qs[q]=[]; qs[q].push(r); } });
+        return Object.keys(qs).map(q => { let s=0; qs[q].forEach(r=>s+=parseFloat(r.puntuacion||9)); return { q, score: (s/qs[q].length || 9) }; });
+      }, [abonoRaw]);
+
+      const histReunion = useMemo(() => {
+        const qs = {}; reunionRaw.forEach(r => { if(r.mes) { const q = r.mes === 'Mayo'?'Q2':'Q3'; if(!qs[q]) qs[q]=[]; qs[q].push(r); } });
+        return Object.keys(qs).map(q => { let s=0; qs[q].forEach(r=>s+=parseFloat(r.puntuacion||5)); return { q, score: (s/qs[q].length || 5) }; });
+      }, [reunionRaw]);
+
+      const criticosCSAT = useMemo(() => {
+        return [...abonoRaw, ...reunionRaw].filter(r => { const v = parseFloat(r.puntuacion); return !isNaN(v) && (v <= 6 || v <= 3); });
+      }, [abonoRaw, reunionRaw]);
+
+      return e('div', { className: 'space-y-6' },
+        e('div', { className: 'card p-4 bg-brand/5 border border-brand/10 -mb-2' },
+          e('h3', { className: 'text-xs font-bold text-brand uppercase tracking-wider' }, 'Sección Horizontal 1 · CSAT Post Abono Trimestral'),
+          e('p', { className: 'text-[11px] text-gray-500 mt-0.5' }, 'Evaluación gatillada tras la confirmación de abonos trimestrales en la plataforma financiera.')
+        ),
+        e(BloquePreguntaEspejo, {
+          id: 'csat_1', tituloCompleto: '¿Qué tan satisfecho(a) estás con el uso de la plataforma para la gestión de tus abonos trimestrales?',
+          totalRespuestas: m1.total, promotores: m1.p, neutrales: m1.n, detractores: m1.d, score: m1.score, promedio: m1.avg, totalPromotores: m1.p, porcentajePromotores: m1.pPorc,
+          listaPaises: listPaises, listaMeses: listMeses, filtroPais: c1Pais, setFiltroPais: setC1Pais, filtroMes: c1Mes, setFiltroMes: setC1Mes,
+          textoBoton: 'Generar reporte de respuestas abiertas', labelScoreCenter: 'Satisfechos',
+          onExportar: () => generarPDFResumenEjecutivo(c1Filtrados, 'CSAT 1 - Post Abono', `Corte ${c1Pais}`)
+        }),
+
+        e('div', { className: 'card p-4 bg-brand/5 border border-brand/10 -mb-2' },
+          e('h3', { className: 'text-xs font-bold text-brand uppercase tracking-wider' }, 'Sección Horizontal 2 · CSAT Post Reunión Comercial'),
+          e('p', { className: 'text-[11px] text-gray-500 mt-0.5' }, 'Medición de calidad del servicio consultivo ejecutada inmediatamente al cierre de mesas de trabajo.')
+        ),
+        e(BloquePreguntaEspejo, {
+          id: 'csat_2', tituloCompleto: '¿El ejecutivo comercial resolvió de forma clara y oportuna tus requerimientos en la reunión de cuenta?',
+          totalRespuestas: m2.total, promotores: m2.p, neutrales: m2.n, detractores: m2.d, score: m2.score, promedio: m2.avg, totalPromotores: m2.p, porcentajePromotores: m2.pPorc,
+          listaPaises: listPaises, listaMeses: listMeses, filtroPais: c2Pais, setFiltroPais: setC2Pais, filtroMes: c2Mes, setFiltroMes: setC2Mes,
+          textoBoton: 'Generar reporte de respuestas abiertas', labelScoreCenter: 'Satisfechos',
+          onExportar: () => generarPDFResumenEjecutivo(c2Filtrados, 'CSAT 2 - Post Reunión', `Corte ${c2Pais}`)
+        }),
+
+        e('div', { className: 'card p-6 bg-white' },
+          e('h4', { className: 'text-sm font-bold text-gray-900 mb-4' }, 'Evolución Histórica de Tendencia CSAT (Líneas Comparativas)'),
+          e(ChartLineaDobleCSAT, { datosAbono: histAbono, datosReunion: histReunion })
+        ),
+
+        e('div', { className: 'card p-6 bg-white' },
+          e('h4', { className: 'text-sm font-bold text-red-600 mb-3' }, 'Radar de Alertas Críticas · CSAT'),
+          criticosCSAT.length === 0 ? e('p', { className: 'text-xs text-gray-400 py-4 text-center' }, 'No hay alertas de insatisfacción críticas en este bloque.') :
+          e('div', { className: 'space-y-2' }, criticosCSAT.map((c, i) => 
+            e('div', { key: i, className: 'p-3 rounded-lg border border-red-100 bg-red-50/5 flex justify-between text-xs' },
+              e('div', {}, e('p', { className: 'font-bold' }, c.cliente || 'Empresa'), e('p', { className: 'text-gray-400 italic' }, c.comentario || 'Sin comentario de texto')),
+              e('span', { className: 'font-bold text-red-500' }, `Nota: ${c.puntuacion || '—'}`)
+            )
+          ))
+        )
+      );
+    }
+
+    // --- ANÁLISIS DE CLIENTES INACTIVOS ---
+    function PlaceholderTab({ title, icon, dataRaw }) {
+      return e('div', { className: 'card p-10 text-center text-gray-500 font-medium space-y-4 bg-white' },
+        e('i', { className: `fa-solid ${icon} text-4xl text-brand block` }),
+        e('h2', { className: 'text-sm font-extrabold text-gray-800' }, title),
+        e('div', { className: 'bg-gray-50 p-4 rounded-xl font-mono text-[10px] text-gray-600 text-left overflow-x-auto max-w-xl mx-auto border border-gray-100' },
+          JSON.stringify(dataRaw, null, 2)
+        )
+      );
+    }
+
+    // ── NÚCLEO CENTRAL DE CARGA ──
+    function App() {
+      const [data, setData] = useState(null); 
+      const [metaHeaders, setMetaHeaders] = useState({});
+      const [loading, setLoading] = useState(true); 
+      const [error, setError] = useState(null);
+      const [tab, setTab] = useState(0);
+
+      // Variables de estado unificadas para el filtrado Off
+      const [filtroPais, setFiltroPais] = useState('Todos');
+      const [filtroAnio, setFiltroAnio] = useState('Todos');
+      const [filtroMes, setFiltroMes] = useState('Todos');
+
+      const cargarData = useCallback(() => {
+        setLoading(true); setError(null);
+        fetch(CONFIG_FRONTEND.URL_API_BACKEND)
+          .then(res => { if (!res.ok) throw new Error("Fallo de respuesta del servidor."); return res.json(); })
+          .then(parsed => { if (!parsed || typeof parsed !== 'object') throw new Error("Esquema corrupto."); setData(parsed); setMetaHeaders(parsed.headers || {}); setLoading(false); })
+          .catch(err => { setError(err.message || "Error general de enlace."); setLoading(false); });
+      }, []);
+
+      useEffect(() => { cargarData(); }, []);
+
+      const menuTabs = [['NPS', 'fa-solid fa-chart-line'], ['CSAT', 'fa-solid fa-star'], ['Inactivos', 'fa-solid fa-user-clock'], ['Salidas / Off', 'fa-solid fa-arrow-right-from-bracket']];
+
+      return e('div', { className: 'min-h-screen flex flex-col justify-between' },
+        e('div', {},
+          e('header', { className: 'bg-white border-b border-gray-200 sticky top-0 z-20 shadow-sm px-6 py-4' },
+            e('div', { className: 'max-w-7xl mx-auto flex items-center justify-between' },
+              e('div', { className: 'flex items-center gap-3' },
+                e('div', { className: 'w-10 h-10 rounded-xl bg-brand flex items-center justify-center text-white text-base shadow-md' }, e('i', { className: 'fa-solid fa-heart-pulse' })),
+                e('div', {}, e('h1', { className: 'text-base font-extrabold text-gray-900 leading-none tracking-tight' }, 'Experiencia del cliente'), e('p', { className: 'text-[11px] text-gray-400 mt-1 font-medium' }, 'Métricas sincronizadas en vivo corporativo'))
+              ),
+              e('button', { onClick: cargarData, disabled: loading, className: 'p-2.5 bg-gray-50 hover:bg-gray-100 rounded-xl text-gray-400 border border-gray-200' }, e('i', { className: `fa-solid fa-arrow-rotate-right ${loading ? 'animate-spin' : ''}` }))
+            ),
+            e('div', { className: 'max-w-7xl mx-auto flex gap-6 -mb-4 mt-4 overflow-x-auto' }, menuTabs.map(([lbl, icon], id) => e('button', { key: id, onClick: () => setTab(id), className: `tab-btn pb-3 text-xs font-bold tracking-wider uppercase whitespace-nowrap flex items-center gap-2 ${tab === id ? 'active text-brand' : 'text-gray-400 hover:text-gray-600'}` }, e('i', { className: icon }), lbl)))
+          ),
+          e('main', { className: 'max-w-7xl mx-auto px-6 mt-6' },
+            loading && e('div', { className: 'space-y-5' }, e('div', { className: 'skeleton h-20' }), e('div', { className: 'grid grid-cols-1 lg:grid-cols-2 gap-6' }, e('div', { className: 'skeleton h-[300px]' }), e('div', { className: 'skeleton h-[300px]' })), e('div', { className: 'skeleton h-48 w-full' })),
+            !loading && error && e('div', { className: 'card p-8 text-center max-w-md mx-auto mt-10 space-y-3 bg-white' }, e('i', { className: 'fa-solid fa-triangle-exclamation text-red-500 text-3xl' }), e('p', { className: 'font-bold text-gray-800' }, 'Error de conexión'), e('button', { onClick: cargarData, className: 'px-4 py-2 bg-brand text-white text-xs font-bold rounded-xl' }, 'Reintentar')),
+            !loading && !error && data && e('div', {},
+              tab === 0 && e(ModuleNPS, { rawNps: Array.isArray(data.nps) ? data.nps : [], metaHeaders: metaHeaders }),
+              tab === 1 && e(ModuleCSAT, { abonoRaw: Array.isArray(data.csat_abono) ? data.csat_abono : [], reunionRaw: Array.isArray(data.csat_reunion) ? data.csat_reunion : [] }),
+              tab === 2 && e(PlaceholderTab, { title: 'Análisis de Clientes Inactivos', icon: 'fa-user-clock', dataRaw: { inactivos: data.inactivos } }),
+              tab === 3 && e(RenderSalidasOff, {
+                datosSalidas: Array.isArray(data.salidas) ? data.salidas.map(obj => ({
+                  pais: obj.pais || obj["país"] || obj["País"] || "",
+                  programa: obj.programa || obj["nombreDelPrograma"] || obj["Nombre del programa"] || "",
+                  correo: obj.correo || obj["correoDeContacto"] || obj["Correo de contacto"] || "",
+                  motivoSalida: obj.motivoBaja || obj.motivoSalida || obj["principalMotivo"] || obj["Principal motivo"] || "",
+                  puntuacionFalla: obj.puntuacionFalla || obj["queFallo"] || obj["Qué falló"] || "",
+                  puntuacionExperiencia: obj.experiencia || "",
+                  puntuacionEjecutivo: obj.notaKam || "",
+                  volveria: obj.volveria ? String(obj.volveria).toUpperCase().replace('Í', 'I').trim() : "",
+                  estado: obj.estado || obj["estadoDeEncuesta"] || obj["Estado de encuesta"] || obj["estado"] || "",
+                  fecha: obj.fecha || obj["fechaDeRespuesta"] || obj["Fecha de respuesta"] || null
+                })) : [],
+                filtroPais, setFiltroPais,
+                filtroAnio, setFiltroAnio,
+                filtroMes, setFiltroMes
+              })
+            )
+          )
+        ),
+        e('footer', { className: 'text-center py-6 text-[11px] text-gray-400 mt-10 border-t border-gray-200 bg-white w-full' }, 'Apprecio · Dashboard Experiencia del cliente · 2026')
+      );
+    }
+
+    ReactDOM.render(e(App), document.getElementById('root'));
+
+    function printReport() {
+      const title = document.getElementById('modal-title').textContent;
+      const body = document.getElementById('modal-body').innerHTML;
+      const w = window.open('', '_blank', 'width=900,height=700');
+      w.document.write(`
+        <!DOCTYPE html>
+        <html lang="es">
+        <head>
+          <meta charset="UTF-8">
+          <title>${title}</title>
+          <style>
+            body { font-family: 'DM Sans', system-ui, sans-serif; max-width: 800px; margin: 40px auto; color: #111827; font-size: 13px; line-height: 1.6; padding: 0 20px; }
+            h1 { color: #FA345E; font-size: 18px; border-bottom: 2px solid #FA345E; padding-bottom: 8px; margin-bottom: 24px; font-weight: 800; }
+            h3 { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .07em; color: #FA345E; margin: 24px 0 10px; padding-bottom: 5px; border-bottom: 2px solid #FFF0F3; }
+            .report-item { padding: 10px 14px; margin-bottom: 8px; border-radius: 6px; border: 1px solid #E4E7EB; font-size: 12px; background: #F8F9FA; }
+            .report-item.negative { border-left: 3px solid #EF4444; background: #FEF2F2; }
+            .report-item.neutral { border-left: 3px solid #F59E0B; background: #FFFBEB; }
+            .report-item.positive { border-left: 3px solid #10B981; background: #F0FDF4; }
+            strong { color: #111827; }
+            @media print { body { margin: 20px; } .no-print { display: none; } }
+          </style>
+        </head>
+        <body>
+          <h1>${title}</h1>
+          ${body}
+          <p style="font-size:11px; color:#9AA0B4; margin-top:32px; border-top:1px solid #E4E7EB; padding-top:12px; text-align:center;">
+            Generado por Apprecio Beat CX Dashboard · ${new Date().toLocaleString('es-CL')}
+          </p>
+        </body>
+        </html>
+      `);
+      w.document.close();
+      setTimeout(() => w.print(), 500);
+    }
+
+    function openModal() {
+      document.getElementById('report-modal').classList.add('open');
+    }
+
+    function closeModal() {
+      document.getElementById('report-modal').classList.remove('open');
+    }
+
+    document.getElementById('report-modal').addEventListener('click', function(e) {
+      if (e.target === this) closeModal();
+    });
+  </script>
+</body>
+</html>
