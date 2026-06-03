@@ -623,28 +623,36 @@ const valoresFallas = Object.values(conteoFallas);
           )
         ),
 
-    // ── CALCULOS DIRECTOS COMPATIBLES CON EL COMPONENTE DE GRÁFICOS ──
+// ── CALCULOS DIRECTOS COMPATIBLES CON EL COMPONENTE DE GRÁFICOS ──
         (() => {
           const conteoMotivosDirecto = {};
           const conteoFallasDirecto = {};
 
+          // Variables para capturar qué datos están llegando realmente
+          let queLlegaMotivo = "Vacio";
+          let queLlegaFalla = "Vacio";
+
           datosFiltrados.forEach(r => {
+            // Evaluamos qué nombres de llaves existen en el objeto que llega
+            if (r.motivoBaja) queLlegaMotivo = r.motivoBaja;
+            else if (r.motivoSalida) queLlegaMotivo = "Vino como motivoSalida: " + r.motivoSalida;
+            
+            if (r.puntuacionFalla) queLlegaFalla = r.puntuacionFalla;
+
             // Procesamiento de motivos de salida
-            if (r.motivoBaja) {
-              r.motivoBaja.split(',').forEach(opcion => {
+            const campoMotivo = r.motivoBaja || r.motivoSalida || "";
+            if (campoMotivo) {
+              campoMotivo.split(',').forEach(opcion => {
                 const opLimpia = opcion.trim();
-                if (opLimpia) {
-                  conteoMotivosDirecto[opLimpia] = (conteoMotivosDirecto[opLimpia] || 0) + 1;
-                }
+                if (opLimpia) conteoMotivosDirecto[opLimpia] = (conteoMotivosDirecto[opLimpia] || 0) + 1;
               });
             }
+
             // Procesamiento de fallas detectadas
             if (r.puntuacionFalla) {
               r.puntuacionFalla.split(',').forEach(opcion => {
                 const opLimpia = opcion.trim();
-                if (opLimpia) {
-                  conteoFallasDirecto[opLimpia] = (conteoFallasDirecto[opLimpia] || 0) + 1;
-                }
+                if (opLimpia) conteoFallasDirecto[opLimpia] = (conteoFallasDirecto[opLimpia] || 0) + 1;
               });
             }
           });
@@ -667,7 +675,7 @@ const valoresFallas = Object.values(conteoFallas);
               e('div', { className: 'text-sm font-extrabold text-gray-900 mb-4' }, '¿Principal motivo por el que decidiste dejar de trabajar con nosotros?'),
               labelsMotivosFinal.length > 0 
                 ? e(ChartHorizontalBars, { id: 'motivos-salida-final', dataLabels: labelsMotivosFinal, dataValues: valoresMotivosFinal }) 
-                : e('div', { className: 'text-center py-10 text-xs text-gray-400' }, 'Sin registros válidos para este corte.')
+                : e('div', { className: 'text-center py-10 text-xs text-gray-500 bg-gray-50 rounded-xl p-4 font-mono' }, `Debug lector: ${queLlegaMotivo}`)
             ),
 
             // Cuadrante 2: Qué falló principalmente
@@ -676,10 +684,13 @@ const valoresFallas = Object.values(conteoFallas);
               e('div', { className: 'text-sm font-extrabold text-gray-900 mb-4' }, '¿Qué falló principalmente en tu experiencia?'),
               labelsFallasFinal.length > 0 
                 ? e(ChartHorizontalBars, { id: 'fallas-experiencia-final', dataLabels: labelsFallasFinal, dataValues: valoresFallasFinal }) 
-                : e('div', { className: 'text-center py-10 text-xs text-gray-400' }, 'Sin registros de fallas.')
+                : e('div', { className: 'text-center py-10 text-xs text-gray-500 bg-gray-50 rounded-xl p-4 font-mono' }, `Debug lector: ${queLlegaFalla}`)
             )
           );
         })(),
+
+___
+               
         // ── FILA CON LAS DOS PREGUNTAS ABIERTAS (SE ELIMINÓ LA PRIMERA DE LA "X") ──
         e('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-6 mb-6' },
           e('div', { className: 'bg-white p-5 rounded-2xl border border-gray-100 shadow-sm flex flex-col justify-between' },
