@@ -4,12 +4,10 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Dashboard · Experiencia del cliente</title>
-
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
-
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
@@ -18,162 +16,56 @@
           fontFamily: { sans: ['"DM Sans"', 'sans-serif'] },
           colors: {
             brand: { DEFAULT: '#FA345E', light: '#FFF0F3', dark: '#D61F47' },
-            success: '#22C55E', warn: '#F59E0B', danger: '#EF4444',
-            neutral: { 50: '#F8F9FA', 100: '#F1F3F7', 200: '#E4E7EB', 300: '#CBD1D6', 400: '#9AA0B4', 500: '#6B7280', 700: '#374151', 800: '#1F2937', 900: '#111827' }
+            neutral: { 50:'#F8F9FA',100:'#F1F3F7',200:'#E4E7EB',300:'#CBD1D6',400:'#9AA0B4',500:'#6B7280',700:'#374151',800:'#1F2937',900:'#111827' }
           }
         }
       }
     };
   </script>
-
   <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    html, body { font-family: 'DM Sans', sans-serif; background: #F8F9FA; min-height: 100vh; color: #1F2937; }
-    .card { background: #ffffff; border-radius: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.02), 0 1px 3px rgba(0,0,0,0.03); border: 1px solid #E4E7EB; }
-    .tab-btn { position: relative; transition: all 0.2s; }
-    .tab-btn::after { content: ''; position: absolute; bottom: -1px; left: 0; right: 0; height: 3px; background: #FA345E; border-radius: 3px 3px 0 0; transform: scaleX(0); transition: transform 0.2s ease; }
-    .tab-btn.active { color: #FA345E; font-weight: 700; }
-    .tab-btn.active::after { transform: scaleX(1); }
-    .tooltip-box { display: none; position: absolute; z-index: 50; width: 280px; background: #111827; color: #ffffff; padding: 12px; border-radius: 12px; font-size: 11px; box-shadow: 0 10px 25px rgba(0,0,0,0.15); line-height: 1.4; }
-    .tooltip-container:hover .tooltip-box { display: block; }
-
-    /* ── MODAL REPORTE PDF ── */
-    .modal-overlay {
-      display: none; 
-      position: fixed; 
-      inset: 0; 
-      background: rgba(0,0,0,0.55); 
-      z-index: 500; 
-      align-items: center; 
-      justify-content: center; 
-      padding: 20px;
-    }
-    .modal-overlay.open {
-      display: flex;
-    }
-    .modal-box {
-      background: #ffffff; 
-      border-radius: 20px; 
-      width: 100%; 
-      max-width: 760px; 
-      max-height: 88vh; 
-      display: flex; 
-      flex-direction: column; 
-      overflow: hidden; 
-      box-shadow: 0 24px 64px rgba(0,0,0,0.25);
-    }
-    .modal-header {
-      display: flex; 
-      align-items: center; 
-      justify-content: space-between; 
-      padding: 18px 22px; 
-      border-bottom: 1.5px solid #E4E7EB; 
-      background: #F8F9FA;
-    }
-    .modal-title {
-      font-size: 15px; 
-      font-weight: 700; 
-      color: #111827;
-    }
-    .modal-close {
-      background: none; 
-      border: none; 
-      font-size: 20px; 
-      cursor: pointer; 
-      color: #9AA0B4; 
-      line-height: 1; 
-      padding: 4px 8px; 
-      border-radius: 6px; 
-      transition: background 0.15s;
-    }
-    .modal-close:hover {
-      background: #E4E7EB; 
-      color: #111827;
-    }
-    .modal-body {
-      flex: 1; 
-      overflow-y: auto; 
-      padding: 24px;
-    }
-    .modal-footer {
-      display: flex; 
-      gap: 10px; 
-      justify-content: flex-end; 
-      padding: 16px 22px; 
-      border-top: 1.5px solid #E4E7EB; 
-      background: #F8F9FA;
-    }
-
-    /* Contenido interno del Reporte */
-    .report-section {
-      margin-bottom: 24px;
-    }
-    .report-section h3 {
-      font-size: 13px; 
-      font-weight: 700; 
-      text-transform: uppercase; 
-      letter-spacing: .07em; 
-      color: #FA345E; 
-      margin-bottom: 12px; 
-      padding-bottom: 6px; 
-      border-bottom: 2px solid #FFF0F3;
-    }
-    .report-group {
-      display: flex; 
-      flex-direction: column; 
-      gap: 10px;
-    }
-    .report-item {
-      padding: 12px 16px; 
-      border-radius: 8px; 
-      border: 1px solid #E4E7EB; 
-      background: #F8F9FA; 
-      font-size: 13px; 
-      line-height: 1.6; 
-      color: #374151;
-    }
-    .report-item.negative {
-      border-left: 3px solid #EF4444; 
-      background: #FEF2F2;
-    }
-    .report-item.neutral {
-      border-left: 3px solid #F59E0B; 
-      background: #FFFBEB;
-    }
-    .report-item.positive {
-      border-left: 3px solid #10B981; 
-      background: #F0FDF4;
-    }
-    .spinner-dark {
-      display: inline-block; 
-      width: 13px; 
-      height: 13px; 
-      border: 2px solid rgba(26,26,46,0.2); 
-      border-top-color: #FA345E; 
-      border-radius: 50%; 
-      animation: spin .65s linear infinite; 
-      vertical-align: middle;
-    }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    html,body{font-family:'DM Sans',sans-serif;background:#F8F9FA;min-height:100vh;color:#1F2937}
+    .card{background:#fff;border-radius:20px;box-shadow:0 4px 20px rgba(0,0,0,.02),0 1px 3px rgba(0,0,0,.03);border:1px solid #E4E7EB}
+    .tab-btn{position:relative;transition:all .2s}
+    .tab-btn::after{content:'';position:absolute;bottom:-1px;left:0;right:0;height:3px;background:#FA345E;border-radius:3px 3px 0 0;transform:scaleX(0);transition:transform .2s ease}
+    .tab-btn.active{color:#FA345E;font-weight:700}
+    .tab-btn.active::after{transform:scaleX(1)}
+    .tooltip-box{display:none;position:absolute;z-index:50;width:280px;background:#111827;color:#fff;padding:12px;border-radius:12px;font-size:11px;box-shadow:0 10px 25px rgba(0,0,0,.15);line-height:1.4}
+    .tooltip-container:hover .tooltip-box{display:block}
+    .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:500;align-items:center;justify-content:center;padding:20px}
+    .modal-overlay.open{display:flex}
+    .modal-box{background:#fff;border-radius:20px;width:100%;max-width:760px;max-height:88vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 24px 64px rgba(0,0,0,.25)}
+    .modal-header{display:flex;align-items:center;justify-content:space-between;padding:18px 22px;border-bottom:1.5px solid #E4E7EB;background:#F8F9FA}
+    .modal-title{font-size:15px;font-weight:700;color:#111827}
+    .modal-close{background:none;border:none;font-size:20px;cursor:pointer;color:#9AA0B4;line-height:1;padding:4px 8px;border-radius:6px;transition:background .15s}
+    .modal-close:hover{background:#E4E7EB;color:#111827}
+    .modal-body{flex:1;overflow-y:auto;padding:24px}
+    .modal-footer{display:flex;gap:10px;justify-content:flex-end;padding:16px 22px;border-top:1.5px solid #E4E7EB;background:#F8F9FA}
+    .report-section{margin-bottom:24px}
+    .report-section h3{font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#FA345E;margin-bottom:12px;padding-bottom:6px;border-bottom:2px solid #FFF0F3}
+    .report-group{display:flex;flex-direction:column;gap:10px}
+    .report-item{padding:12px 16px;border-radius:8px;border:1px solid #E4E7EB;background:#F8F9FA;font-size:13px;line-height:1.6;color:#374151}
+    .report-item.negative{border-left:3px solid #EF4444;background:#FEF2F2}
+    .report-item.neutral{border-left:3px solid #F59E0B;background:#FFFBEB}
+    .report-item.positive{border-left:3px solid #10B981;background:#F0FDF4}
+    .spinner-dark{display:inline-block;width:13px;height:13px;border:2px solid rgba(26,26,46,.2);border-top-color:#FA345E;border-radius:50%;animation:spin .65s linear infinite;vertical-align:middle}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    .skeleton{background:linear-gradient(90deg,#f0f0f0 25%,#e0e0e0 50%,#f0f0f0 75%);background-size:200% 100%;animation:shimmer 1.5s infinite;border-radius:12px}
+    @keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
   </style>
 </head>
-
 <body>
   <div id="root"></div>
-
   <div class="modal-overlay" id="report-modal">
     <div class="modal-box">
       <div class="modal-header">
-        <div class="modal-title" id="modal-title">Reporte de Respuestas Abiertas</div>
+        <div class="modal-title" id="modal-title">Reporte</div>
         <button class="modal-close" onclick="closeModal()">✕</button>
       </div>
-      <div class="modal-body" id="modal-body">
-        <p style="color: #6B7280; font-size: 13px;">El contenido del reporte se cargará aquí.</p>
-      </div>
+      <div class="modal-body" id="modal-body"></div>
       <div class="modal-footer">
         <button class="px-4 py-2 bg-gray-100 text-gray-700 font-bold rounded-xl text-xs uppercase" onclick="closeModal()">Cerrar</button>
-        <button class="px-4 py-2 bg-brand text-white font-bold rounded-xl text-xs uppercase" onclick="printReport()">
-          Descargar PDF
-        </button>
+        <button class="px-4 py-2 bg-brand text-white font-bold rounded-xl text-xs uppercase" style="background:#FA345E" onclick="printReport()">Descargar PDF</button>
       </div>
     </div>
   </div>
@@ -181,920 +73,917 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/react/17.0.2/umd/react.production.min.js" crossorigin></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/17.0.2/umd/react-dom.production.min.js" crossorigin></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
-
   <script>
-    const e = React.createElement;
-    const { useState, useEffect, useCallback, useMemo, useRef } = React;
+  const e = React.createElement;
+  const { useState, useEffect, useCallback, useMemo, useRef } = React;
 
-    const CONFIG_FRONTEND = {
-      URL_API_BACKEND: "https://script.google.com/macros/s/AKfycbx3TEMFdxbYGKZFhF5GSZstiiV6vivCCbLq9L7A2iq5oq6DgrVyM6Q3a5Wd_JLAhbT1Wg/exec"
-    };
+  const URL_BACKEND = "https://script.google.com/macros/s/AKfycbx3TEMFdxbYGKZFhF5GSZstiiV6vivCCbLq9L7A2iq5oq6DgrVyM6Q3a5Wd_JLAhbT1Wg/exec";
+  const URL_N8N     = "https://n8n.openip.cl/webhook/apprecio-cx-analisis-v2";
 
-    // --- MOTOR DE PROCESAMIENTO Y CONFIGURACIÓN DEL MODAL CON IA ---
-    const generarPDFResumenEjecutivo = async (datosFiltrados, modulo, especificacion) => {
-      document.getElementById('modal-title').textContent = `Reporte de Respuestas Abiertas · ${modulo}`;
-      document.getElementById('modal-body').innerHTML = `
-        <div style="text-align:center; padding:40px; color:#6B7280;">
-          <span class="spinner-dark"></span> Generando análisis con IA...
+  // ─── MODAL HELPERS ───
+  function openModal()  { document.getElementById('report-modal').classList.add('open'); }
+  function closeModal() { document.getElementById('report-modal').classList.remove('open'); }
+  function printReport() {
+    const title = document.getElementById('modal-title').textContent;
+    const body  = document.getElementById('modal-body').innerHTML;
+    const w = window.open('','_blank','width=900,height=700');
+    w.document.write(`<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><title>${title}</title>
+      <style>body{font-family:system-ui,sans-serif;max-width:800px;margin:40px auto;color:#111827;font-size:13px;line-height:1.6;padding:0 20px}
+      h1{color:#FA345E;font-size:18px;border-bottom:2px solid #FA345E;padding-bottom:8px;margin-bottom:24px;font-weight:800}
+      h3{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#FA345E;margin:24px 0 10px;padding-bottom:5px;border-bottom:2px solid #FFF0F3}
+      .report-item{padding:10px 14px;margin-bottom:8px;border-radius:6px;border:1px solid #E4E7EB;font-size:12px;background:#F8F9FA}
+      .report-item.negative{border-left:3px solid #EF4444;background:#FEF2F2}
+      .report-item.neutral{border-left:3px solid #F59E0B;background:#FFFBEB}
+      .report-item.positive{border-left:3px solid #10B981;background:#F0FDF4}
+      </style></head><body><h1>${title}</h1>${body}
+      <p style="font-size:11px;color:#9AA0B4;margin-top:32px;border-top:1px solid #E4E7EB;padding-top:12px;text-align:center;">
+        Apprecio CX Dashboard · ${new Date().toLocaleString('es-CL')}</p></body></html>`);
+    w.document.close();
+    setTimeout(() => w.print(), 500);
+  }
+  document.getElementById('report-modal').addEventListener('click', function(ev){ if(ev.target===this) closeModal(); });
+
+  // ─── LLAMADA IA VÍA N8N ───
+  async function llamarIA(prompt, tituloModal) {
+    document.getElementById('modal-title').textContent = tituloModal;
+    document.getElementById('modal-body').innerHTML = `<div style="text-align:center;padding:40px;color:#6B7280"><span class="spinner-dark"></span> Generando análisis con IA...</div>`;
+    openModal();
+    try {
+      const res = await fetch(URL_N8N, {
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ tipo:'REPORTE_RESPUESTAS_ABIERTAS', datos:{ instrucciones: prompt } })
+      });
+      if (!res.ok) throw new Error('n8n error');
+      const datos = await res.json();
+      return datos.respuesta || 'Sin respuesta de IA.';
+    } catch(err) { return null; }
+  }
+
+  function renderFallbackComentarios(neg, neu, pos) {
+    const bloque = (arr, titulo, cls) => !arr.length ? '' : `
+      <div class="report-section"><h3>${titulo} (${arr.length})</h3><div class="report-group">
+        ${arr.map(r=>`<div class="report-item ${cls}"><strong>${r.empresa}</strong> · <span style="font-weight:700">${r.nota!==undefined?'Nota: '+r.nota:''}</span><br><em style="color:#4A5568">"${r.comentario}"</em></div>`).join('')}
+      </div></div>`;
+    return bloque(neg,'🔴 Críticos / Negativos','negative') +
+           bloque(neu,'🟡 Neutros','neutral') +
+           bloque(pos,'🟢 Positivos / Destacados','positive') ||
+           `<div style="text-align:center;padding:40px;color:#9AA0B4">Sin respuestas escritas para este corte.</div>`;
+  }
+
+  // ─── REPORTE NPS P1 (razon = Col H) ───
+  async function reporteNpsP1(filtrados, etiqueta) {
+    const items = filtrados.map(r => ({
+      empresa: r.cliente||r.pais||'—', nota: parseFloat(r.puntuacion)||0, comentario: (r.razon||'').trim()
+    })).filter(r => r.comentario);
+    const neg = items.filter(r=>r.nota<=6), neu = items.filter(r=>r.nota>=7&&r.nota<=8), pos = items.filter(r=>r.nota>=9);
+    const prompt = buildPromptNPS('NPS P1 · Recomendación de Marca', etiqueta, neg, neu, pos);
+    const ia = await llamarIA(prompt, `Reporte NPS P1 · ${etiqueta}`);
+    if (ia) {
+      document.getElementById('modal-body').innerHTML = renderIABox(ia, items.length);
+    } else {
+      document.getElementById('modal-body').innerHTML = `<div style="margin-bottom:16px;padding:12px 16px;background:#FEF2F2;border:1px solid #FECACA;border-radius:12px;font-size:12px;color:#DC2626;font-weight:500">⚠️ Sin conexión IA — análisis local</div>` + renderFallbackComentarios(neg,neu,pos);
+    }
+  }
+
+  // ─── REPORTE NPS P2 (distribución de notas KAM = Col I) ───
+  function reporteNpsP2(filtrados, etiqueta) {
+    document.getElementById('modal-title').textContent = `Distribución Notas KAM · ${etiqueta}`;
+    const notas = filtrados.map(r=>parseFloat(r.pregunta2)).filter(v=>!isNaN(v));
+    const total = notas.length;
+    if (!total) {
+      document.getElementById('modal-body').innerHTML = `<div style="text-align:center;padding:40px;color:#9AA0B4">Sin notas KAM para este corte.</div>`;
+      openModal(); return;
+    }
+    const prom = (notas.reduce((a,b)=>a+b,0)/total).toFixed(1);
+    const altos = notas.filter(v=>v>=9).length, medios = notas.filter(v=>v>=7&&v<9).length, bajos = notas.filter(v=>v<7).length;
+    const dist = {};
+    notas.forEach(v=>{ dist[v]=(dist[v]||0)+1; });
+    document.getElementById('modal-body').innerHTML = `
+      <div style="margin-bottom:16px;padding:16px 20px;background:#F0FDF4;border:1px solid #BBF7D0;border-radius:12px;display:flex;gap:24px;align-items:center;">
+        <div style="text-align:center"><div style="font-size:28px;font-weight:800;color:#111827">${prom}</div><div style="font-size:11px;color:#6B7280;font-weight:600">Promedio</div></div>
+        <div style="flex:1;display:grid;grid-template-columns:repeat(3,1fr);gap:8px">
+          <div style="text-align:center;padding:8px;background:#F0FDF4;border-radius:8px"><div style="font-size:16px;font-weight:800;color:#16A34A">${altos}</div><div style="font-size:10px;color:#6B7280">Alto (9-10)</div></div>
+          <div style="text-align:center;padding:8px;background:#FFFBEB;border-radius:8px"><div style="font-size:16px;font-weight:800;color:#D97706">${medios}</div><div style="font-size:10px;color:#6B7280">Medio (7-8)</div></div>
+          <div style="text-align:center;padding:8px;background:#FEF2F2;border-radius:8px"><div style="font-size:16px;font-weight:800;color:#DC2626">${bajos}</div><div style="font-size:10px;color:#6B7280">Bajo (&lt;7)</div></div>
         </div>
-      `;
-      openModal();
+      </div>
+      <div class="report-section"><h3>Distribución por nota</h3><div class="report-group">
+        ${Object.entries(dist).sort((a,b)=>Number(b[0])-Number(a[0])).map(([n,c])=>`
+          <div class="report-item ${Number(n)>=9?'positive':Number(n)>=7?'neutral':'negative'}">
+            <strong>Nota ${n}</strong> — ${c} respuesta${c>1?'s':''} (${Math.round((c/total)*100)}%)
+          </div>`).join('')}
+      </div></div>
+      <div style="font-size:11px;color:#9AA0B4;margin-top:8px;padding:10px;background:#F8F9FA;border-radius:8px">
+        ℹ️ Pregunta 2 evalúa la atención del KAM. Los comentarios cualitativos están en la Pregunta 3.
+      </div>`;
+    openModal();
+  }
 
-      const comentariosData = datosFiltrados.map(r => {
-        const notaColG = parseFloat(r.puntuacion);
-        const notaColH = parseFloat(r.pregunta2);
-        const notaFinal = modulo.includes('P2') ? notaColH : notaColG;
+  // ─── REPORTE NPS P3 IA (pregunta3 = Col J) ───
+  async function reporteNpsP3IA(filtrados, etiqueta) {
+    const palabrasNeg = ['mal','falla','error','demora','lento','difícil','problema','falta','nunca','malo','pésimo','complica','no funciona'];
+    const palabrasPos = ['bien','excelente','bueno','genial','perfecto','rápido','fácil','increíble','satisfecho','feliz','recomend','siempre'];
+    const clsf = txt => { const t=txt.toLowerCase(); const p=palabrasPos.filter(w=>t.includes(w)).length; const n=palabrasNeg.filter(w=>t.includes(w)).length; return n>p?'neg':p>n?'pos':'neu'; };
+    const items = filtrados.filter(r=>r.pregunta3&&r.pregunta3.trim()).map(r=>({ empresa:r.cliente||r.pais||'—', comentario:r.pregunta3.trim(), cls:clsf(r.pregunta3) }));
+    const neg = items.filter(r=>r.cls==='neg'), neu = items.filter(r=>r.cls==='neu'), pos = items.filter(r=>r.cls==='pos');
+    const prompt = `Eres analista CX senior de Apprecio (plataforma B2B de beneficios en LATAM).
+PREGUNTA: "¿Qué podríamos mejorar o agregar para entregarte más valor?" | CORTE: ${etiqueta} | TOTAL: ${items.length} respuestas
+${neg.length?`\nCRÍTICOS (${neg.length}):\n${neg.slice(0,15).map((r,i)=>`${i+1}. ${r.empresa}: "${r.comentario}"`).join('\n')}`:'' }
+${neu.length?`\nSUGERENCIAS (${neu.length}):\n${neu.slice(0,15).map((r,i)=>`${i+1}. ${r.empresa}: "${r.comentario}"`).join('\n')}`:'' }
+${pos.length?`\nPOSITIVOS (${pos.length}):\n${pos.slice(0,15).map((r,i)=>`${i+1}. ${r.empresa}: "${r.comentario}"`).join('\n')}`:'' }
+TAREA: 1) Temas críticos que se repiten 2) Sugerencias más frecuentes 3) Lo que más valoran 4) Top 3 acciones prioritarias. Español, ejecutivo.`;
+    const ia = await llamarIA(prompt, `Análisis IA P3 · ${etiqueta}`);
+    if (ia) {
+      document.getElementById('modal-body').innerHTML = renderIABox(ia, items.length) + `
+        <div class="report-section" style="margin-top:20px"><h3>Respuestas individuales (${items.length})</h3><div class="report-group">
+          ${items.map(r=>`<div class="report-item ${r.cls==='neg'?'negative':r.cls==='pos'?'positive':'neutral'}"><strong>${r.empresa}</strong><br><em style="color:#4A5568">"${r.comentario}"</em></div>`).join('')}
+        </div></div>`;
+    } else {
+      document.getElementById('modal-body').innerHTML =
+        `<div style="margin-bottom:16px;padding:12px 16px;background:#FEF2F2;border:1px solid #FECACA;border-radius:12px;font-size:12px;color:#DC2626;font-weight:500">⚠️ Sin conexión IA — clasificación local</div>` +
+        renderFallbackComentarios(neg.map(r=>({...r,nota:undefined})), neu.map(r=>({...r,nota:undefined})), pos.map(r=>({...r,nota:undefined})));
+    }
+  }
 
-        return {
-          empresa: r.cliente || r.pais || 'Empresa solicitante',
-          pais: r.pais || '—',
-          puntuacion: !isNaN(notaFinal) ? notaFinal : 10,
-          comentario: r.razon || r.comentario || ''
-        };
-      }).filter(r => r.comentario.trim() !== '');
+  // ─── REPORTE CSAT (comentario = Col D para reuniones, Col J para abonos) ───
+  async function reporteCSAT(filtrados, modulo, etiqueta) {
+    const items = filtrados.map(r => ({
+      empresa: r.cliente||r.pais||'—', nota: parseFloat(r.puntuacion)||0, comentario: (r.comentario||'').trim()
+    })).filter(r => r.comentario);
+    const neg = items.filter(r=>r.nota<=3), neu = items.filter(r=>r.nota===3||r.nota===4), pos = items.filter(r=>r.nota>=4);
+    // CSAT escala 1-5: >=4 alto, 3 medio, <=2 bajo
+    const neg2 = items.filter(r=>r.nota<=2), neu2 = items.filter(r=>r.nota===3), pos2 = items.filter(r=>r.nota>=4);
+    const prompt = buildPromptCSAT(modulo, etiqueta, neg2, neu2, pos2);
+    const ia = await llamarIA(prompt, `Reporte ${modulo} · ${etiqueta}`);
+    if (ia) {
+      document.getElementById('modal-body').innerHTML = renderIABox(ia, items.length);
+    } else {
+      document.getElementById('modal-body').innerHTML = `<div style="margin-bottom:16px;padding:12px 16px;background:#FEF2F2;border:1px solid #FECACA;border-radius:12px;font-size:12px;color:#DC2626;font-weight:500">⚠️ Sin conexión IA — análisis local</div>` + renderFallbackComentarios(neg2,neu2,pos2);
+    }
+  }
 
-      const neg = comentariosData.filter(r => r.puntuacion <= 6);
-      const neu = comentariosData.filter(r => r.puntuacion >= 7 && r.puntuacion <= 8);
-      const pos = comentariosData.filter(r => r.puntuacion >= 9);
-      
-      const scoreActual = comentariosData.length ? Math.round(((pos.length - neg.length) / comentariosData.length) * 100) : 0;
+  // ─── REPORTE SALIDAS (queHacerDif = Col L, adicional = Col M) ───
+  async function reporteSalidas(filtrados, campo, etiqueta) {
+    const preguntas = {
+      queHacerDif: '¿Qué podríamos haber hecho diferente para que te quedaras?',
+      adicional:   '¿Hay algo adicional que quieras compartir sobre tu experiencia?'
+    };
+    const titulo = campo==='queHacerDif' ? 'Retención · Col L' : 'Comentarios Adicionales · Col M';
 
-      const resumenComentarios = (arr, tipo) => {
-        if (!arr.length) return `No hay comentarios ${tipo.toLowerCase()}s en este corte.\n`;
-        return `\n[COMENTARIOS ${tipo}S - ${arr.length} casos]:\n` + 
-          arr.slice(0, 15).map((r, i) => `${i + 1}. ${r.empresa} (Nota: ${r.puntuacion}): "${r.comentario}"`).join('\n');
-      };
+    const items = filtrados
+      .map(r => ({ empresa: r.programa||r.pais||'—', comentario: (r[campo]||'').trim() }))
+      .filter(r => r.comentario && r.comentario !== '-' && r.comentario.toLowerCase() !== 'n/a' && r.comentario !== '');
 
-      const promptContextual = `Eres el analista CX senior de Apprecio, una plataforma B2B de beneficios para empleados en Latinoamérica.
+    if (!items.length) {
+      document.getElementById('modal-title').textContent = `${titulo} · ${etiqueta}`;
+      document.getElementById('modal-body').innerHTML = '<div style="text-align:center;padding:40px;color:#9AA0B4;font-size:13px;">Sin respuestas escritas para este corte.</div>';
+      openModal(); return;
+    }
 
-MÉTRICA ANALIZADA: ${modulo} (${especificacion})
-SCORE NETO ACTUAL: ${scoreActual > 0 ? '+' : ''}${scoreActual} puntos
-DISTRIBUCIÓN: ${pos.length} promotores (≥9) · ${neu.length} neutros (7-8) · ${neg.length} detractores (≤6)
-TOTAL COMENTARIOS EVALUADOS: ${comentariosData.length}
+    const palabrasNeg=['mal','falla','error','demora','caro','problema','falta','nunca','malo','pésimo','difícil','tarde','lento','no funciona'];
+    const palabrasPos=['bien','excelente','bueno','genial','satisfecho','feliz','recomend','rápido','fácil','perfecto','increíble'];
+    const clsf=txt=>{const t=txt.toLowerCase();const p=palabrasPos.filter(w=>t.includes(w)).length;const n=palabrasNeg.filter(w=>t.includes(w)).length;return n>p?'neg':p>n?'pos':'neu';};
 
-${resumenComentarios(neg, 'NEGATIVO')}
-${resumenComentarios(neu, 'NEUTRO')}
-${resumenComentarios(pos, 'POSITIVO')}
+    const neg=items.filter(r=>clsf(r.comentario)==='neg');
+    const neu=items.filter(r=>clsf(r.comentario)==='neu');
+    const pos=items.filter(r=>clsf(r.comentario)==='pos');
 
-TAREA: Basándote EXCLUSIVAMENTE en los comentarios reales anteriores:
-1. **Análisis de Negativos**: ¿Qué patrones concretos se repiten? ¿Qué está fallando?
-2. **Análisis de Neutros**: ¿Qué aspectos generan indiferencia? ¿Qué falta para convertirlos en promotores?
-3. **Análisis de Positivos**: ¿Qué valoran más los promotores? ¿Qué podemos amplificar?
-4. **Plan de Acción (5 acciones)**: Acciones específicas y accionables para subir el score, basadas en los comentarios reales. Cada acción debe mencionar el problema exacto que resuelve.
+    const prompt = `Eres analista CX senior de Apprecio (plataforma B2B de beneficios en LATAM).
+PREGUNTA ANALIZADA: "${preguntas[campo]}"
+SECCIÓN: Clientes que salieron | CORTE: ${etiqueta} | TOTAL: ${items.length} respuestas
 
-Responde en español, de forma ejecutiva, directa y profesional.`;
+${neg.length ? `NEGATIVOS (${neg.length}):\n${neg.slice(0,15).map((r,i)=>`${i+1}. ${r.empresa}: "${r.comentario}"`).join('\n')}` : ''}
+${neu.length ? `\nNEUTROS / SUGERENCIAS (${neu.length}):\n${neu.slice(0,15).map((r,i)=>`${i+1}. ${r.empresa}: "${r.comentario}"`).join('\n')}` : ''}
+${pos.length ? `\nPOSITIVOS (${pos.length}):\n${pos.slice(0,15).map((r,i)=>`${i+1}. ${r.empresa}: "${r.comentario}"`).join('\n')}` : ''}
 
-      try {
-        const respuestaN8N = await fetch("https://n8n.openip.cl/webhook/apprecio-cx-analisis-v2", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ 
-            modulo: modulo,
-            tipo: "REPORTE_RESPUESTAS_ABIERTAS",
-            datos: { instrucciones: promptContextual }
-          })
-        });
+TAREA: Entrega un resumen ejecutivo con estas 4 secciones:
+1. 🔴 NEGATIVOS: patrones que se repiten, qué duele más
+2. 🟡 NEUTROS: sugerencias frecuentes, qué están pidiendo
+3. 🟢 POSITIVOS: qué valoraron a pesar de irse
+4. ⚡ TOP 3 ACCIONES: concretas y priorizadas basadas en los comentarios reales
+Responde en español, directo y ejecutivo.`;
 
-        if (!respuestaN8N.ok) throw new Error("Error en la respuesta del servidor de IA");
+    const ia = await llamarIA(prompt, `${titulo} · ${etiqueta}`);
+    if (ia) {
+      document.getElementById('modal-body').innerHTML =
+        renderIABox(ia, items.length) +
+        `<div class="report-section" style="margin-top:16px"><h3>Detalle de respuestas (${items.length})</h3><div class="report-group">` +
+        neg.map(r=>`<div class="report-item negative"><strong>${r.empresa}</strong><br><em style="color:#4A5568">"${r.comentario}"</em></div>`).join('') +
+        neu.map(r=>`<div class="report-item neutral"><strong>${r.empresa}</strong><br><em style="color:#4A5568">"${r.comentario}"</em></div>`).join('') +
+        pos.map(r=>`<div class="report-item positive"><strong>${r.empresa}</strong><br><em style="color:#4A5568">"${r.comentario}"</em></div>`).join('') +
+        '</div></div>';
+    } else {
+      document.getElementById('modal-body').innerHTML =
+        '<div style="margin-bottom:16px;padding:12px 16px;background:#FEF2F2;border:1px solid #FECACA;border-radius:12px;font-size:12px;color:#DC2626;font-weight:500">⚠️ Sin conexión IA — mostrando clasificación local</div>' +
+        renderFallbackComentarios(neg.map(r=>({...r,nota:undefined})), neu.map(r=>({...r,nota:undefined})), pos.map(r=>({...r,nota:undefined})));
+    }
+  }
 
-        const datos = await respuestaN8N.json();
-        const textoResumenIA = datos.respuesta || "No se recibió una respuesta válida de la IA.";
+    // ─── HELPERS PROMPTS Y UI ───
+  function buildPromptNPS(modulo, etiqueta, neg, neu, pos) {
+    const score = neg.length+pos.length ? Math.round(((pos.length-neg.length)/(neg.length+neu.length+pos.length))*100) : 0;
+    return `Eres analista CX senior de Apprecio (B2B beneficios LATAM). MÓDULO: ${modulo} | CORTE: ${etiqueta} | NPS: ${score>0?'+':''}${score} | Total comentarios: ${neg.length+neu.length+pos.length}
+${neg.length?`\nDETRACTORES (≤6):\n${neg.slice(0,15).map((r,i)=>`${i+1}. ${r.empresa} (Nota:${r.nota}): "${r.comentario}"`).join('\n')}`:'' }
+${neu.length?`\nNEUTROS (7-8):\n${neu.slice(0,15).map((r,i)=>`${i+1}. ${r.empresa} (Nota:${r.nota}): "${r.comentario}"`).join('\n')}`:'' }
+${pos.length?`\nPROMOTORES (9-10):\n${pos.slice(0,15).map((r,i)=>`${i+1}. ${r.empresa} (Nota:${r.nota}): "${r.comentario}"`).join('\n')}`:'' }
+TAREA: 1) Patrones negativos 2) Qué genera indiferencia 3) Qué valoran promotores 4) Plan 5 acciones. Español ejecutivo.`;
+  }
+  function buildPromptCSAT(modulo, etiqueta, neg, neu, pos) {
+    return `Eres analista CX senior de Apprecio. MÓDULO: ${modulo} | CORTE: ${etiqueta} | Escala 1-5
+${neg.length?`\nBAJO (≤2):\n${neg.slice(0,15).map((r,i)=>`${i+1}. ${r.empresa} (Nota:${r.nota}): "${r.comentario}"`).join('\n')}`:'' }
+${neu.length?`\nMEDIO (3):\n${neu.slice(0,15).map((r,i)=>`${i+1}. ${r.empresa} (Nota:${r.nota}): "${r.comentario}"`).join('\n')}`:'' }
+${pos.length?`\nALTO (4-5):\n${pos.slice(0,15).map((r,i)=>`${i+1}. ${r.empresa} (Nota:${r.nota}): "${r.comentario}"`).join('\n')}`:'' }
+TAREA: 1) Qué genera insatisfacción 2) Qué es indiferente 3) Qué valoran 4) Acciones prioritarias. Español ejecutivo.`;
+  }
+  function renderIABox(texto, total) {
+    return `<div style="margin-bottom:20px;padding:26px;background:#FFFBFB;border:1px solid rgba(250,52,94,.15);border-radius:14px">
+      <div style="font-size:11px;font-weight:800;text-transform:uppercase;color:#FA345E;margin-bottom:12px;letter-spacing:.08em;display:flex;align-items:center;gap:6px">
+        <span style="width:8px;height:8px;background:#FA345E;border-radius:50%;display:inline-block"></span>
+        Análisis IA · ${total} respuestas analizadas
+      </div>
+      <div style="font-size:13.5px;line-height:1.7;color:#2D3748;white-space:pre-wrap;font-weight:500">${texto}</div>
+    </div>`;
+  }
 
-        document.getElementById('modal-body').innerHTML = `
-          <div style="margin-bottom:20px; padding:26px; background:#FFFBFB; border:1px solid rgba(250,52,94,0.15); border-radius:14px; box-shadow: 0 4px 12px rgba(0,0,0,0.02);">
-            <div style="font-size:11px; font-weight:800; text-transform:uppercase; color:#FA345E; margin-bottom:12px; letter-spacing: 0.08em; display:flex; align-items:center; gap:6px;">
-              <span style="display:inline-block; width:8px; height:8px; background:#FA345E; border-radius:50%;"></span>
-              Análisis Sintetizado por Inteligencia Artificial
-            </div>
-            <div style="font-size:13.5px; line-height:1.7; color:#2D3748; white-space:pre-wrap; font-weight: 500;">${textoResumenIA}</div>
-          </div>
-        `;
+  // ──────────────────────────────────────────
+  // GRÁFICO DONUT
+  // ──────────────────────────────────────────
+  function ChartDonut({ id, promotores, neutrales, detractores, score, labelCenter }) {
+    const ref = useRef(null), chart = useRef(null);
+    useEffect(() => {
+      if (!ref.current || typeof Chart === 'undefined') return;
+      if (chart.current) chart.current.destroy();
+      const sinDatos = promotores===0 && neutrales===0 && detractores===0;
+      chart.current = new Chart(ref.current.getContext('2d'), {
+        type:'doughnut',
+        data:{
+          labels: sinDatos?['Sin datos']:['Alto','Medio','Bajo'],
+          datasets:[{ data: sinDatos?[1]:[promotores,neutrales,detractores], backgroundColor: sinDatos?['#E4E7EB']:['#22C55E','#F59E0B','#FA345E'], borderWidth:0, spacing: sinDatos?0:2, hoverOffset: sinDatos?0:4 }]
+        },
+        options:{ responsive:true, maintainAspectRatio:false, cutout:'76%', plugins:{ legend:{display:false}, tooltip:{enabled:!sinDatos} } },
+        plugins:[{ id:'txt_'+id, beforeDraw(ch){
+          const {ctx,width,height}=ch; ctx.save();
+          const fh=Math.min(width,height)/5.5;
+          ctx.font=`800 ${fh}px DM Sans,sans-serif`; ctx.textAlign='center'; ctx.textBaseline='middle';
+          ctx.fillStyle=sinDatos?'#9AA0B4':'#111827';
+          ctx.fillText(sinDatos?'—':(score>0?'+':'')+score, width/2, height/2-5);
+          ctx.font=`600 ${fh/2.8}px DM Sans,sans-serif`; ctx.fillStyle='#9AA0B4';
+          ctx.fillText(sinDatos?'Sin datos':labelCenter, width/2, height/2+fh/1.5); ctx.restore();
+        }}]
+      });
+      return ()=>{ if(chart.current) chart.current.destroy(); };
+    },[promotores,neutrales,detractores,score,labelCenter,id]);
+    return e('div',{className:'relative w-full h-[180px]'}, e('canvas',{ref}));
+  }
 
-      } catch (error) {
-        console.error(error);
-        let htmlFallback = `
-          <div style="margin-bottom:16px; padding:12px 16px; background:#FEF2F2; border:1px solid #FECACA; border-radius:12px; font-size:12px; color:#DC2626; font-weight:500;">
-            ⚠️ No se pudo conectar con el servidor de IA. Mostrando análisis condensado local del corte activo.
-          </div>
-        `;
+  // ──────────────────────────────────────────
+  // GRÁFICO LÍNEA SIMPLE (NPS histórico)
+  // ──────────────────────────────────────────
+  function ChartLineaNPS({ datos }) {
+    const ref=useRef(null), chart=useRef(null);
+    useEffect(()=>{
+      if(!ref.current||typeof Chart==='undefined') return;
+      if(chart.current) chart.current.destroy();
+      chart.current=new Chart(ref.current.getContext('2d'),{
+        type:'line',
+        data:{ labels:datos.map(d=>d.q), datasets:[{ label:'NPS Score', data:datos.map(d=>d.score), borderColor:'#FA345E', backgroundColor:'rgba(250,52,94,.04)', borderWidth:3, tension:.3, fill:true, pointBackgroundColor:'#FA345E', pointRadius:4 }] },
+        options:{ responsive:true, maintainAspectRatio:false, scales:{ y:{min:-100,max:100,ticks:{font:{family:'DM Sans'}}}, x:{ticks:{font:{family:'DM Sans',weight:'bold'}}} }, plugins:{legend:{display:false}} }
+      });
+      return ()=>{ if(chart.current) chart.current.destroy(); };
+    },[datos]);
+    return e('div',{className:'w-full h-[240px]'}, e('canvas',{ref}));
+  }
 
-        if (neg.length > 0) {
-          htmlFallback += `
-            <div class="report-section">
-              <h3>🔴 Respuestas Críticas / Detractores (${neg.length})</h3>
-              <div class="report-group">
-                ${neg.map(r => `
-                  <div class="report-item negative">
-                    <strong>${r.empresa}</strong> · <span style="color:#EF4444; font-weight:700;">Nota: ${r.puntuacion}</span><br>
-                    <span style="font-style:italic; color:#4A5568;">"${r.comentario}"</span>
-                  </div>
-                `).join('')}
-              </div>
-            </div>
-          `;
-        }
+  // ──────────────────────────────────────────
+  // GRÁFICO LÍNEA DOBLE (CSAT)
+  // ──────────────────────────────────────────
+  function ChartLineaDobleCSAT({ datosAbono, datosReunion }) {
+    const ref=useRef(null), chart=useRef(null);
+    useEffect(()=>{
+      if(!ref.current||typeof Chart==='undefined') return;
+      if(chart.current) chart.current.destroy();
+      const qs=Array.from(new Set([...datosAbono.map(d=>d.q),...datosReunion.map(d=>d.q)])).sort();
+      chart.current=new Chart(ref.current.getContext('2d'),{
+        type:'line',
+        data:{ labels:qs, datasets:[
+          { label:'CSAT Post Abonos', data:qs.map(q=>{const f=datosAbono.find(d=>d.q===q);return f?f.score:null;}), borderColor:'#4361EE', borderWidth:3, tension:.25, pointBackgroundColor:'#4361EE', pointRadius:4 },
+          { label:'CSAT Post Reuniones', data:qs.map(q=>{const f=datosReunion.find(d=>d.q===q);return f?f.score:null;}), borderColor:'#FA345E', borderWidth:3, tension:.25, pointBackgroundColor:'#FA345E', pointRadius:4 }
+        ]},
+        options:{ responsive:true, maintainAspectRatio:false, scales:{ y:{min:1,max:5,grid:{color:'#F1F3F7'},ticks:{font:{family:'DM Sans'}}}, x:{grid:{display:false},ticks:{font:{family:'DM Sans',weight:'bold'}}} }, plugins:{legend:{display:true,position:'top',labels:{font:{family:'DM Sans',size:11,weight:'bold'}}}} }
+      });
+      return ()=>{ if(chart.current) chart.current.destroy(); };
+    },[datosAbono,datosReunion]);
+    return e('div',{className:'w-full h-[250px]'}, e('canvas',{ref}));
+  }
 
-        if (neu.length > 0) {
-          htmlFallback += `
-            <div class="report-section">
-              <h3>🟡 Respuestas Neutrales (${neu.length})</h3>
-              <div class="report-group">
-                ${neu.map(r => `
-                  <div class="report-item neutral">
-                    <strong>${r.empresa}</strong> · <span style="color:#D97706; font-weight:700;">Nota: ${r.puntuacion}</span><br>
-                    <span style="font-style:italic; color:#4A5568;">"${r.comentario}"</span>
-                  </div>
-                `).join('')}
-              </div>
-            </div>
-          `;
-        }
+  // ──────────────────────────────────────────
+  // GRÁFICO BARRAS HORIZONTALES (Salidas)
+  // ──────────────────────────────────────────
+  function ChartBarras({ id, labels, values }) {
+    const ref=useRef(null), chart=useRef(null);
+    useEffect(()=>{
+      if(!ref.current||typeof Chart==='undefined') return;
+      if(chart.current) chart.current.destroy();
+      chart.current=new Chart(ref.current.getContext('2d'),{
+        type:'bar',
+        data:{ labels, datasets:[{ data:values, backgroundColor:'#FA345E', borderRadius:6, barThickness:14 }] },
+        options:{ indexAxis:'y', responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{ x:{beginAtZero:true,max:100,grid:{display:false},ticks:{color:'#9AA0B4',font:{family:'DM Sans',size:10}}}, y:{grid:{display:false},ticks:{display:false}} }, layout:{padding:{top:24,left:5,right:20,bottom:5}} },
+        plugins:[{ id:'lbl_'+id, afterDatasetsDraw(ch){
+          const {ctx,scales:{x}}=ch; ctx.save();
+          ch.data.labels.forEach((lbl,idx)=>{
+            const bar=ch.getDatasetMeta(0).data[idx]; if(!bar) return;
+            ctx.font='700 11.5px "DM Sans",sans-serif'; ctx.fillStyle='#111827'; ctx.textAlign='left'; ctx.textBaseline='bottom';
+            ctx.fillText(lbl, x.left, bar.y-4);
+          }); ctx.restore();
+        }}]
+      });
+      return ()=>{ if(chart.current) chart.current.destroy(); };
+    },[labels,values,id]);
+    return e('div',{className:'relative w-full h-[250px]'}, e('canvas',{ref}));
+  }
 
-        if (pos.length > 0) {
-          htmlFallback += `
-            <div class="report-section">
-              <h3>🟢 Respuestas Destacadas / Promotores (${pos.length})</h3>
-              <div class="report-group">
-                ${pos.map(r => `
-                  <div class="report-item positive">
-                    <strong>${r.empresa}</strong> · <span style="color:#16A34A; font-weight:700;">Nota: ${r.puntuacion}</span><br>
-                    <span style="font-style:italic; color:#4A5568;">"${r.comentario}"</span>
-                  </div>
-                `).join('')}
-              </div>
-            </div>
-          `;
-        }
+  // ──────────────────────────────────────────
+  // BLOQUE ESPEJO (NPS P1, P2, CSAT)
+  // ──────────────────────────────────────────
+  function BloqueEspejo({ id, titulo, totalRespuestas, promotores, neutrales, detractores, score, promedio, totalPromotores, pctPromotores, listaPaises, listaMeses, filtroPais, setFiltroPais, filtroMes, setFiltroMes, textoBoton, labelCenter, onBoton }) {
+    return e('div',{className:'card p-6 flex flex-col md:flex-row gap-6 bg-white'},
+      e('div',{className:'w-full md:w-7/12 flex flex-col justify-between border-r border-gray-100 pr-0 md:pr-4'},
+        e('div',{className:'flex items-start justify-between gap-3 mb-4'},
+          e('div',{},
+            e('h3',{className:'text-sm font-bold text-gray-900 leading-snug break-words'},titulo),
+            e('p',{className:'text-[11px] font-semibold text-gray-400 uppercase mt-1'},`Basado en ${totalRespuestas} respuestas`)
+          ),
+          e('div',{className:'flex gap-1.5 flex-shrink-0'},
+            e('select',{value:filtroPais,onChange:ev=>setFiltroPais(ev.target.value),className:'text-[10px] font-bold text-gray-500 bg-gray-50 border border-gray-200 rounded-lg px-2 py-1 outline-none'},
+              listaPaises.map(p=>e('option',{key:p,value:p},p==='Todos'?'País: Todos':p))
+            ),
+            e('select',{value:filtroMes,onChange:ev=>setFiltroMes(ev.target.value),className:'text-[10px] font-bold text-gray-500 bg-gray-50 border border-gray-200 rounded-lg px-2 py-1 outline-none'},
+              listaMeses.map(m=>e('option',{key:m,value:m},m==='Todos'?'Mes: Todos':m))
+            )
+          )
+        ),
+        e(ChartDonut,{id,promotores,neutrales,detractores,score,labelCenter}),
+        e('div',{className:'flex justify-around mt-4 text-center text-xs border-t border-gray-50 pt-3'},
+          [['Alto / Satisfecho','text-green-600',promotores],['Medio / Neutral','text-amber-500',neutrales],['Bajo / Crítico','text-red-500',detractores]].map(([lbl,clr,cant])=>
+            e('div',{key:lbl},
+              e('p',{className:`font-bold ${clr} text-sm`},cant),
+              e('p',{className:'text-[10px] text-gray-400 font-medium'},lbl)
+            )
+          )
+        )
+      ),
+      e('div',{className:'w-full md:w-5/12 flex flex-col justify-between pl-0 md:pl-2'},
+        e('div',{className:'space-y-4'},
+          e('h4',{className:'text-[10px] font-bold text-gray-400 uppercase tracking-wider'},'Consolidado General'),
+          e('div',{className:'grid grid-cols-2 gap-3'},
+            e('div',{className:'bg-gray-50/60 p-4 rounded-xl border border-gray-100'},
+              e('p',{className:'text-[11px] font-medium text-gray-400'},'Promedio Métrica'),
+              e('p',{className:'text-xl font-extrabold text-gray-800 mt-1'},promedio),
+              e('p',{className:'text-[9px] text-gray-400 mt-0.5'},'Filtro Activo')
+            ),
+            e('div',{className:'bg-gray-50/60 p-4 rounded-xl border border-gray-100'},
+              e('p',{className:'text-[11px] font-medium text-gray-400'},'Casos Destacados'),
+              e('p',{className:'text-xl font-extrabold text-green-600 mt-1'},totalPromotores),
+              e('p',{className:'text-[9px] text-gray-400 mt-0.5'},`${pctPromotores}% de este corte`)
+            )
+          )
+        ),
+        e('button',{onClick:onBoton,className:'w-full mt-6 p-3 bg-brand hover:bg-brand-dark text-white rounded-xl text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 shadow-md shadow-red-100 transition-colors',style:{background:'#FA345E'}},
+          e('i',{className:'fa-solid fa-file-pdf'}), textoBoton
+        )
+      )
+    );
+  }
 
-        if (comentariosData.length === 0) {
-          htmlFallback += `
-            <div style="text-align:center; padding:40px; color:#9AA0B4; font-size:13px;">
-              No hay respuestas abiertas escritas disponibles para este corte en particular.
-            </div>
-          `;
-        }
-        document.getElementById('modal-body').innerHTML = htmlFallback;
-      }
+  // ──────────────────────────────────────────
+  // BLOQUE P3 ABIERTA (Col J NPS) — acordeón
+  // ──────────────────────────────────────────
+  function BloqueP3({ rawNps, listaPaises, listaMeses }) {
+    const [pais,setPais]=useState('Todos');
+    const [mes,setMes]=useState('Todos');
+    const [expandido,setExpandido]=useState(null); // 'neg'|'neu'|'pos'|null
+
+    const palabrasNeg=['mal','falla','error','demora','lento','difícil','problema','falta','nunca','malo','pésimo','complica','no funciona'];
+    const palabrasPos=['bien','excelente','bueno','genial','perfecto','rápido','fácil','increíble','satisfecho','feliz','recomend','siempre'];
+    const clsf=txt=>{const t=txt.toLowerCase();const p=palabrasPos.filter(w=>t.includes(w)).length;const n=palabrasNeg.filter(w=>t.includes(w)).length;return n>p?'neg':p>n?'pos':'neu';};
+
+    const base=useMemo(()=>rawNps.filter(r=>(pais==='Todos'||r.pais===pais)&&(mes==='Todos'||r.mes===mes)),[rawNps,pais,mes]);
+    const filtrados=useMemo(()=>base.filter(r=>r.pregunta3&&r.pregunta3.trim()!==''),[base]);
+
+    const negArr=useMemo(()=>filtrados.filter(r=>clsf(r.pregunta3)==='neg'),[filtrados]);
+    const neuArr=useMemo(()=>filtrados.filter(r=>clsf(r.pregunta3)==='neu'),[filtrados]);
+    const posArr=useMemo(()=>filtrados.filter(r=>clsf(r.pregunta3)==='pos'),[filtrados]);
+
+    const toggle=(tipo)=>setExpandido(prev=>prev===tipo?null:tipo);
+
+    const KPIBtn=(tipo,emoji,label,arr,colorText,bg,border)=>e('div',{key:tipo},
+      e('div',{
+        onClick:()=>toggle(tipo),
+        className:'p-3 rounded-xl text-center cursor-pointer select-none transition-all',
+        style:{background:bg, border:`1.5px solid ${expandido===tipo?colorText:border}`, boxShadow:expandido===tipo?`0 0 0 2px ${colorText}22`:'none'}
+      },
+        e('p',{className:'text-lg font-extrabold',style:{color:colorText}},arr.length),
+        e('p',{className:'text-[10px] font-bold text-gray-500 mt-0.5 flex items-center justify-center gap-1'},
+          emoji,' ',label,' ',
+          e('i',{className:`fa-solid fa-chevron-${expandido===tipo?'up':'down'} text-[8px] ml-1`,style:{color:colorText}})
+        )
+      ),
+      expandido===tipo && e('div',{className:'mt-2 space-y-1.5 max-h-[220px] overflow-y-auto pr-0.5'},
+        arr.length===0
+          ? e('div',{className:'py-3 text-center text-[11px] text-gray-400 bg-gray-50 rounded-lg'},'Sin respuestas en esta categoría.')
+          : arr.map((r,i)=>e('div',{key:i,className:'p-2.5 rounded-lg text-xs',style:{background:bg,border:`1px solid ${border}`}},
+              e('span',{className:'font-bold text-gray-800'},r.cliente||r.pais||'Empresa'),
+              e('span',{className:'text-gray-400 mx-1'},'·'),
+              e('span',{className:'italic text-gray-600'},`"${r.pregunta3}"`)
+            ))
+      )
+    );
+
+    return e('div',{className:'card p-6 bg-white'},
+      e('div',{className:'flex flex-col sm:flex-row sm:items-start justify-between gap-3 mb-5'},
+        e('div',{},
+          e('h3',{className:'text-sm font-bold text-gray-900 leading-snug max-w-xl'},'¿Qué podríamos mejorar o agregar para entregarte más valor?'),
+          e('p',{className:'text-[11px] text-gray-400 mt-1'},`${filtrados.length} respuestas escritas de ${base.length} encuestados`)
+        ),
+        e('div',{className:'flex gap-2 flex-shrink-0'},
+          e('select',{value:pais,onChange:ev=>{setPais(ev.target.value);setExpandido(null);},className:'text-[10px] font-bold text-gray-500 bg-gray-50 border border-gray-200 rounded-lg px-2 py-1 outline-none'},
+            listaPaises.map(p=>e('option',{key:p,value:p},p==='Todos'?'País: Todos':p))
+          ),
+          e('select',{value:mes,onChange:ev=>{setMes(ev.target.value);setExpandido(null);},className:'text-[10px] font-bold text-gray-500 bg-gray-50 border border-gray-200 rounded-lg px-2 py-1 outline-none'},
+            listaMeses.map(m=>e('option',{key:m,value:m},m==='Todos'?'Mes: Todos':m))
+          )
+        )
+      ),
+      filtrados.length===0
+        ? e('div',{className:'py-8 text-center text-xs text-gray-400 bg-gray-50 rounded-xl mb-5'},'Sin respuestas escritas para este corte.')
+        : e('div',{className:'grid grid-cols-3 gap-3 mb-5'},
+            KPIBtn('neg','🔴','Negativas',negArr,'#EF4444','#FEF2F2','#FECACA'),
+            KPIBtn('neu','🟡','Neutras',  neuArr,'#D97706','#FFFBEB','#FDE68A'),
+            KPIBtn('pos','🟢','Positivas',posArr,'#16A34A','#F0FDF4','#BBF7D0')
+          ),
+      e('button',{
+        onClick:()=>reporteNpsP3IA(base,`Corte ${pais} / ${mes}`),
+        className:'w-full p-3 rounded-xl text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 text-white',
+        style:{background:'linear-gradient(135deg,#FA345E 0%,#D61F47 100%)',boxShadow:'0 4px 12px rgba(250,52,94,.25)'}
+      },
+        e('i',{className:'fa-solid fa-wand-magic-sparkles'}),
+        `Analizar con IA · ${filtrados.length} respuestas`
+      )
+    );
+  }
+
+  // ──────────────────────────────────────────
+  // MÓDULO NPS
+  // ──────────────────────────────────────────
+  function ModuloNPS({ rawNps }) {
+    const [p1Pais,setP1Pais]=useState('Todos'), [p1Mes,setP1Mes]=useState('Todos');
+    const [p2Pais,setP2Pais]=useState('Todos'), [p2Mes,setP2Mes]=useState('Todos');
+    const [histPais,setHistPais]=useState('Todos'), [histAnio,setHistAnio]=useState('2026');
+
+    const {listaPaises,listaMeses,listaAnios}=useMemo(()=>{
+      const p=new Set(),m=new Set(),a=new Set();
+      rawNps.forEach(r=>{if(r.pais)p.add(r.pais);if(r.mes)m.add(r.mes);if(r.anio)a.add(String(r.anio));});
+      return {listaPaises:['Todos',...Array.from(p)],listaMeses:['Todos',...Array.from(m)],listaAnios:Array.from(a).length?Array.from(a):['2026']};
+    },[rawNps]);
+
+    const calcMetrica=(arr)=>{
+      const total=arr.length; if(!total) return {total:0,p:0,n:0,d:0,score:0,avg:'—',pPorc:0};
+      let pr=0,ne=0,de=0,suma=0;
+      arr.forEach(r=>{const v=parseFloat(r.puntuacion);if(!isNaN(v)){suma+=v;if(v>=9)pr++;else if(v>=7)ne++;else de++;}});
+      return {total,p:pr,n:ne,d:de,score:Math.round(((pr/total)*100)-((de/total)*100)),avg:(suma/total).toFixed(1),pPorc:((pr/total)*100).toFixed(0)};
+    };
+    const calcMetricaP2=(arr)=>{
+      const validos=arr.filter(r=>r.pregunta2!==undefined&&r.pregunta2!==null&&String(r.pregunta2).trim()!=='');
+      const total=validos.length; if(!total) return {total:0,p:0,n:0,d:0,score:0,avg:'—',pPorc:0};
+      let pr=0,ne=0,de=0,suma=0;
+      validos.forEach(r=>{const v=parseFloat(r.pregunta2);if(!isNaN(v)){suma+=v;if(v>=9)pr++;else if(v>=7)ne++;else de++;}});
+      return {total,p:pr,n:ne,d:de,score:Math.round(((pr/total)*100)-((de/total)*100)),avg:(suma/total).toFixed(1),pPorc:((pr/total)*100).toFixed(0)};
     };
 
-    // --- GRÁFICOS DONUT ---
-    function ChartDonut({ id, promotores, neutrales, detractores, score, labelCenter }) {
-      const canvasRef = useRef(null);
-      const chartRef = useRef(null);
+    const p1f=useMemo(()=>rawNps.filter(r=>(p1Pais==='Todos'||r.pais===p1Pais)&&(p1Mes==='Todos'||r.mes===p1Mes)),[rawNps,p1Pais,p1Mes]);
+    const p2f=useMemo(()=>rawNps.filter(r=>(p2Pais==='Todos'||r.pais===p2Pais)&&(p2Mes==='Todos'||r.mes===p2Mes)),[rawNps,p2Pais,p2Mes]);
+    const m1=useMemo(()=>calcMetrica(p1f),[p1f]);
+    const m2=useMemo(()=>calcMetricaP2(p2f),[p2f]);
 
-      useEffect(() => {
-        if (!canvasRef.current || typeof Chart === 'undefined') return;
-        if (chartRef.current) chartRef.current.destroy();
-
-        const ctx = canvasRef.current.getContext('2d');
-        chartRef.current = new Chart(ctx, {
-          type: 'doughnut',
-          data: {
-            labels: ['Alto / Promotores', 'Medio / Neutrales', 'Bajo / Detractores'],
-            datasets: [{
-              data: [promotores, neutrales, detractores],
-              backgroundColor: ['#22C55E', '#F59E0B', '#FA345E'],
-              hoverBackgroundColor: ['#16A34A', '#D97706', '#D61F47'],
-              borderWidth: 0,
-              spacing: 2, 
-              hoverOffset: 4
-            }]
-          },
-          options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            cutout: '76%',
-            plugins: { legend: { display: false }, tooltip: { enabled: true } }
-          },
-          plugins: [{
-            id: 'textCenter_' + id,
-            beforeDraw: (chart) => {
-              const { ctx, width, height } = chart;
-              ctx.save();
-              const fontHeight = Math.min(width, height) / 5.5;
-              ctx.font = `800 ${fontHeight}px DM Sans, sans-serif`;
-              ctx.textAlign = 'center';
-              ctx.textBaseline = 'middle';
-              ctx.fillStyle = '#111827';
-              ctx.fillText((score > 0 ? '+' : '') + score, width / 2, height / 2 - 5);
-              ctx.font = `600 ${fontHeight/2.8}px DM Sans, sans-serif`;
-              ctx.fillStyle = '#9AA0B4';
-              ctx.fillText(labelCenter, width / 2, height / 2 + fontHeight/1.5);
-              ctx.restore();
-            }
-          }]
-        });
-
-        return () => { if (chartRef.current) chartRef.current.destroy(); };
-      }, [promotores, neutrales, detractores, score, labelCenter, id]);
-
-      return e('div', { className: 'relative w-full h-[180px]' }, e('canvas', { ref: canvasRef }));
-    }
-
-    // --- GRÁFICO TENDENCIA DOBLE LÍNEA (CSAT UNIFICADO) ---
-    function ChartLineaDobleCSAT({ datosAbono, datosReunion }) {
-      const canvasRef = useRef(null);
-      const chartRef = useRef(null);
-
-      useEffect(() => {
-        if (!canvasRef.current || typeof Chart === 'undefined') return;
-        if (chartRef.current) chartRef.current.destroy();
-
-        const qsSet = new Set([...datosAbono.map(d => d.q), ...datosReunion.map(d => d.q)]);
-        const labels = Array.from(qsSet).sort();
-
-        const dataA = labels.map(l => { const f = datosAbono.find(d => d.q === l); return f ? f.score : null; });
-        const dataR = labels.map(l => { const f = datosReunion.find(d => d.q === l); return f ? f.score : null; });
-
-        const ctx = canvasRef.current.getContext('2d');
-        chartRef.current = new Chart(ctx, {
-          type: 'line',
-          data: {
-            labels: labels,
-            datasets: [
-              {
-                label: 'CSAT Post Abonos (Plataforma)',
-                data: dataA,
-                borderColor: '#4361EE',
-                borderWidth: 3,
-                tension: 0.25,
-                pointBackgroundColor: '#4361EE',
-                pointRadius: 4
-              },
-              {
-                label: 'CSAT Post Reuniones (Comercial)',
-                data: dataR,
-                borderColor: '#FA345E',
-                borderWidth: 3,
-                tension: 0.25,
-                pointBackgroundColor: '#FA345E',
-                pointRadius: 4
-              }
-            ]
-          },
-          options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            scales: {
-              y: { min: 1, max: 10, grid: { color: '#F1F3F7' }, ticks: { font: { family: 'DM Sans' } } },
-              x: { grid: { display: false }, ticks: { font: { family: 'DM Sans', weight: 'bold' } } }
-            },
-            plugins: { legend: { display: true, position: 'top', labels: { font: { family: 'DM Sans', size: 11, weight: 'bold' } } } }
-          }
-        });
-
-        return () => { if (chartRef.current) chartRef.current.destroy(); };
-      }, [datosAbono, datosReunion]);
-
-      return e('div', { className: 'w-full h-[250px]' }, e('canvas', { ref: canvasRef }));
-    }
-
-    // --- GRÁFICO LÍNEA TENDENCIA SIMPLE (NPS) ---
-    function ChartLineaHistorico({ datos }) {
-      const canvasRef = useRef(null);
-      const chartRef = useRef(null);
-
-      useEffect(() => {
-        if (!canvasRef.current || typeof Chart === 'undefined') return;
-        if (chartRef.current) chartRef.current.destroy();
-
-        const ctx = canvasRef.current.getContext('2d');
-        chartRef.current = new Chart(ctx, {
-          type: 'line',
-          data: {
-            labels: datos.map(d => d.q),
-            datasets: [{
-              label: 'NPS Score',
-              data: datos.map(d => d.score),
-              borderColor: '#FA345E',
-              backgroundColor: 'rgba(250, 52, 94, 0.04)',
-              borderWidth: 3,
-              tension: 0.3,
-              fill: true,
-              pointBackgroundColor: '#FA345E',
-              pointRadius: 4
-            }]
-          },
-          options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            scales: {
-              y: { min: -100, max: 100, ticks: { font: { family: 'DM Sans' } } },
-              x: { ticks: { font: { family: 'DM Sans', weight: 'bold' } } }
-            },
-            plugins: { legend: { display: false } }
-          }
-        });
-
-        return () => { if (chartRef.current) chartRef.current.destroy(); };
-      }, [datos]);
-
-      return e('div', { className: 'w-full h-[240px]' }, e('canvas', { ref: canvasRef }));
-    }
-
-    // ── GRÁFICO BARRAS HORIZONTALES CON ETIQUETAS FLOTANTES ARRIBA ALINEADAS IZQUIERDA ──
-    function ChartHorizontalBars({ id, dataLabels, dataValues }) {
-      const canvasRef = useRef(null);
-      const chartRef = useRef(null);
-
-      useEffect(() => {
-        if (!canvasRef.current || typeof Chart === 'undefined') return;
-        if (chartRef.current) chartRef.current.destroy();
-
-        const ctx = canvasRef.current.getContext('2d');
-        chartRef.current = new Chart(ctx, {
-          type: 'bar',
-          data: {
-            labels: dataLabels,
-            datasets: [{
-              data: dataValues,
-              backgroundColor: '#FA345E',
-              borderRadius: 6,
-              barThickness: 14
-            }]
-          },
-          options: {
-            indexAxis: 'y',
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: { 
-              legend: { display: false }
-            },
-            scales: {
-              x: { beginAtZero: true, max: 100, grid: { display: false }, ticks: { color: '#9AA0B4', font: { family: 'DM Sans', size: 10 } } },
-              y: { 
-                grid: { display: false }, 
-                ticks: { display: false }
-              }
-            },
-            layout: {
-              padding: { top: 24, left: 5, right: 20, bottom: 5 }
-            }
-          },
-          plugins: [{
-            id: 'labelsArribaIzquierda_' + id,
-            afterDatasetsDraw: (chart) => {
-              const { ctx, scales: { x } } = chart;
-              ctx.save();
-              chart.data.labels.forEach((label, index) => {
-                const meta = chart.getDatasetMeta(0);
-                const barElement = meta.data[index];
-                if (!barElement) return;
-                
-                const yPos = barElement.y;
-                
-                ctx.font = '700 11.5px "DM Sans", sans-serif';
-                ctx.fillStyle = '#111827';
-                ctx.textAlign = 'left';
-                ctx.textBaseline = 'bottom';
-                
-                ctx.fillText(label, x.left, yPos - 4);
-              });
-              ctx.restore();
-            }
-          }]
-        });
-
-        return () => { if (chartRef.current) chartRef.current.destroy(); };
-      }, [dataLabels, dataValues, id]);
-
-      return e('div', { className: 'relative w-full h-[250px]' }, e('canvas', { ref: canvasRef }));
-    }
-
-    // ── VISTA PRINCIPAL: COMPONENTE CLIENTES DESVINCULADOS ──
-    function RenderSalidasOff({ datosSalidas, filtroPais, setFiltroPais, filtroAnio, setFiltroAnio, filtroMes, setFiltroMes }) {
-      
-      const datosFiltrados = datosSalidas.filter(r => {
-        const estadoRespondido = r.estado ? r.estado.toUpperCase().trim() : '';
-        if (estadoRespondido !== 'RESPONDIDO') return false;
-
-        const paisNormalized = r.pais === 'Peru' ? 'Perú' : r.pais;
-        if (filtroPais !== 'Todos' && paisNormalized !== filtroPais) return false;
-        
-        const fechaObj = r.fecha ? new Date(r.fecha) : null;
-        if (fechaObj && !isNaN(fechaObj.getTime())) {
-          const anioStr = fechaObj.getFullYear().toString();
-          const mesesNombres = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
-          const mesNombreStr = mesesNombres[fechaObj.getMonth()];
-          
-          if (filtroAnio !== 'Todos' && anioStr !== filtroAnio) return false;
-          if (filtroMes !== 'Todos' && mesNombreStr !== filtroMes) return false;
-        } else if (filtroAnio !== 'Todos' || filtroMes !== 'Todos') {
-          return false;
-        }
-        return true;
+    const datosLinea=useMemo(()=>{
+      const filtHist=rawNps.filter(r=>(histPais==='Todos'||r.pais===histPais)&&String(r.anio)===histAnio);
+      const qsMap={}; filtHist.forEach(r=>{if(r.periodoQ){if(!qsMap[r.periodoQ])qsMap[r.periodoQ]=[];qsMap[r.periodoQ].push(r);}});
+      return Object.keys(qsMap).sort().map(q=>{
+        const arr=qsMap[q];let pr=0,de=0,tot=arr.length;
+        arr.forEach(r=>{const v=parseFloat(r.puntuacion);if(!isNaN(v)){if(v>=9)pr++;else if(v<7)de++;}});
+        return {q,score:tot?Math.round(((pr/tot)*100)-((de/tot)*100)):0};
       });
+    },[rawNps,histPais,histAnio]);
 
-      const totalCuentasOff = datosFiltrados.length;
-      
-      const calcularPromedio = (campo) => {
-        const validos = datosFiltrados.map(r => parseFloat(r[campo])).filter(n => !isNaN(n));
-        return validos.length ? (validos.reduce((a, b) => a + b, 0) / validos.length).toFixed(1) : '—';
-      };
-      
-      const promExperiencia = calcularPromedio('puntuacionExperiencia');
-      const promEjecutivo = calcularPromedio('puntuacionEjecutivo');
+    const criticos=useMemo(()=>rawNps.filter(r=>{const n=parseFloat(r.puntuacion);return !isNaN(n)&&n<=6;}),[rawNps]);
 
-      const cuentasConIntencion = datosFiltrados.filter(r => r.volveria && r.volveria.includes('SI')).length;
-      const pctRetorno = totalCuentasOff > 0 ? Math.round((cuentasConIntencion / totalCuentasOff) * 100) : 0;
-
-      // ── CALCULO DINÁMICO DE OPCIONES MULTIPLES ──
-      const conteoMotivosDirecto = {};
-      const conteoFallasDirecto = {};
-
-      datosFiltrados.forEach(r => {
-        if (r.motivoSalida) {
-          r.motivoSalida.split(',').forEach(opcion => {
-            const opLimpia = opcion.trim();
-            if (opLimpia) conteoMotivosDirecto[opLimpia] = (conteoMotivosDirecto[opLimpia] || 0) + 1;
-          });
-        }
-        if (r.puntuacionFalla) {
-          r.puntuacionFalla.split(',').forEach(opcion => {
-            const opLimpia = opcion.trim();
-            if (opLimpia) conteoFallasDirecto[opLimpia] = (conteoFallasDirecto[opLimpia] || 0) + 1;
-          });
-        }
-      });
-
-      const labelsMotivosFinal = Object.keys(conteoMotivosDirecto);
-      const valoresMotivosFinal = Object.values(conteoMotivosDirecto).map(v => 
-        totalCuentasOff > 0 ? Math.round((v / totalCuentasOff) * 100) : 0
-      );
-
-      const labelsFallasFinal = Object.keys(conteoFallasDirecto);
-      const valoresFallasFinal = Object.values(conteoFallasDirecto).map(v => 
-        totalCuentasOff > 0 ? Math.round((v / totalCuentasOff) * 100) : 0
-      );
-
-      return e('div', { className: 'space-y-6 animate-fade-in' },
-        
-        // Barra de Filtros Ejecutiva
-        e('div', { className: 'bg-white p-4 rounded-2xl border border-gray-100 flex flex-wrap gap-4 items-center justify-between shadow-sm' },
-          e('div', { className: 'text-sm font-bold text-gray-800' }, 'Cuentas que salieron'),
-          e('div', { className: 'flex gap-3' },
-            e('select', { className: 'p-2 bg-gray-50 border border-gray-200 rounded-xl text-xs font-semibold text-gray-700 outline-none', value: filtroPais, onChange: (e) => setFiltroPais(e.target.value) }, ['Todos', 'Perú', 'Chile', 'Colombia', 'Ecuador'].map(p => e('option', { value: p }, p === 'Todos' ? 'Todos los Países' : p))),
-            e('select', { className: 'p-2 bg-gray-50 border border-gray-200 rounded-xl text-xs font-semibold text-gray-700 outline-none', value: filtroAnio, onChange: (e) => setFiltroAnio(e.target.value) }, ['Todos', '2025', '2026'].map(a => e('option', { value: a }, a === 'Todos' ? 'Todos los Años' : `Año ${a}`))),
-            e('select', { className: 'p-2 bg-gray-50 border border-gray-200 rounded-xl text-xs font-semibold text-gray-700 outline-none', value: filtroMes, onChange: (e) => setFiltroMes(e.target.value) }, [
-              'Todos', 'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
-            ].map(m => e('option', { value: m }, m === 'Todos' ? 'Todos los Meses' : m)))
-          )
-        ),
-
-        // Tarjetas KPIs con Barra de Progreso
-        e('div', { className: 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5' },
-          e('div', { className: 'bg-white p-5 rounded-2xl border border-gray-100 shadow-sm' }, e('div', { className: 'text-[11px] font-bold text-gray-400 uppercase tracking-wider' }, 'Total Cuentas Off'), e('div', { className: 'text-2xl font-extrabold text-gray-900 mt-1' }, totalCuentasOff), e('div', { className: 'text-[9px] text-gray-400 mt-0.5' }, 'Respuestas válidas')),
-          e('div', { className: 'bg-white p-5 rounded-2xl border border-gray-100 shadow-sm' }, e('div', { className: 'text-[11px] font-bold text-gray-400 uppercase tracking-wider' }, 'Promedio Experiencia Base'), e('div', { className: 'text-2xl font-extrabold mt-1 text-brand' }, promExperiencia), e('div', { className: 'text-[9px] text-gray-400 mt-0.5' }, 'Escala del 1 al 10')),
-          e('div', { className: 'bg-white p-5 rounded-2xl border border-gray-100 shadow-sm' }, e('div', { className: 'text-[11px] font-bold text-gray-400 uppercase tracking-wider' }, 'Promedio Atención KAM'), e('div', { className: 'text-2xl font-extrabold text-gray-900 mt-1' }, promEjecutivo), e('div', { className: 'text-[9px] text-gray-400 mt-0.5' }, 'Evaluación del servicio')),
-          e('div', { className: 'bg-white p-5 rounded-2xl border border-gray-100 shadow-sm flex flex-col justify-between' },
-            e('div', null, e('div', { className: 'text-[11px] font-bold text-gray-400 uppercase tracking-wider' }, 'Intención de Retorno'), e('div', { className: 'text-2xl font-extrabold text-green-600 mt-1' }, totalCuentasOff > 0 ? `${pctRetorno}%` : '—')),
-            totalCuentasOff > 0 ? e('div', { className: 'w-full bg-gray-100 rounded-full h-1.5 mt-2 overflow-hidden flex' },
-              e('div', { style: { width: `${pctRetorno}%` }, className: 'bg-green-500 h-full' }),
-              e('div', { style: { width: `${100 - pctRetorno}%` }, className: 'bg-red-400 h-full' })
-            ) : e('div', { className: 'text-[9px] text-gray-400 mt-1' }, 'Esperando datos...')
-          )
-        ),
-
-        // ── FILA CON LOS DOS CUADRANTES DE GRÁFICOS LADO A LADO ──
-        e('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-6 mb-6' },
-          
-          // Cuadrante 1: Principal motivo
-          e('div', { className: 'bg-white p-6 rounded-2xl border border-gray-100 shadow-sm' },
-            e('div', { className: 'text-xs font-bold uppercase tracking-wider text-gray-400 mb-1' }, 'Distribución de Causas'),
-            e('div', { className: 'text-sm font-extrabold text-gray-900 mb-4' }, '¿Principal motivo por el que decidiste dejar de trabajar con nosotros?'),
-            labelsMotivosFinal.length > 0 
-              ? e(ChartHorizontalBars, { id: 'motivos-salida-final', dataLabels: labelsMotivosFinal, dataValues: valoresMotivosFinal }) 
-              : e('div', { className: 'text-center py-10 text-xs text-gray-400 bg-gray-50 rounded-xl p-4' }, 'Sin registros válidos para este corte.')
-          ),
-
-          // Cuadrante 2: Qué falló principalmente
-          e('div', { className: 'bg-white p-6 rounded-2xl border border-gray-100 shadow-sm' },
-            e('div', { className: 'text-xs font-bold uppercase tracking-wider text-gray-400 mb-1' }, 'Fallas Detectadas'),
-            e('div', { className: 'text-sm font-extrabold text-gray-900 mb-4' }, '¿Qué falló principalmente en tu experiencia?'),
-            labelsFallasFinal.length > 0 
-              ? e(ChartHorizontalBars, { id: 'fallas-experiencia-final', dataLabels: labelsFallasFinal, dataValues: valoresFallasFinal }) 
-              : e('div', { className: 'text-center py-10 text-xs text-gray-400 bg-gray-50 rounded-xl p-4' }, 'Sin registros de fallas.')
-          )
-        ),
-               
-        // ── FILA CON LAS DOS PREGUNTAS ABIERTAS ──
-        e('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-6 mb-6' },
-          e('div', { className: 'bg-white p-5 rounded-2xl border border-gray-100 shadow-sm flex flex-col justify-between' },
-            e('div', null, e('div', { className: 'text-[10px] font-bold text-brand uppercase tracking-wider mb-1' }, 'Pregunta Abierta'), e('div', { className: 'text-xs font-extrabold text-gray-900 leading-tight' }, '¿Qué podríamos haber hecho diferente para que te quedaras?')),
-            e('button', { className: 'mt-4 w-full py-2 bg-brand text-white font-bold rounded-xl text-[11px] uppercase tracking-wide transition-transform active:scale-95', onClick: () => generarPDFResumenEjecutivo(datosFiltrados, 'OFF - Estrategias de Retención (Col L)', `Corte ${filtroPais}`) }, '🔍 Analizar Retención')
-          ),
-          e('div', { className: 'bg-white p-5 rounded-2xl border border-gray-100 shadow-sm flex flex-col justify-between' },
-            e('div', null, e('div', { className: 'text-[10px] font-bold text-brand uppercase tracking-wider mb-1' }, 'Pregunta Abierta'), e('div', { className: 'text-xs font-extrabold text-gray-900 leading-tight' }, '¿Hay algo adicional que quieras compartir sobre tu experiencia?')),
-            e('button', { className: 'mt-4 w-full py-2 bg-brand text-white font-bold rounded-xl text-[11px] uppercase tracking-wide transition-transform active:scale-95', onClick: () => generarPDFResumenEjecutivo(datosFiltrados, 'OFF - Comentarios Adicionales (Col M)', `Corte ${filtroPais}`) }, '🔍 Analizar Adicionales')
-          )
-        ),
-
-        // Tabla de programas
-        e('div', { className: 'bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden' },
-          e('div', { className: 'p-5 border-b border-gray-50 bg-gray-50/50 flex justify-between items-center' },
-            e('div', null, e('div', { className: 'text-sm font-extrabold text-gray-900' }, 'Programas que Salieron'), e('div', { className: 'text-[11px] text-gray-400 mt-0.5' }, 'Control cronológico de desvinculaciones')),
-            e('span', { className: 'px-2.5 py-1 bg-gray-100 text-gray-600 rounded-full text-[10px] font-bold' }, `${totalCuentasOff} Programas`)
-          ),
-          e('div', { className: 'overflow-x-auto' },
-            e('table', { className: 'w-full text-left border-collapse' },
-              e('thead', { className: 'bg-gray-50 text-[11px] font-bold text-gray-400 uppercase tracking-wider border-b border-gray-100' },
-                e('tr', null, e('th', { className: 'p-4 pl-6' }, 'Fecha Salida'), e('th', { className: 'p-4' }, 'Nombre del Programa'), e('th', { className: 'p-4 pr-6' }, 'Correo de Contacto'))
-              ),
-              e('tbody', { className: 'divide-y divide-gray-50 text-xs text-gray-700' },
-                totalCuentasOff > 0 ? datosFiltrados.map((r, index) => e('tr', { key: index, className: 'hover:bg-gray-50/80 transition-colors' },
-                  e('td', { className: 'p-4 pl-6 font-medium text-gray-500' }, r.fecha ? new Date(r.fecha).toLocaleDateString('es-CL') : '—'),
-                  e('td', { className: 'p-4 font-bold text-gray-900' }, r.programa || '—'),
-                  e('td', { className: 'p-4 text-gray-600 font-mono' }, r.correo || '—')
-                )) : e('tr', null, e('td', { colSpan: 3, className: 'p-8 text-center text-gray-400 italic' }, 'No hay desvinculaciones con respuestas registradas.'))
+    return e('div',{className:'space-y-6'},
+      e('div',{className:'grid grid-cols-1 xl:grid-cols-2 gap-6'},
+        e(BloqueEspejo,{
+          id:'nps_p1',
+          titulo:'Pregunta 1: En una escala del 1 al 10, ¿Qué tanto recomiendas nuestra aplicación Apprecio?',
+          totalRespuestas:m1.total,promotores:m1.p,neutrales:m1.n,detractores:m1.d,score:m1.score,promedio:m1.avg,totalPromotores:m1.p,pctPromotores:m1.pPorc,
+          listaPaises,listaMeses,filtroPais:p1Pais,setFiltroPais:setP1Pais,filtroMes:p1Mes,setFiltroMes:setP1Mes,
+          textoBoton:'Generar reporte de respuestas abiertas', labelCenter:'NPS Score',
+          onBoton:()=>reporteNpsP1(p1f,`Corte ${p1Pais} / ${p1Mes}`)
+        }),
+        e(BloqueEspejo,{
+          id:'nps_p2',
+          titulo:'Pregunta 2: ¿Cómo calificarías la atención del KAM asignado a tu cuenta trimestralmente?',
+          totalRespuestas:m2.total,promotores:m2.p,neutrales:m2.n,detractores:m2.d,score:m2.score,promedio:m2.avg,totalPromotores:m2.p,pctPromotores:m2.pPorc,
+          listaPaises,listaMeses,filtroPais:p2Pais,setFiltroPais:setP2Pais,filtroMes:p2Mes,setFiltroMes:setP2Mes,
+          textoBoton:'Ver distribución de notas KAM', labelCenter:'KAM Score',
+          onBoton:()=>reporteNpsP2(p2f,`Corte ${p2Pais} / ${p2Mes}`)
+        })
+      ),
+      e(BloqueP3,{rawNps,listaPaises,listaMeses}),
+      e('div',{className:'card p-6 bg-white flex flex-col md:flex-row gap-6'},
+        e('div',{className:'w-full md:w-8/12'},
+          e('div',{className:'flex items-center gap-2 mb-4'},
+            e('h3',{className:'text-sm font-bold text-gray-900'},'Evolución Histórica NPS por Trimestre'),
+            e('div',{className:'tooltip-container relative inline-block cursor-help'},
+              e('i',{className:'fa-solid fa-circle-info text-gray-300 hover:text-brand text-xs'}),
+              e('div',{className:'tooltip-box shadow-xl'},
+                e('p',{className:'font-bold border-b border-gray-700 pb-1 mb-1'},'¿Qué es el NPS?'),
+                e('p',{},'% Promotores (9-10) menos % Detractores (0-6).')
               )
             )
-          )
-        )
-      );
-    }
-
-    // --- RECUADRO ESPEJO DE CONTROL OPERATIVO ---
-    function BloquePreguntaEspejo({ id, tituloCompleto, totalRespuestas, promotores, neutrales, detractores, score, promedio, totalPromotores, porcentajePromotores, listaPaises, listaMeses, filtroPais, setFiltroPais, filtroMes, setFiltroMes, textoBoton, labelScoreCenter, onExportar }) {
-      return e('div', { className: 'card p-6 flex flex-col md:flex-row gap-6 bg-white' },
-        e('div', { className: 'w-full md:w-7/12 flex flex-col justify-between border-r border-gray-100 pr-0 md:pr-4' },
-          e('div', { className: 'flex justify-between items-start mb-4 gap-4' },
-            e('div', { className: 'flex-1 min-w-0' },
-              e('h3', { className: 'text-sm font-bold text-gray-900 leading-snug break-words' }, tituloCompleto),
-              e('p', { className: 'text-[11px] font-semibold text-gray-400 uppercase mt-1' }, `Basado en ${totalRespuestas} respuestas reales`)
+          ),
+          datosLinea.length===0
+            ? e('div',{className:'h-[240px] flex items-center justify-center text-xs text-gray-400'},'Sin históricos en este corte')
+            : e(ChartLineaNPS,{datos:datosLinea})
+        ),
+        e('div',{className:'w-full md:w-4/12 flex flex-col justify-between border-l border-gray-100 pl-0 md:pl-6'},
+          e('h4',{className:'text-[10px] font-bold text-gray-400 uppercase tracking-wider'},'Filtros de Tendencia'),
+          e('div',{className:'space-y-3'},
+            e('div',{className:'space-y-1'},
+              e('label',{className:'text-[11px] text-gray-400 font-medium'},'País:'),
+              e('select',{value:histPais,onChange:ev=>setHistPais(ev.target.value),className:'w-full text-xs font-semibold text-gray-600 bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 outline-none'},
+                listaPaises.map(p=>e('option',{key:p,value:p},p))
+              )
             ),
-            e('div', { className: 'flex gap-1.5 flex-shrink-0' },
-              e('select', { value: filtroPais, onChange: ev => setFiltroPais(ev.target.value), className: 'text-[10px] font-bold text-gray-500 bg-gray-50 border border-gray-200 rounded-lg px-2 py-1 outline-none' },
-                listaPaises.map(p => e('option', { key: p, value: p }, p === 'Todos' ? 'País: Todos' : p))
-              ),
-              e('select', { value: filtroMes, onChange: ev => setFiltroMes(ev.target.value), className: 'text-[10px] font-bold text-gray-500 bg-gray-50 border border-gray-200 rounded-lg px-2 py-1 outline-none' },
-                listaMeses.map(m => e('option', { key: m, value: m }, m === 'Todos' ? 'Mes: Todos' : m))
+            e('div',{className:'space-y-1'},
+              e('label',{className:'text-[11px] text-gray-400 font-medium'},'Año:'),
+              e('select',{value:histAnio,onChange:ev=>setHistAnio(ev.target.value),className:'w-full text-xs font-semibold text-gray-600 bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 outline-none'},
+                listaAnios.map(a=>e('option',{key:a,value:a},a))
               )
             )
-          ),
-          totalRespuestas === 0 ? e('div', { className: 'h-[180px] flex items-center justify-center text-xs text-gray-400' }, 'Sin registros en este corte') :
-          e(ChartDonut, { id, promotores, neutrales, detractores, score, labelCenter: labelScoreCenter }),
-          
-          e('div', { className: 'flex justify-around mt-4 text-center text-xs border-t border-gray-50 pt-3' },
-            [['Alto / Satisfecho', 'text-green-600', promotores], ['Medio / Neutral', 'text-amber-500', neutrales], ['Bajo / Crítico', 'text-red-500', detractores]].map(([lbl, clr, cant]) => 
-              e('div', { key: lbl },
-                e('p', { className: `font-bold ${clr} text-sm` }, cant),
-                e('p', { className: 'text-[10px] text-gray-400 font-medium' }, lbl)
-              )
-            )
-          )
-        ),
-        e('div', { className: 'w-full md:w-5/12 flex flex-col justify-between pl-0 md:pl-2' },
-          e('div', { className: 'space-y-4' },
-            e('h4', { className: 'text-[10px] font-bold text-gray-400 uppercase tracking-wider' }, 'Consolidado General'),
-            e('div', { className: 'grid grid-cols-2 gap-3' },
-              e('div', { className: 'bg-gray-50/60 p-4 rounded-xl border border-gray-100' },
-                e('p', { className: 'text-[11px] font-medium text-gray-400' }, 'Promedio Métrica'),
-                e('p', { className: 'text-xl font-extrabold text-gray-800 mt-1' }, promedio),
-                e('p', { className: 'text-[9px] text-gray-400 mt-0.5' }, 'Filtro Activo')
-              ),
-              e('div', { className: 'bg-gray-50/60 p-4 rounded-xl border border-gray-100' },
-                e('p', { className: 'text-[11px] font-medium text-gray-400' }, 'Casos Destacados'),
-                e('p', { className: 'text-xl font-extrabold text-green-600 mt-1' }, totalPromotores),
-                e('p', { className: 'text-[9px] text-gray-400 mt-0.5' }, `${porcentajePromotores}% de este corte`)
-              )
-            )
-          ),
-          e('button', { onClick: onExportar, className: 'w-full mt-6 p-3 bg-brand hover:bg-brand-dark text-white rounded-xl text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 shadow-md shadow-red-100 transition-colors' },
-            e('i', { className: 'fa-solid fa-file-pdf' }),
-            textoBoton
           )
         )
-      );
-    }
-
-    // ==========================================
-    // --- PESTAÑA 1: MÓDULO CENTRAL NPS ---
-    // ==========================================
-    function ModuleNPS({ rawNps, metaHeaders }) {
-      const [p1Pais, setP1Pais] = useState('Todos'); const [p1Mes, setP1Mes] = useState('Todos');
-      const [p2Pais, setP2Pais] = useState('Todos'); const [p2Mes, setP2Mes] = useState('Todos');
-      const [histPais, setHistPais] = useState('Todos'); const [histAnio, setHistAnio] = useState('2026');
-
-      const getPregunta1Dinamica = (mesSeleccionado) => {
-        if(mesSeleccionado === 'Mayo' || mesSeleccionado === 'Todos') return "Pregunta 1: En una escala del 1 al 10, ¿Qué tanto recomiendas nuestra aplicación Apprecio?";
-        return metaHeaders.puntuacion || "Pregunta 1: Recommendation de Marca (NPS)";
-      };
-
-      const getPregunta2Dinamica = (mesSeleccionado) => {
-        if(mesSeleccionado === 'Mayo' || mesSeleccionado === 'Todos') return "Pregunta 2: ¿Cómo calificarías la atención del KAM asignado a tu cuenta trimestralmente?";
-        return metaHeaders.pregunta2 || "Pregunta 2: Evaluación Operativa (KAM)";
-      };
-
-      const { listPaises, listMeses, listAnios } = useMemo(() => {
-        const p = new Set(), m = new Set(), a = new Set();
-        rawNps.forEach(r => { if (r.pais) p.add(r.pais); if (r.mes) m.add(r.mes); if (r.anio) a.add(String(r.anio)); });
-        return { listPaises: ['Todos', ...Array.from(p)], listMeses: ['Todos', ...Array.from(m)], listAnios: Array.from(a).length > 0 ? Array.from(a) : ['2026'] };
-      }, [rawNps]);
-
-      const p1Filtrados = useMemo(() => rawNps.filter(r => (p1Pais === 'Todos' || r.pais === p1Pais) && (p1Mes === 'Todos' || r.mes === p1Mes)), [rawNps, p1Pais, p1Mes]);
-      const m1 = useMemo(() => {
-        const total = p1Filtrados.length; if (total === 0) return { total: 0, p: 0, n: 0, d: 0, score: 0, avg: '—', pPorc: 0 };
-        let prom = 0, neut = 0, detr = 0, suma = 0;
-        p1Filtrados.forEach(r => { const v = parseFloat(r.puntuacion); if (!isNaN(v)) { suma += v; if (v >= 9) prom++; else if (v >= 7) neut++; else detr++; } });
-        return { total, p: prom, n: neut, d: detr, score: Math.round(((prom/total)*100) - ((detr/total)*100)), avg: (suma/total).toFixed(1), pPorc: ((prom/total)*100).toFixed(0) };
-      }, [p1Filtrados]);
-
-      const p2Filtrados = useMemo(() => rawNps.filter(r => (p2Pais === 'Todos' || r.pais === p2Pais) && (p2Mes === 'Todos' || r.mes === p2Mes)), [rawNps, p2Pais, p2Mes]);
-      const m2 = useMemo(() => {
-        const validos = p2Filtrados.filter(r => r.pregunta2 !== undefined && r.pregunta2 !== null && r.pregunta2 !== '');
-        const total = validos.length; if (total === 0) return { total: 0, p: 0, n: 0, d: 0, score: 0, avg: '—', pPorc: 0 };
-        let prom = 0, neut = 0, detr = 0, suma = 0;
-        validos.forEach(r => { const v = parseFloat(r.pregunta2); if (!isNaN(v)) { suma += v; if (v >= 9) prom++; else if (v >= 7) neut++; else detr++; } });
-        return { total, p: prom, n: neut, d: detr, score: Math.round(((prom/total)*100) - ((detr/total)*100)), avg: (suma/total).toFixed(1), pPorc: ((prom/total)*100).toFixed(0) };
-      }, [p2Filtrados]);
-
-      const datosLinea = useMemo(() => {
-        const filtradosHist = rawNps.filter(r => (histPais === 'Todos' || r.pais === histPais) && (String(r.anio) === histAnio));
-        const qsMap = {}; filtradosHist.forEach(r => { if (r.periodoQ) { if (!qsMap[r.periodoQ]) qsMap[r.periodoQ] = []; qsMap[r.periodoQ].push(r); } });
-        return Object.keys(qsMap).sort().map(qName => {
-          const arr = qsMap[qName]; let p = 0, d = 0, tot = arr.length;
-          arr.forEach(r => { const v = parseFloat(r.puntuacion); if (!isNaN(v)) { if (v >= 9) p++; else if (v < 7) d++; } });
-          return { q: qName, score: tot > 0 ? Math.round(((p / tot) * 100) - ((d / tot) * 100)) : 0 };
-        });
-      }, [rawNps, histPais, histAnio]);
-
-      const criticos = useMemo(() => rawNps.filter(r => { const n = parseFloat(r.puntuacion); return !isNaN(n) && n <= 6; }), [rawNps]);
-
-      return e('div', { className: 'space-y-6' },
-        e('div', { className: 'grid grid-cols-1 xl:grid-cols-2 gap-6' },
-          e(BloquePreguntaEspejo, {
-            id: 'nps_p1', tituloCompleto: getPregunta1Dinamica(p1Mes),
-            totalRespuestas: m1.total, promotores: m1.p, neutrales: m1.n, detractores: m1.d, score: m1.score, promedio: m1.avg, totalPromotores: m1.p, porcentajePromotores: m1.pPorc,
-            listaPaises: listPaises, listaMeses: listMeses, filtroPais: p1Pais, setFiltroPais: setP1Pais, filtroMes: p1Mes, setFiltroMes: setP1Mes,
-            textoBoton: 'Generar reporte de respuestas abiertas', labelScoreCenter: 'NPS Score',
-            onExportar: () => generarPDFResumenEjecutivo(p1Filtrados, 'NPS P1', `Corte ${p1Pais} / ${p1Mes}`)
-          }),
-          e(BloquePreguntaEspejo, {
-            id: 'nps_p2', tituloCompleto: getPregunta2Dinamica(p2Mes),
-            totalRespuestas: m2.total, promotores: m2.p, neutrales: m2.n, detractores: m2.d, score: m2.score, promedio: m2.avg, totalPromotores: m2.p, porcentajePromotores: m2.pPorc,
-            listaPaises: listPaises, listaMeses: listMeses, filtroPais: p2Pais, setFiltroPais: setP2Pais, filtroMes: p2Mes, setFiltroMes: setP2Mes,
-            textoBoton: 'Generar reporte de respuestas abiertas', labelScoreCenter: 'Operativo',
-            onExportar: () => generarPDFResumenEjecutivo(p2Filtrados, 'NPS P2', `Corte ${p2Pais} / ${p2Mes}`)
-          })
+      ),
+      e('div',{className:'card p-6 bg-white'},
+        e('div',{className:'flex justify-between items-center mb-4'},
+          e('h3',{className:'text-sm font-bold text-red-600 flex items-center gap-1.5'},
+            e('i',{className:'fa-solid fa-triangle-exclamation animate-pulse'}),
+            'Radar de Alertas · Control de Clientes Críticos'
+          ),
+          e('span',{className:'px-2.5 py-1 bg-red-50 text-red-600 text-xs font-extrabold rounded-full'},`${criticos.length} Casos`)
         ),
-        e('div', { className: 'card p-6 bg-white flex flex-col md:flex-row gap-6' },
-          e('div', { className: 'w-full md:w-8/12' },
-            e('div', { className: 'flex items-center gap-2 mb-4' },
-              e('h3', { className: 'text-sm font-bold text-gray-900' }, 'Evolución Histórica de Tendencia por Trimestre (Qs)'),
-              e('div', { className: 'tooltip-container relative inline-block cursor-help' },
-                e('i', { className: 'fa-solid fa-circle-info text-gray-300 hover:text-brand text-xs' }),
-                e('div', { className: 'tooltip-box shadow-xl' },
-                  e('p', { className: 'font-bold border-b border-gray-700 pb-1 mb-1' }, '¿Qué significa el Score NPS?'),
-                  e('p', {}, 'Se calcula restando el % de Promotores (9-10) menos el % de Detractores (0-6).')
+        criticos.length===0
+          ? e('p',{className:'text-center py-6 text-xs text-gray-400'},'¡Felicidades! Sin alertas críticas 🎉')
+          : e('div',{className:'space-y-2'},criticos.map((c,i)=>{
+              // gestion = Col M en NPS (observaciones del KAM sobre el cliente crítico)
+              const gestion=(c.gestion||'').trim();
+              const ok=gestion.toLowerCase().match(/comunic|hablo|ok\b|^si\b|contactad|gestion/);
+              return e('div',{key:i,className:'p-4 rounded-xl border border-red-100 bg-red-50/10 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 text-xs'},
+                e('div',{},
+                  e('p',{className:'font-extrabold text-gray-900'},`${c.cliente||'Empresa'} (${c.pais||'—'})`),
+                  e('p',{className:'text-gray-500 italic mt-0.5'},c.razon?`"${c.razon}"`:c.pregunta3?`"${c.pregunta3}"`:' — ')
+                ),
+                e('div',{className:'text-right flex-shrink-0'},
+                  e('span',{className:'px-2 py-0.5 bg-red-500 text-white font-bold rounded'},`Nota: ${c.puntuacion}`),
+                  e('p',{className:`font-bold mt-1 ${ok?'text-green-600':'text-amber-500'}`}, gestion||'Sin gestión registrada')
                 )
+              );
+            }))
+      )
+    );
+  }
+
+  // ──────────────────────────────────────────
+  // MÓDULO CSAT
+  // ──────────────────────────────────────────
+  function ModuloCSAT({ abonoRaw, reunionRaw }) {
+    const [c1Pais,setC1Pais]=useState('Todos'), [c1Mes,setC1Mes]=useState('Todos');
+    const [c2Pais,setC2Pais]=useState('Todos'), [c2Mes,setC2Mes]=useState('Todos');
+    const listaPaises=['Todos','Colombia','México','Chile','Perú','Ecuador'];
+    const listaMeses=['Todos','Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+
+    const calcCSAT=(arr)=>{
+      const total=arr.length; if(!total) return {total:0,p:0,n:0,d:0,score:0,avg:'—',pPorc:0};
+      let alto=0,medio=0,bajo=0,suma=0;
+      arr.forEach(r=>{const v=parseFloat(r.puntuacion);if(!isNaN(v)){suma+=v;if(v>=4)alto++;else if(v===3)medio++;else bajo++;}});
+      return {total,p:alto,n:medio,d:bajo,score:Math.round((alto/total)*100),avg:(suma/total).toFixed(1),pPorc:((alto/total)*100).toFixed(0)};
+    };
+
+    const c1f=useMemo(()=>abonoRaw.filter(r=>(c1Pais==='Todos'||r.pais===c1Pais)&&(c1Mes==='Todos'||r.mes===c1Mes)),[abonoRaw,c1Pais,c1Mes]);
+    const c2f=useMemo(()=>reunionRaw.filter(r=>(c2Pais==='Todos'||r.pais===c2Pais)&&(c2Mes==='Todos'||r.mes===c2Mes)),[reunionRaw,c2Pais,c2Mes]);
+    const m1=useMemo(()=>calcCSAT(c1f),[c1f]);
+    const m2=useMemo(()=>calcCSAT(c2f),[c2f]);
+
+    const histAbono=useMemo(()=>{
+      const qs={}; abonoRaw.forEach(r=>{if(r.mes){const q=r.periodoQ||'Q2';if(!qs[q])qs[q]=[];qs[q].push(r);}});
+      return Object.keys(qs).map(q=>{let s=0;qs[q].forEach(r=>s+=parseFloat(r.puntuacion)||3);return {q,score:+(s/qs[q].length).toFixed(1)};});
+    },[abonoRaw]);
+    const histReunion=useMemo(()=>{
+      const qs={}; reunionRaw.forEach(r=>{if(r.mes){const q=r.periodoQ||'Q2';if(!qs[q])qs[q]=[];qs[q].push(r);}});
+      return Object.keys(qs).map(q=>{let s=0;qs[q].forEach(r=>s+=parseFloat(r.puntuacion)||3);return {q,score:+(s/qs[q].length).toFixed(1)};});
+    },[reunionRaw]);
+
+    const criticosCSAT=useMemo(()=>[...abonoRaw,...reunionRaw].filter(r=>{const v=parseFloat(r.puntuacion);return !isNaN(v)&&v<=2;}),[abonoRaw,reunionRaw]);
+
+    return e('div',{className:'space-y-6'},
+      e('div',{className:'card p-4 bg-brand/5 border border-brand/10 -mb-2'},
+        e('h3',{className:'text-xs font-bold text-brand uppercase tracking-wider',style:{color:'#FA345E'}},'Sección 1 · CSAT Post Abono Trimestral'),
+        e('p',{className:'text-[11px] text-gray-500 mt-0.5'},'Evaluación tras confirmación de abonos trimestrales en la plataforma.')
+      ),
+      e(BloqueEspejo,{
+        id:'csat_1',
+        titulo:'¿Qué tan satisfecho(a) estás con el uso de la plataforma para la gestión de tus abonos trimestrales?',
+        totalRespuestas:m1.total,promotores:m1.p,neutrales:m1.n,detractores:m1.d,score:m1.score,promedio:m1.avg,totalPromotores:m1.p,pctPromotores:m1.pPorc,
+        listaPaises,listaMeses,filtroPais:c1Pais,setFiltroPais:setC1Pais,filtroMes:c1Mes,setFiltroMes:setC1Mes,
+        textoBoton:'Generar reporte de respuestas abiertas', labelCenter:'Satisfechos',
+        onBoton:()=>reporteCSAT(c1f,'CSAT Post Abono',`Corte ${c1Pais}`)
+      }),
+      e('div',{className:'card p-4 bg-brand/5 border border-brand/10 -mb-2'},
+        e('h3',{className:'text-xs font-bold text-brand uppercase tracking-wider',style:{color:'#FA345E'}},'Sección 2 · CSAT Post Reunión Comercial'),
+        e('p',{className:'text-[11px] text-gray-500 mt-0.5'},'Medición de calidad del servicio consultivo al cierre de mesas de trabajo.')
+      ),
+      e(BloqueEspejo,{
+        id:'csat_2',
+        titulo:'¿El ejecutivo comercial resolvió de forma clara y oportuna tus requerimientos en la reunión de cuenta?',
+        totalRespuestas:m2.total,promotores:m2.p,neutrales:m2.n,detractores:m2.d,score:m2.score,promedio:m2.avg,totalPromotores:m2.p,pctPromotores:m2.pPorc,
+        listaPaises,listaMeses,filtroPais:c2Pais,setFiltroPais:setC2Pais,filtroMes:c2Mes,setFiltroMes:setC2Mes,
+        textoBoton:'Generar reporte de respuestas abiertas', labelCenter:'Satisfechos',
+        onBoton:()=>reporteCSAT(c2f,'CSAT Post Reunión',`Corte ${c2Pais}`)
+      }),
+      e('div',{className:'card p-6 bg-white'},
+        e('h4',{className:'text-sm font-bold text-gray-900 mb-4'},'Evolución Histórica CSAT (Líneas Comparativas)'),
+        e(ChartLineaDobleCSAT,{datosAbono:histAbono,datosReunion:histReunion})
+      ),
+      e('div',{className:'card p-6 bg-white'},
+        e('h4',{className:'text-sm font-bold text-red-600 mb-3'},'Radar de Alertas Críticas · CSAT'),
+        criticosCSAT.length===0
+          ? e('p',{className:'text-xs text-gray-400 py-4 text-center'},'Sin alertas de insatisfacción en este bloque.')
+          : e('div',{className:'space-y-2'},criticosCSAT.map((c,i)=>
+              e('div',{key:i,className:'p-3 rounded-lg border border-red-100 bg-red-50/5 flex justify-between text-xs'},
+                e('div',{},
+                  e('p',{className:'font-bold'},c.cliente||'Empresa'),
+                  e('p',{className:'text-gray-400 italic'},c.comentario||'Sin comentario')
+                ),
+                e('span',{className:'font-bold text-red-500'},`Nota: ${c.puntuacion||'—'}`)
               )
-            ),
-            datosLinea.length === 0 ? e('div', { className: 'h-[240px] flex items-center justify-center text-xs text-gray-400' }, 'Sin históricos en este corte') : e(ChartLineaHistorico, { datos: datosLinea })
+            ))
+      )
+    );
+  }
+
+  // ──────────────────────────────────────────
+  // MÓDULO SALIDAS / OFF
+  // ──────────────────────────────────────────
+  function ModuloSalidas({ datos, filtroPais, setFiltroPais, filtroAnio, setFiltroAnio, filtroMes, setFiltroMes }) {
+    const mesesNombres=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+
+    const filtrados=useMemo(()=>datos.filter(r=>{
+      if((r.estado||'').toUpperCase().trim()!=='RESPONDIDO') return false;
+      const pn=r.pais==='Peru'?'Perú':r.pais;
+      if(filtroPais!=='Todos'&&pn!==filtroPais) return false;
+      const f=r.fecha?new Date(r.fecha):null;
+      if(f&&!isNaN(f)){
+        if(filtroAnio!=='Todos'&&String(f.getFullYear())!==filtroAnio) return false;
+        if(filtroMes!=='Todos'&&mesesNombres[f.getMonth()]!==filtroMes) return false;
+      } else if(filtroAnio!=='Todos'||filtroMes!=='Todos') return false;
+      return true;
+    }),[datos,filtroPais,filtroAnio,filtroMes]);
+
+    const total=filtrados.length;
+    const prom=campo=>{const v=filtrados.map(r=>parseFloat(r[campo])).filter(n=>!isNaN(n));return v.length?(v.reduce((a,b)=>a+b,0)/v.length).toFixed(1):'—';};
+    const promExp=prom('puntuacionExperiencia'), promKam=prom('puntuacionEjecutivo');
+    const retorno=filtrados.filter(r=>r.volveria&&r.volveria.includes('SI')).length;
+    const pctRetorno=total?Math.round((retorno/total)*100):0;
+
+    const conteoPor=campo=>{const c={};filtrados.forEach(r=>{if(r[campo]){const val=String(r[campo]);val.split(/[,;|\n]+/).forEach(o=>{const t=o.trim().replace(/\s+/g,' ');if(t&&t!=='-'&&t.toLowerCase()!=='n/a')c[t]=(c[t]||0)+1;});}});return c;};
+    const motivosC=conteoPor('motivoSalida');
+    const fallasC =conteoPor('fallaExperiencia');  // Col I
+    const labMotivos=Object.keys(motivosC), valMotivos=Object.values(motivosC).map(v=>total?Math.round((v/total)*100):0);
+    const labFallas =Object.keys(fallasC),  valFallas =Object.values(fallasC).map(v=>total?Math.round((v/total)*100):0);
+
+    return e('div',{className:'space-y-6'},
+      // Filtros
+      e('div',{className:'bg-white p-4 rounded-2xl border border-gray-100 flex flex-wrap gap-4 items-center justify-between shadow-sm'},
+        e('div',{className:'text-sm font-bold text-gray-800'},'Cuentas que salieron'),
+        e('div',{className:'flex gap-3'},
+          e('select',{className:'p-2 bg-gray-50 border border-gray-200 rounded-xl text-xs font-semibold text-gray-700 outline-none',value:filtroPais,onChange:ev=>setFiltroPais(ev.target.value)},
+            ['Todos','Perú','Chile','Colombia','Ecuador','México'].map(p=>e('option',{key:p,value:p},p==='Todos'?'Todos los Países':p))
           ),
-          e('div', { className: 'w-full md:w-4/12 flex flex-col justify-between border-l border-gray-100 pl-0 md:pl-6' },
-            e('div', { className: 'space-y-4' },
-              e('h4', { className: 'text-[10px] font-bold text-gray-400 uppercase tracking-wider' }, 'Filtros de Tendencia'),
-              e('div', { className: 'space-y-3' },
-                e('div', { className: 'space-y-1' }, e('label', { className: 'text-[11px] text-gray-400 font-medium' }, 'País:'), e('select', { value: histPais, onChange: ev => setHistPais(ev.target.value), className: 'w-full text-xs font-semibold text-gray-600 bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 outline-none' }, listPaises.map(p => e('option', { key: p, value: p }, p)))),
-                e('div', { className: 'space-y-1' }, e('label', { className: 'text-[11px] text-gray-400 font-medium' }, 'Año Fiscal:'), e('select', { value: histAnio, onChange: ev => setHistAnio(ev.target.value), className: 'w-full text-xs font-semibold text-gray-600 bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 outline-none' }, listAnios.map(a => e('option', { key: a, value: a }, a))))
-              )
+          e('select',{className:'p-2 bg-gray-50 border border-gray-200 rounded-xl text-xs font-semibold text-gray-700 outline-none',value:filtroAnio,onChange:ev=>setFiltroAnio(ev.target.value)},
+            ['Todos','2025','2026'].map(a=>e('option',{key:a,value:a},a==='Todos'?'Todos los Años':`Año ${a}`))
+          ),
+          e('select',{className:'p-2 bg-gray-50 border border-gray-200 rounded-xl text-xs font-semibold text-gray-700 outline-none',value:filtroMes,onChange:ev=>setFiltroMes(ev.target.value)},
+            ['Todos',...mesesNombres].map(m=>e('option',{key:m,value:m},m==='Todos'?'Todos los Meses':m))
+          )
+        )
+      ),
+      // KPIs
+      e('div',{className:'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5'},
+        e('div',{className:'bg-white p-5 rounded-2xl border border-gray-100 shadow-sm'},e('div',{className:'text-[11px] font-bold text-gray-400 uppercase tracking-wider'},'Total Cuentas Off'),e('div',{className:'text-2xl font-extrabold text-gray-900 mt-1'},total),e('div',{className:'text-[9px] text-gray-400 mt-0.5'},'Respuestas válidas')),
+        e('div',{className:'bg-white p-5 rounded-2xl border border-gray-100 shadow-sm'},e('div',{className:'text-[11px] font-bold text-gray-400 uppercase tracking-wider'},'Promedio Experiencia'),e('div',{className:'text-2xl font-extrabold mt-1',style:{color:'#FA345E'}},promExp),e('div',{className:'text-[9px] text-gray-400 mt-0.5'},'Col J · Escala 1-10')),
+        e('div',{className:'bg-white p-5 rounded-2xl border border-gray-100 shadow-sm'},e('div',{className:'text-[11px] font-bold text-gray-400 uppercase tracking-wider'},'Promedio Atención KAM'),e('div',{className:'text-2xl font-extrabold text-gray-900 mt-1'},promKam),e('div',{className:'text-[9px] text-gray-400 mt-0.5'},'Col K · Evaluación servicio')),
+        e('div',{className:'bg-white p-5 rounded-2xl border border-gray-100 shadow-sm flex flex-col justify-between'},
+          e('div',null,
+            e('div',{className:'text-[11px] font-bold text-gray-400 uppercase tracking-wider'},'Intención de Retorno'),
+            e('div',{className:'text-2xl font-extrabold text-green-600 mt-1'},total?`${pctRetorno}%`:'—')
+          ),
+          total?e('div',{className:'w-full bg-gray-100 rounded-full h-1.5 mt-2 overflow-hidden flex'},
+            e('div',{style:{width:`${pctRetorno}%`},className:'bg-green-500 h-full'}),
+            e('div',{style:{width:`${100-pctRetorno}%`},className:'bg-red-400 h-full'})
+          ):e('div',{className:'text-[9px] text-gray-400 mt-1'},'Esperando datos...')
+        )
+      ),
+      // Gráficos lado a lado: Motivos + Fallas
+      e('div',{className:'grid grid-cols-1 md:grid-cols-2 gap-6'},
+        labMotivos.length>0
+          ? e('div',{className:'bg-white p-6 rounded-2xl border border-gray-100 shadow-sm'},
+              e('div',{className:'text-xs font-bold uppercase tracking-wider text-gray-400 mb-1'},'Distribución de Causas'),
+              e('div',{className:'text-sm font-extrabold text-gray-900 mb-4'},'¿Principal motivo por el que decidiste dejar de trabajar con nosotros?'),
+              e(ChartBarras,{id:'motivos-salida',labels:labMotivos,values:valMotivos})
             )
+          : e('div',{className:'bg-white p-6 rounded-2xl border border-gray-100 shadow-sm flex items-center justify-center'},
+              e('p',{className:'text-xs text-gray-400'},'Sin datos de motivos')
+            ),
+        labFallas.length>0
+          ? e('div',{className:'bg-white p-6 rounded-2xl border border-gray-100 shadow-sm'},
+              e('div',{className:'text-xs font-bold uppercase tracking-wider text-gray-400 mb-1'},'Fallas Detectadas'),
+              e('div',{className:'text-sm font-extrabold text-gray-900 mb-4'},'¿Qué falló principalmente en tu experiencia con nosotros?'),
+              e(ChartBarras,{id:'fallas-salida',labels:labFallas,values:valFallas})
+            )
+          : e('div',{className:'bg-white p-6 rounded-2xl border border-gray-100 shadow-sm flex items-center justify-center'},
+              e('p',{className:'text-xs text-gray-400'},'Sin datos de fallas registradas (Col I)')
+            )
+      ),
+      // Preguntas abiertas Col L y Col M con análisis IA
+      e('div',{className:'grid grid-cols-1 md:grid-cols-2 gap-6'},
+        e('div',{className:'bg-white p-5 rounded-2xl border border-gray-100 shadow-sm flex flex-col justify-between'},
+          e('div',null,
+            e('div',{className:'text-[10px] font-bold uppercase tracking-wider mb-1',style:{color:'#FA345E'}},'Pregunta Abierta · Col L'),
+            e('div',{className:'text-xs font-extrabold text-gray-900 leading-tight mb-2'},'¿Qué podríamos haber hecho diferente para que te quedaras?'),
+            e('p',{className:'text-[10px] text-gray-400'},
+              `${filtrados.filter(r=>r.queHacerDif&&r.queHacerDif.trim()&&r.queHacerDif.trim()!=='-').length} respuestas escritas`
+            )
+          ),
+          e('button',{
+            className:'mt-4 w-full py-2.5 text-white font-bold rounded-xl text-[11px] uppercase tracking-wide flex items-center justify-center gap-2',
+            style:{background:'linear-gradient(135deg,#FA345E 0%,#D61F47 100%)'},
+            onClick:()=>reporteSalidas(filtrados,'queHacerDif',`Corte ${filtroPais}`)
+          },
+            e('i',{className:'fa-solid fa-wand-magic-sparkles'}),
+            'Analizar con IA'
           )
         ),
-        e('div', { className: 'card p-6 bg-white' },
-          e('div', { className: 'flex justify-between items-center mb-4' },
-            e('h3', { className: 'text-sm font-bold text-red-600 flex items-center gap-1.5' }, e('i', { className: 'fa-solid fa-triangle-exclamation animate-pulse' }), 'Radar de Alertas Avanzado · Control de Clientes Críticos'),
-            e('span', { className: 'px-2.5 py-1 bg-red-50 text-red-600 text-xs font-extrabold rounded-full' }, `${criticos.length} Casos`)
-          ),
-          criticos.length === 0 ? e('p', { className: 'text-center py-6 text-xs text-gray-400' }, '¡Felicidades! Sin alertas críticas 🎉') :
-          e('div', { className: 'space-y-2' }, criticos.map((c, i) => {
-            const txtColM = (c.notaKam || '').trim();
-            const gestionado = txtColM.toLowerCase().includes('comunic') || txtColM.toLowerCase().includes('hablo') || txtColM.toLowerCase().includes('ok') || txtColM.toLowerCase().includes('si');
-            return e('div', { key: i, className: 'p-4 rounded-xl border border-red-100 bg-red-50/10 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 text-xs' },
-              e('div', {}, e('p', { className: 'font-extrabold text-gray-900' }, `${c.cliente || 'Empresa'} (${c.pais || '—'})`), e('p', { className: 'text-gray-500 italic mt-0.5' }, c.razon ? `"${c.razon}"` : '—')),
-              e('div', { className: 'text-right flex-shrink-0' }, e('span', { className: 'px-2 py-0.5 bg-red-500 text-white font-bold rounded' }, `Nota: ${c.puntuacion}`), e('p', { className: `font-bold mt-1 ${gestionado ? 'text-green-600' : 'text-amber-500'}` }, txtColM || 'Sin observaciones registradas'))
-            );
-          }))
-        )
-      );
-    }
-
-    // ==========================================
-    // --- PESTAÑA 2: MÓDULO CSAT REFLEXIVO ---
-    // ==========================================
-    function ModuleCSAT({ abonoRaw, reunionRaw }) {
-      const [c1Pais, setC1Pais] = useState('Todos'); const [c1Mes, setC1Mes] = useState('Todos');
-      const [c2Pais, setC2Pais] = useState('Todos'); const [c2Mes, setC2Mes] = useState('Todos');
-
-      const listPaises = ['Todos', 'Colombia', 'México', 'Chile', 'Perú', 'Ecuador'];
-      const listMeses = ['Todos', 'Mayo', 'Junio', 'Julio', 'Agosto'];
-
-      const c1Filtrados = useMemo(() => abonoRaw.filter(r => (c1Pais === 'Todos' || r.pais === c1Pais) && (c1Mes === 'Todos' || r.mes === c1Mes)), [abonoRaw, c1Pais, c1Mes]);
-      const m1 = useMemo(() => {
-        const total = c1Filtrados.length; if (total === 0) return { total: 0, p: 0, n: 0, d: 0, score: 0, avg: '—', pPorc: 0 };
-        let alto = 0, medio = 0, bajo = 0, suma = 0;
-        c1Filtrados.forEach(r => { 
-          const v = parseFloat(r.puntuacion || 10); suma += v;
-          if (v >= 9) alto++; else if (v >= 7) medio++; else bajo++;
-        });
-        return { total, p: alto, n: medio, d: bajo, score: Math.round((alto/total)*100), avg: (suma/total).toFixed(1), pPorc: ((alto/total)*100).toFixed(0) };
-      }, [c1Filtrados]);
-
-      const c2Filtrados = useMemo(() => reunionRaw.filter(r => (c2Pais === 'Todos' || r.pais === c2Pais) && (c2Mes === 'Todos' || r.mes === c2Mes)), [reunionRaw, c2Pais, c2Mes]);
-      const m2 = useMemo(() => {
-        const total = c2Filtrados.length; if (total === 0) return { total: 0, p: 0, n: 0, d: 0, score: 0, avg: '—', pPorc: 0 };
-        let alto = 0, medio = 0, bajo = 0, suma = 0;
-        c2Filtrados.forEach(r => {
-          const v = parseFloat(r.puntuacion || 5); suma += v;
-          if (v >= 4) alto++; else if (v === 3) medio++; else bajo++;
-        });
-        return { total, p: alto, n: medio, d: bajo, score: Math.round((alto/total)*100), avg: (suma/total).toFixed(1), pPorc: ((alto/total)*100).toFixed(0) };
-      }, [c2Filtrados]);
-
-      const histAbono = useMemo(() => {
-        const qs = {}; abonoRaw.forEach(r => { if(r.mes) { const q = r.mes === 'Mayo'?'Q2':'Q3'; if(!qs[q]) qs[q]=[]; qs[q].push(r); } });
-        return Object.keys(qs).map(q => { let s=0; qs[q].forEach(r=>s+=parseFloat(r.puntuacion||9)); return { q, score: (s/qs[q].length || 9) }; });
-      }, [abonoRaw]);
-
-      const histReunion = useMemo(() => {
-        const qs = {}; reunionRaw.forEach(r => { if(r.mes) { const q = r.mes === 'Mayo'?'Q2':'Q3'; if(!qs[q]) qs[q]=[]; qs[q].push(r); } });
-        return Object.keys(qs).map(q => { let s=0; qs[q].forEach(r=>s+=parseFloat(r.puntuacion||5)); return { q, score: (s/qs[q].length || 5) }; });
-      }, [reunionRaw]);
-
-      const criticosCSAT = useMemo(() => {
-        return [...abonoRaw, ...reunionRaw].filter(r => { const v = parseFloat(r.puntuacion); return !isNaN(v) && (v <= 6 || v <= 3); });
-      }, [abonoRaw, reunionRaw]);
-
-      return e('div', { className: 'space-y-6' },
-        e('div', { className: 'card p-4 bg-brand/5 border border-brand/10 -mb-2' },
-          e('h3', { className: 'text-xs font-bold text-brand uppercase tracking-wider' }, 'Sección Horizontal 1 · CSAT Post Abono Trimestral'),
-          e('p', { className: 'text-[11px] text-gray-500 mt-0.5' }, 'Evaluación gatillada tras la confirmación de abonos trimestrales en la plataforma financiera.')
-        ),
-        e(BloquePreguntaEspejo, {
-          id: 'csat_1', tituloCompleto: '¿Qué tan satisfecho(a) estás con el uso de la plataforma para la gestión de tus abonos trimestrales?',
-          totalRespuestas: m1.total, promotores: m1.p, neutrales: m1.n, detractores: m1.d, score: m1.score, promedio: m1.avg, totalPromotores: m1.p, porcentajePromotores: m1.pPorc,
-          listaPaises: listPaises, listMeses: listMeses, filtroPais: c1Pais, setFiltroPais: setC1Pais, filtroMes: c1Mes, setFiltroMes: setC1Mes,
-          textoBoton: 'Generar reporte de respuestas abiertas', labelScoreCenter: 'Satisfechos',
-          onExportar: () => generarPDFResumenEjecutivo(c1Filtrados, 'CSAT 1 - Post Abono', `Corte ${c1Pais}`)
-        }),
-
-        e('div', { className: 'card p-4 bg-brand/5 border border-brand/10 -mb-2' },
-          e('h3', { className: 'text-xs font-bold text-brand uppercase tracking-wider' }, 'Sección Horizontal 2 · CSAT Post Reunión Comercial'),
-          e('p', { className: 'text-[11px] text-gray-500 mt-0.5' }, 'Medición de calidad del servicio consultivo ejecutada inmediatamente al cierre de mesas de trabajo.')
-        ),
-        e(BloquePreguntaEspejo, {
-          id: 'csat_2', tituloCompleto: '¿El ejecutivo comercial resolvió de forma clara y oportuna tus requerimientos en la reunión de cuenta?',
-          totalRespuestas: m2.total, promotores: m2.p, neutrales: m2.n, detractores: m2.d, score: m2.score, promedio: m2.avg, totalPromotores: m2.p, porcentajePromotores: m2.pPorc,
-          listaPaises: listPaises, listMeses: listMeses, filtroPais: c2Pais, setFiltroPais: setC2Pais, filtroMes: c2Mes, setFiltroMes: setC2Mes,
-          textoBoton: 'Generar reporte de respuestas abiertas', labelScoreCenter: 'Satisfechos',
-          onExportar: () => generarPDFResumenEjecutivo(c2Filtrados, 'CSAT 2 - Post Reunión', `Corte ${c2Pais}`)
-        }),
-
-        e('div', { className: 'card p-6 bg-white' },
-          e('h4', { className: 'text-sm font-bold text-gray-900 mb-4' }, 'Evolución Histórica de Tendencia CSAT (Líneas Comparativas)'),
-          e(ChartLineaDobleCSAT, { datosAbono: histAbono, datosReunion: histReunion })
-        ),
-
-        e('div', { className: 'card p-6 bg-white' },
-          e('h4', { className: 'text-sm font-bold text-red-600 mb-3' }, 'Radar de Alertas Críticas · CSAT'),
-          criticosCSAT.length === 0 ? e('p', { className: 'text-xs text-gray-400 py-4 text-center' }, 'No hay alertas de insatisfacción críticas en este bloque.') :
-          e('div', { className: 'space-y-2' }, criticosCSAT.map((c, i) => 
-            e('div', { key: i, className: 'p-3 rounded-lg border border-red-100 bg-red-50/5 flex justify-between text-xs' },
-              e('div', {}, e('p', { className: 'font-bold' }, c.cliente || 'Empresa'), e('p', { className: 'text-gray-400 italic' }, c.razon || c.comentario || 'Sin comentario de texto')),
-              e('span', { className: 'font-bold text-red-500' }, `Nota: ${c.puntuacion || '—'}`)
+        e('div',{className:'bg-white p-5 rounded-2xl border border-gray-100 shadow-sm flex flex-col justify-between'},
+          e('div',null,
+            e('div',{className:'text-[10px] font-bold uppercase tracking-wider mb-1',style:{color:'#FA345E'}},'Pregunta Abierta · Col M'),
+            e('div',{className:'text-xs font-extrabold text-gray-900 leading-tight mb-2'},'¿Hay algo adicional que quieras compartir sobre tu experiencia?'),
+            e('p',{className:'text-[10px] text-gray-400'},
+              `${filtrados.filter(r=>r.adicional&&r.adicional.trim()&&r.adicional.trim()!=='-').length} respuestas escritas`
             )
-          ))
+          ),
+          e('button',{
+            className:'mt-4 w-full py-2.5 text-white font-bold rounded-xl text-[11px] uppercase tracking-wide flex items-center justify-center gap-2',
+            style:{background:'linear-gradient(135deg,#FA345E 0%,#D61F47 100%)'},
+            onClick:()=>reporteSalidas(filtrados,'adicional',`Corte ${filtroPais}`)
+          },
+            e('i',{className:'fa-solid fa-wand-magic-sparkles'}),
+            'Analizar con IA'
+          )
         )
-      );
-    }
-
-    // --- ANÁLISIS DE CLIENTES INACTIVOS ---
-    function PlaceholderTab({ title, icon, dataRaw }) {
-      return e('div', { className: 'card p-10 text-center text-gray-500 font-medium space-y-4 bg-white' },
-        e('i', { className: `fa-solid ${icon} text-4xl text-brand block` }),
-        e('h2', { className: 'text-sm font-extrabold text-gray-800' }, title),
-        e('div', { className: 'bg-gray-50 p-4 rounded-xl font-mono text-[10px] text-gray-600 text-left overflow-x-auto max-w-xl mx-auto border border-gray-100' },
-          JSON.stringify(dataRaw, null, 2)
+      ),
+      // Tabla programas
+      e('div',{className:'bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden'},
+        e('div',{className:'p-5 border-b border-gray-50 bg-gray-50/50 flex justify-between items-center'},
+          e('div',null,
+            e('div',{className:'text-sm font-extrabold text-gray-900'},'Programas que Salieron'),
+            e('div',{className:'text-[11px] text-gray-400 mt-0.5'},'Control cronológico de desvinculaciones')
+          ),
+          e('span',{className:'px-2.5 py-1 bg-gray-100 text-gray-600 rounded-full text-[10px] font-bold'},`${total} Programas`)
+        ),
+        e('div',{className:'overflow-x-auto'},
+          e('table',{className:'w-full text-left border-collapse'},
+            e('thead',{className:'bg-gray-50 text-[11px] font-bold text-gray-400 uppercase tracking-wider border-b border-gray-100'},
+              e('tr',null,e('th',{className:'p-4 pl-6'},'Fecha Salida'),e('th',{className:'p-4'},'Nombre del Programa'),e('th',{className:'p-4 pr-6'},'Correo de Contacto'))
+            ),
+            e('tbody',{className:'divide-y divide-gray-50 text-xs text-gray-700'},
+              total>0
+                ? filtrados.map((r,i)=>e('tr',{key:i,className:'hover:bg-gray-50/80 transition-colors'},
+                    e('td',{className:'p-4 pl-6 font-medium text-gray-500'},r.fecha?new Date(r.fecha).toLocaleDateString('es-CL'):'—'),
+                    e('td',{className:'p-4 font-bold text-gray-900'},r.programa||'—'),
+                    e('td',{className:'p-4 text-gray-600 font-mono'},r.correo||'—')
+                  ))
+                : e('tr',null,e('td',{colSpan:3,className:'p-8 text-center text-gray-400 italic'},'No hay desvinculaciones con respuestas registradas.'))
+            )
+          )
         )
-      );
-    }
+      )
+    );
+  }
 
-    // ── NÚCLEO CENTRAL DE CARGA ──
-    function App() {
-      const [data, setData] = useState(null); 
-      const [metaHeaders, setMetaHeaders] = useState({});
-      const [loading, setLoading] = useState(true); 
-      const [error, setError] = useState(null);
-      const [tab, setTab] = useState(0);
+  // ──────────────────────────────────────────
+  // APP PRINCIPAL
+  // ──────────────────────────────────────────
+  function App() {
+    const [data,setData]=useState(null);
+    const [loading,setLoading]=useState(true);
+    const [error,setError]=useState(null);
+    const [tab,setTab]=useState(0);
+    const [filtroPais,setFiltroPais]=useState('Todos');
+    const [filtroAnio,setFiltroAnio]=useState('Todos');
+    const [filtroMes,setFiltroMes]=useState('Todos');
 
-      // Variables de estado unificadas para el filtrado Off
-      const [filtroPais, setFiltroPais] = useState('Todos');
-      const [filtroAnio, setFiltroAnio] = useState('Todos');
-      const [filtroMes, setFiltroMes] = useState('Todos');
+    const cargar=useCallback(()=>{
+      setLoading(true); setError(null);
+      fetch(URL_BACKEND)
+        .then(r=>{ if(!r.ok) throw new Error('Error servidor'); return r.json(); })
+        .then(d=>{ if(!d||typeof d!=='object') throw new Error('Datos inválidos'); setData(d); setLoading(false); })
+        .catch(err=>{ setError(err.message); setLoading(false); });
+    },[]);
+    useEffect(()=>{ cargar(); },[]);
 
-      const cargarData = useCallback(() => {
-        setLoading(true); setError(null);
-        fetch(CONFIG_FRONTEND.URL_API_BACKEND)
-          .then(res => { if (!res.ok) throw new Error("Fallo de respuesta del servidor."); return res.json(); })
-          .then(parsed => { if (!parsed || typeof parsed !== 'object') throw new Error("Esquema corrupto."); setData(parsed); setMetaHeaders(parsed.headers || {}); setLoading(false); })
-          .catch(err => { setError(err.message || "Error general de enlace."); setLoading(false); });
-      }, []);
+    const tabs=[['NPS','fa-solid fa-chart-line'],['CSAT','fa-solid fa-star'],['Inactivos','fa-solid fa-user-clock'],['Salidas / Off','fa-solid fa-arrow-right-from-bracket']];
 
-      useEffect(() => { cargarData(); }, []);
+    // Normalizar datos de salidas con mapeo exacto del GAS
+    const salidasNorm=useMemo(()=>{
+      if(!data||!Array.isArray(data.salidas)) return [];
+      return data.salidas.map(o=>({
+        pais:               o.pais||'',
+        programa:           o.programa||'',
+        correo:             o.correo||'',
+        motivoSalida:       o.motivoBaja||'',          // Col H
+        fallaExperiencia:   o.fallas||'',              // Col I – fallas detectadas
+        puntuacionExperiencia: o.experiencia||'',      // Col J
+        puntuacionEjecutivo:   o.notaKam||'',          // Col K
+        queHacerDif:        o.queHacerDif||'',         // Col L
+        adicional:          o.adicional||'',           // Col M
+        volveria:           o.volveria?String(o.volveria).toUpperCase().replace(/Í/g,'I').trim():'',
+        estado:             o.estado||'',              // Col O
+        fecha:              o.fecha||null
+      }));
+    },[data]);
 
-      const menuTabs = [['NPS', 'fa-solid fa-chart-line'], ['CSAT', 'fa-solid fa-star'], ['Inactivos', 'fa-solid fa-user-clock'], ['Salidas / Off', 'fa-solid fa-arrow-right-from-bracket']];
-
-      return e('div', { className: 'min-h-screen flex flex-col justify-between' },
-        e('div', {},
-          e('header', { className: 'bg-white border-b border-gray-200 sticky top-0 z-20 shadow-sm px-6 py-4' },
-            e('div', { className: 'max-w-7xl mx-auto flex items-center justify-between' },
-              e('div', { className: 'flex items-center gap-3' },
-                e('div', { className: 'w-10 h-10 rounded-xl bg-brand flex items-center justify-center text-white text-base shadow-md' }, e('i', { className: 'fa-solid fa-heart-pulse' })),
-                e('div', {}, e('h1', { className: 'text-base font-extrabold text-gray-900 leading-none tracking-tight' }, 'Experiencia del cliente'), e('p', { className: 'text-[11px] text-gray-400 mt-1 font-medium' }, 'Métricas sincronizadas en vivo corporativo'))
+    return e('div',{className:'min-h-screen flex flex-col justify-between'},
+      e('div',{},
+        e('header',{className:'bg-white border-b border-gray-200 sticky top-0 z-20 shadow-sm px-6 py-4'},
+          e('div',{className:'max-w-7xl mx-auto flex items-center justify-between'},
+            e('div',{className:'flex items-center gap-3'},
+              e('div',{className:'w-10 h-10 rounded-xl flex items-center justify-center text-white text-base shadow-md',style:{background:'#FA345E'}},
+                e('i',{className:'fa-solid fa-heart-pulse'})
               ),
-              e('button', { onClick: cargarData, disabled: loading, className: 'p-2.5 bg-gray-50 hover:bg-gray-100 rounded-xl text-gray-400 border border-gray-200' }, e('i', { className: `fa-solid fa-arrow-rotate-right ${loading ? 'animate-spin' : ''}` }))
+              e('div',{},
+                e('h1',{className:'text-base font-extrabold text-gray-900 leading-none tracking-tight'},'Experiencia del cliente'),
+                e('p',{className:'text-[11px] text-gray-400 mt-1 font-medium'},'Métricas sincronizadas en vivo corporativo')
+              )
             ),
-            e('div', { className: 'max-w-7xl mx-auto flex gap-6 -mb-4 mt-4 overflow-x-auto' }, menuTabs.map(([lbl, icon], id) => e('button', { key: id, onClick: () => setTab(id), className: `tab-btn pb-3 text-xs font-bold tracking-wider uppercase whitespace-nowrap flex items-center gap-2 ${tab === id ? 'active text-brand' : 'text-gray-400 hover:text-gray-600'}` }, e('i', { className: icon }), lbl)))
-          ),
-          e('main', { className: 'max-w-7xl mx-auto px-6 mt-6' },
-            loading && e('div', { className: 'space-y-5' }, e('div', { className: 'skeleton h-20' }), e('div', { className: 'grid grid-cols-1 lg:grid-cols-2 gap-6' }, e('div', { className: 'skeleton h-[300px]' }), e('div', { className: 'skeleton h-[300px]' })), e('div', { className: 'skeleton h-48 w-full' })),
-            !loading && error && e('div', { className: 'card p-8 text-center max-w-md mx-auto mt-10 space-y-3 bg-white' }, e('i', { className: 'fa-solid fa-triangle-exclamation text-red-500 text-3xl' }), e('p', { className: 'font-bold text-gray-800' }, 'Error de conexión'), e('button', { onClick: cargarData, className: 'px-4 py-2 bg-brand text-white text-xs font-bold rounded-xl' }, 'Reintentar')),
-            !loading && !error && data && e('div', {},
-              tab === 0 && e(ModuleNPS, { rawNps: Array.isArray(data.nps) ? data.nps : [], metaHeaders: metaHeaders }),
-              tab === 1 && e(ModuleCSAT, { abonoRaw: Array.isArray(data.csat_abono) ? data.csat_abono : [], reunionRaw: Array.isArray(data.csat_reunion) ? data.csat_reunion : [] }),
-              tab === 2 && e(PlaceholderTab, { title: 'Análisis de Clientes Inactivos', icon: 'fa-user-clock', dataRaw: { inactivos: data.inactivos } }),
-              tab === 3 && e(RenderSalidasOff, {
-                datosSalidas: Array.isArray(data.salidas) ? data.salidas.map(obj => ({
-                  pais: obj.pais || obj["país"] || obj["País"] || "",
-                  programa: obj.programa || obj["nombreDelPrograma"] || obj["Nombre del programa"] || "",
-                  correo: obj.correo || obj["correoDeContacto"] || obj["Correo de contacto"] || "",
-                  motivoSalida: obj.motivoBaja || obj.motivoSalida || "",
-                  puntuacionFalla: obj.puntuacionFalla || obj.puntuacionFalla || "",
-                  puntuacionExperiencia: obj.experiencia || "",
-                  puntuacionEjecutivo: obj.notaKam || "",
-                  volveria: obj.volveria ? String(obj.volveria).toUpperCase().replace('Í', 'I').trim() : "",
-                  estado: obj.estado || obj["estadoDeEncuesta"] || obj["Estado de encuesta"] || obj["estado"] || "",
-                  fecha: obj.fecha || obj["fechaDeRespuesta"] || obj["Fecha de respuesta"] || null
-                })) : [],
-                filtroPais, setFiltroPais,
-                filtroAnio, setFiltroAnio,
-                filtroMes, setFiltroMes
-              })
+            e('button',{onClick:cargar,disabled:loading,className:'p-2.5 bg-gray-50 hover:bg-gray-100 rounded-xl text-gray-400 border border-gray-200'},
+              e('i',{className:`fa-solid fa-arrow-rotate-right ${loading?'animate-spin':''}`})
             )
+          ),
+          e('div',{className:'max-w-7xl mx-auto flex gap-6 -mb-4 mt-4 overflow-x-auto'},
+            tabs.map(([lbl,icon],id)=>e('button',{key:id,onClick:()=>setTab(id),className:`tab-btn pb-3 text-xs font-bold tracking-wider uppercase whitespace-nowrap flex items-center gap-2 ${tab===id?'active text-brand':'text-gray-400 hover:text-gray-600'}`},
+              e('i',{className:icon}),lbl
+            ))
           )
         ),
-        e('footer', { className: 'text-center py-6 text-[11px] text-gray-400 mt-10 border-t border-gray-200 bg-white w-full' }, 'Apprecio · Dashboard Experiencia del cliente · 2026')
-      );
-    }
+        e('main',{className:'max-w-7xl mx-auto px-6 mt-6 pb-10'},
+          loading && e('div',{className:'space-y-5'},
+            e('div',{className:'skeleton h-20'}),
+            e('div',{className:'grid grid-cols-1 lg:grid-cols-2 gap-6'},e('div',{className:'skeleton h-[300px]'}),e('div',{className:'skeleton h-[300px]'})),
+            e('div',{className:'skeleton h-48 w-full'})
+          ),
+          !loading && error && e('div',{className:'card p-8 text-center max-w-md mx-auto mt-10 space-y-3 bg-white'},
+            e('i',{className:'fa-solid fa-triangle-exclamation text-red-500 text-3xl'}),
+            e('p',{className:'font-bold text-gray-800'},'Error de conexión'),
+            e('p',{className:'text-xs text-gray-400'},error),
+            e('button',{onClick:cargar,className:'px-4 py-2 text-white text-xs font-bold rounded-xl',style:{background:'#FA345E'}},'Reintentar')
+          ),
+          !loading && !error && data && e('div',{},
+            tab===0 && e(ModuloNPS,{rawNps:Array.isArray(data.nps)?data.nps:[]}),
+            tab===1 && e(ModuloCSAT,{abonoRaw:Array.isArray(data.csat_abono)?data.csat_abono:[],reunionRaw:Array.isArray(data.csat_reunion)?data.csat_reunion:[]}),
+            tab===2 && e('div',{className:'card p-10 text-center text-gray-500 font-medium space-y-4 bg-white'},
+              e('i',{className:'fa-solid fa-user-clock text-4xl block',style:{color:'#FA345E'}}),
+              e('h2',{className:'text-sm font-extrabold text-gray-800'},'Análisis de Clientes Inactivos'),
+              e('p',{className:'text-xs text-gray-400'},'Sección en desarrollo')
+            ),
+            tab===3 && e(ModuloSalidas,{
+              datos:salidasNorm,
+              filtroPais,setFiltroPais,filtroAnio,setFiltroAnio,filtroMes,setFiltroMes
+            })
+          )
+        )
+      ),
+      e('footer',{className:'text-center py-6 text-[11px] text-gray-400 border-t border-gray-200 bg-white w-full'},'Apprecio · Dashboard Experiencia del cliente · 2026')
+    );
+  }
 
-    ReactDOM.render(e(App), document.getElementById('root'));
-
-    function printReport() {
-      const title = document.getElementById('modal-title').textContent;
-      const body = document.getElementById('modal-body').innerHTML;
-      const w = window.open('', '_blank', 'width=900,height=700');
-      w.document.write(`
-        <!DOCTYPE html>
-        <html lang="es">
-        <head>
-          <meta charset="UTF-8">
-          <title>${title}</title>
-          <style>
-            body { font-family: 'DM Sans', system-ui, sans-serif; max-width: 800px; margin: 40px auto; color: #111827; font-size: 13px; line-height: 1.6; padding: 0 20px; }
-            h1 { color: #FA345E; font-size: 18px; border-bottom: 2px solid #FA345E; padding-bottom: 8px; margin-bottom: 24px; font-weight: 800; }
-            h3 { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .07em; color: #FA345E; margin: 24px 0 10px; padding-bottom: 5px; border-bottom: 2px solid #FFF0F3; }
-            .report-item { padding: 10px 14px; margin-bottom: 8px; border-radius: 6px; border: 1px solid #E4E7EB; font-size: 12px; background: #F8F9FA; }
-            .report-item.negative { border-left: 3px solid #EF4444; background: #FEF2F2; }
-            .report-item.neutral { border-left: 3px solid #F59E0B; background: #FFFBEB; }
-            .report-item.positive { border-left: 3px solid #10B981; background: #F0FDF4; }
-            strong { color: #111827; }
-            @media print { body { margin: 20px; } .no-print { display: none; } }
-          </style>
-        </head>
-        <body>
-          <h1>${title}</h1>
-          ${body}
-          <p style="font-size:11px; color:#9AA0B4; margin-top:32px; border-top:1px solid #E4E7EB; padding-top:12px; text-align:center;">
-            Generado por Apprecio Beat CX Dashboard · ${new Date().toLocaleString('es-CL')}
-          </p>
-        </body>
-        </html>
-      `);
-      w.document.close();
-      setTimeout(() => w.print(), 500);
-    }
-
-    function openModal() {
-      document.getElementById('report-modal').classList.add('open');
-    }
-
-    function closeModal() {
-      document.getElementById('report-modal').classList.remove('open');
-    }
-
-    document.getElementById('report-modal').addEventListener('click', function(e) {
-      if (e.target === this) closeModal();
-    });
+  ReactDOM.render(e(App), document.getElementById('root'));
   </script>
 </body>
 </html>
