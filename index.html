@@ -623,59 +623,63 @@ const valoresFallas = Object.values(conteoFallas);
           )
         ),
 
-      // ── FILA CON LOS DOS CUADRANTES DE GRÁFICOS LADO A LADO ──
-        e('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-6 mb-6' },
-          
-          // Cuadrante 1: Principal motivo
-          e('div', { className: 'bg-white p-6 rounded-2xl border border-gray-100 shadow-sm' },
-            e('div', { className: 'text-xs font-bold uppercase tracking-wider text-gray-400 mb-1' }, 'Distribución de Causas'),
-            e('div', { className: 'text-sm font-extrabold text-gray-900 mb-4' }, '¿Principal motivo por el que decidiste dejar de trabajar con nosotros?'),
-            (() => {
-              const conteo = {};
-              datosFiltrados.forEach(r => {
-                if (r.motivoBaja) {
-                  // Separamos por comas por si marcaron varias opciones o incluyeron texto libre
-                  r.motivoBaja.split(',').forEach(opcion => {
-                    const opcionLimpia = opcion.trim();
-                    if (opcionLimpia) {
-                      conteo[opcionLimpia] = (conteo[opcionLimpia] || 0) + 1;
-                    }
-                  });
-                }
-              });
-              const labels = Object.keys(conteo);
-              const valores = Object.values(conteo).map(v => totalCuentasOff > 0 ? Math.round((v / totalCuentasOff) * 100) : 0);
-              return labels.length > 0 
-                ? e(ChartHorizontalBars, { id: 'motivos-salida-dinamico', dataLabels: labels, dataValues: valores }) 
-                : e('div', { className: 'text-center py-10 text-xs text-gray-400' }, 'Sin registros válidos para este corte.');
-            })()
-          ),
+    // ── CALCULOS DIRECTOS COMPATIBLES CON EL COMPONENTE DE GRÁFICOS ──
+        (() => {
+          const conteoMotivosDirecto = {};
+          const conteoFallasDirecto = {};
 
-          // Cuadrante 2: Qué falló principalmente
-          e('div', { className: 'bg-white p-6 rounded-2xl border border-gray-100 shadow-sm' },
-            e('div', { className: 'text-xs font-bold uppercase tracking-wider text-gray-400 mb-1' }, 'Fallas Detectadas'),
-            e('div', { className: 'text-sm font-extrabold text-gray-900 mb-4' }, '¿Qué falló principalmente en tu experiencia?'),
-            (() => {
-              const conteo = {};
-              datosFiltrados.forEach(r => {
-                if (r.puntuacionFalla) {
-                  // Separamos por comas para mapear las opciones múltiples de forma individual
-                  r.puntuacionFalla.split(',').forEach(opcion => {
-                    const opcionLimpia = opcion.trim();
-                    if (opcionLimpia) {
-                      conteo[opcionLimpia] = (conteo[opcionLimpia] || 0) + 1;
-                    }
-                  });
+          datosFiltrados.forEach(r => {
+            // Procesamiento de motivos de salida
+            if (r.motivoBaja) {
+              r.motivoBaja.split(',').forEach(opcion => {
+                const opLimpia = opcion.trim();
+                if (opLimpia) {
+                  conteoMotivosDirecto[opLimpia] = (conteoMotivosDirecto[opLimpia] || 0) + 1;
                 }
               });
-              const labels = Object.keys(conteo);
-              const valores = Object.values(conteo).map(v => totalCuentasOff > 0 ? Math.round((v / totalCuentasOff) * 100) : 0);
-              return labels.length > 0 
-                ? e(ChartHorizontalBars, { id: 'fallas-experiencia-dinamico', dataLabels: labels, dataValues: valores }) 
-                : e('div', { className: 'text-center py-10 text-xs text-gray-400' }, 'Sin registros de fallas.');
-            })()
-          )
-        ),
+            }
+            // Procesamiento de fallas detectadas
+            if (r.puntuacionFalla) {
+              r.puntuacionFalla.split(',').forEach(opcion => {
+                const opLimpia = opcion.trim();
+                if (opLimpia) {
+                  conteoFallasDirecto[opLimpia] = (conteoFallasDirecto[opLimpia] || 0) + 1;
+                }
+              });
+            }
+          });
+
+          const labelsMotivosFinal = Object.keys(conteoMotivosDirecto);
+          const valoresMotivosFinal = Object.values(conteoMotivosDirecto).map(v => 
+            totalCuentasOff > 0 ? Math.round((v / totalCuentasOff) * 100) : 0
+          );
+
+          const labelsFallasFinal = Object.keys(conteoFallasDirecto);
+          const valoresFallasFinal = Object.values(conteoFallasDirecto).map(v => 
+            totalCuentasOff > 0 ? Math.round((v / totalCuentasOff) * 100) : 0
+          );
+
+          return e('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-6 mb-6' },
+            
+            // Cuadrante 1: Principal motivo
+            e('div', { className: 'bg-white p-6 rounded-2xl border border-gray-100 shadow-sm' },
+              e('div', { className: 'text-xs font-bold uppercase tracking-wider text-gray-400 mb-1' }, 'Distribución de Causas'),
+              e('div', { className: 'text-sm font-extrabold text-gray-900 mb-4' }, '¿Principal motivo por el que decidiste dejar de trabajar con nosotros?'),
+              labelsMotivosFinal.length > 0 
+                ? e(ChartHorizontalBars, { id: 'motivos-salida-final', dataLabels: labelsMotivosFinal, dataValues: valoresMotivosFinal }) 
+                : e('div', { className: 'text-center py-10 text-xs text-gray-400' }, 'Sin registros válidos para este corte.')
+            ),
+
+            // Cuadrante 2: Qué falló principalmente
+            e('div', { className: 'bg-white p-6 rounded-2xl border border-gray-100 shadow-sm' },
+              e('div', { className: 'text-xs font-bold uppercase tracking-wider text-gray-400 mb-1' }, 'Fallas Detectadas'),
+              e('div', { className: 'text-sm font-extrabold text-gray-900 mb-4' }, '¿Qué falló principalmente en tu experiencia?'),
+              labelsFallasFinal.length > 0 
+                ? e(ChartHorizontalBars, { id: 'fallas-experiencia-final', dataLabels: labelsFallasFinal, dataValues: valoresFallasFinal }) 
+                : e('div', { className: 'text-center py-10 text-xs text-gray-400' }, 'Sin registros de fallas.')
+            )
+          );
+        })(),
         // ── FILA CON LAS DOS PREGUNTAS ABIERTAS (SE ELIMINÓ LA PRIMERA DE LA "X") ──
         e('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-6 mb-6' },
           e('div', { className: 'bg-white p-5 rounded-2xl border border-gray-100 shadow-sm flex flex-col justify-between' },
