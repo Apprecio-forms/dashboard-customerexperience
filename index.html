@@ -682,12 +682,12 @@ TAREA: 1) Qué genera insatisfacción 2) Qué es indiferente 3) Qué valoran 4) 
     const m2=useMemo(()=>calcCSAT(c2f),[c2f]);
 
     const histAbono=useMemo(()=>{
-      const qs={}; abonoRaw.forEach(r=>{if(r.mes){const q=r.periodoQ||'Q2';if(!qs[q])qs[q]=[];qs[q].push(r);}});
-      return Object.keys(qs).map(q=>{let s=0;qs[q].forEach(r=>s+=parseFloat(r.puntuacion)||3);return {q,score:+(s/qs[q].length).toFixed(1)};});
+      const meses={}; abonoRaw.forEach(r=>{if(r.mes){const m=r.mes;if(!meses[m])meses[m]=[];meses[m].push(r);}});
+      return Object.keys(meses).map(m=>{let s=0;meses[m].forEach(r=>s+=parseFloat(r.puntuacion)||3);return {q:m,score:+(s/meses[m].length).toFixed(1)};});
     },[abonoRaw]);
     const histReunion=useMemo(()=>{
-      const qs={}; reunionRaw.forEach(r=>{if(r.mes){const q=r.periodoQ||'Q2';if(!qs[q])qs[q]=[];qs[q].push(r);}});
-      return Object.keys(qs).map(q=>{let s=0;qs[q].forEach(r=>s+=parseFloat(r.puntuacion)||3);return {q,score:+(s/qs[q].length).toFixed(1)};});
+      const meses={}; reunionRaw.forEach(r=>{if(r.mes){const m=r.mes;if(!meses[m])meses[m]=[];meses[m].push(r);}});
+      return Object.keys(meses).map(m=>{let s=0;meses[m].forEach(r=>s+=parseFloat(r.puntuacion)||3);return {q:m,score:+(s/meses[m].length).toFixed(1)};});
     },[reunionRaw]);
 
     const criticosCSAT=useMemo(()=>[...abonoRaw,...reunionRaw].filter(r=>{const v=parseFloat(r.puntuacion);return !isNaN(v)&&v<=2;}),[abonoRaw,reunionRaw]);
