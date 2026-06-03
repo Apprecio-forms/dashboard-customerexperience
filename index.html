@@ -492,7 +492,7 @@ Responde en español, de forma ejecutiva, directa y profesional.`;
       return e('div', { className: 'w-full h-[240px]' }, e('canvas', { ref: canvasRef }));
     }
 
-    // ── GRÁFICO BARRAS HORIZONTALES PARA MOTIVOS DE SALIDA ──
+    // ── GRÁFICO BARRAS HORIZONTALES PARA MOTIVOS DE SALIDA (ETIQUETAS ARRIBA ALINEADAS IZQUIERDA) ──
     function ChartHorizontalBars({ id, dataLabels, dataValues }) {
       const canvasRef = useRef(null);
       const chartRef = useRef(null);
@@ -510,25 +510,57 @@ Responde en español, de forma ejecutiva, directa y profesional.`;
               data: dataValues,
               backgroundColor: '#FA345E',
               borderRadius: 6,
-              barThickness: 16
+              barThickness: 14
             }]
           },
           options: {
             indexAxis: 'y',
             responsive: true,
             maintainAspectRatio: false,
-            plugins: { legend: { display: false } },
+            plugins: { 
+              legend: { display: false }
+            },
             scales: {
-              x: { beginAtZero: true, grid: { display: false }, ticks: { color: '#9AA0B4' } },
-              y: { grid: { display: false }, ticks: { color: '#111827', font: { weight: '600' } } }
+              x: { beginAtZero: true, max: 100, grid: { display: false }, ticks: { color: '#9AA0B4', font: { family: 'DM Sans', size: 10 } } },
+              y: { 
+                grid: { display: false }, 
+                ticks: { display: false } // Ocultamos el eje estándar lateral para evitar recortes
+              }
+            },
+            layout: {
+              padding: { top: 20, left: 10, right: 20, bottom: 5 }
             }
-          }
+          },
+          plugins: [{
+            id: 'labelsArribaIzquierda_' + id,
+            afterDatasetsDraw: (chart) => {
+              const { ctx, scales: { x, y } } = chart;
+              ctx.save();
+              chart.data.labels.forEach((label, index) => {
+                const meta = chart.getDatasetMeta(0);
+                const barElement = meta.data[index];
+                if (!barElement) return;
+                
+                const yPos = barElement.y;
+                
+                // Configuración tipográfica del letrero
+                ctx.font = '700 11.5px "DM Sans", sans-serif';
+                ctx.fillStyle = '#111827';
+                ctx.textAlign = 'left';
+                ctx.textBaseline = 'bottom';
+                
+                // Dibujamos la etiqueta exactamente arriba del inicio de la barra
+                ctx.fillText(label, x.left, yPos - 4);
+              });
+              ctx.restore();
+            }
+          }]
         });
 
         return () => { if (chartRef.current) chartRef.current.destroy(); };
       }, [dataLabels, dataValues, id]);
 
-      return e('div', { className: 'relative w-full h-[220px]' }, e('canvas', { ref: canvasRef }));
+      return e('div', { className: 'relative w-full h-[250px]' }, e('canvas', { ref: canvasRef }));
     }
 
     // ── VISTA PRINCIPAL: COMPONENTE CLIENTES DESVINCULADOS ──
@@ -707,7 +739,7 @@ Responde en español, de forma ejecutiva, directa y profesional.`;
           e('div', { className: 'flex justify-around mt-4 text-center text-xs border-t border-gray-50 pt-3' },
             [['Alto / Satisfecho', 'text-green-600', promotores], ['Medio / Neutral', 'text-amber-500', neutrales], ['Bajo / Crítico', 'text-red-500', detractores]].map(([lbl, clr, cant]) => 
               e('div', { key: lbl },
-                e('p', { className: `font-bold ${cl} text-sm` }, cant),
+                e('p', { className: `font-bold ${clr} text-sm` }, cant),
                 e('p', { className: 'text-[10px] text-gray-400 font-medium' }, lbl)
               )
             )
@@ -903,7 +935,7 @@ Responde en español, de forma ejecutiva, directa y profesional.`;
         e(BloquePreguntaEspejo, {
           id: 'csat_1', tituloCompleto: '¿Qué tan satisfecho(a) estás con el uso de la plataforma para la gestión de tus abonos trimestrales?',
           totalRespuestas: m1.total, promotores: m1.p, neutrales: m1.n, detractores: m1.d, score: m1.score, promedio: m1.avg, totalPromotores: m1.p, porcentajePromotores: m1.pPorc,
-          listaPaises: listPaises, listaMeses: listMeses, filtroPais: c1Pais, setFiltroPais: setC1Pais, filtroMes: c1Mes, setFiltroMes: setC1Mes,
+          listaPaises: listPaises, listMeses: listMeses, filtroPais: c1Pais, setFiltroPais: setC1Pais, filtroMes: c1Mes, setFiltroMes: setC1Mes,
           textoBoton: 'Generar reporte de respuestas abiertas', labelScoreCenter: 'Satisfechos',
           onExportar: () => generarPDFResumenEjecutivo(c1Filtrados, 'CSAT 1 - Post Abono', `Corte ${c1Pais}`)
         }),
@@ -915,7 +947,7 @@ Responde en español, de forma ejecutiva, directa y profesional.`;
         e(BloquePreguntaEspejo, {
           id: 'csat_2', tituloCompleto: '¿El ejecutivo comercial resolvió de forma clara y oportuna tus requerimientos en la reunión de cuenta?',
           totalRespuestas: m2.total, promotores: m2.p, neutrales: m2.n, detractores: m2.d, score: m2.score, promedio: m2.avg, totalPromotores: m2.p, porcentajePromotores: m2.pPorc,
-          listaPaises: listPaises, listaMeses: listMeses, filtroPais: c2Pais, setFiltroPais: setC2Pais, filtroMes: c2Mes, setFiltroMes: setC2Mes,
+          listaPaises: listPaises, listMeses: listMeses, filtroPais: c2Pais, setFiltroPais: setC2Pais, filtroMes: c2Mes, setFiltroMes: setC2Mes,
           textoBoton: 'Generar reporte de respuestas abiertas', labelScoreCenter: 'Satisfechos',
           onExportar: () => generarPDFResumenEjecutivo(c2Filtrados, 'CSAT 2 - Post Reunión', `Corte ${c2Pais}`)
         }),
@@ -998,8 +1030,8 @@ Responde en español, de forma ejecutiva, directa y profesional.`;
                   pais: obj.pais || obj["país"] || obj["País"] || "",
                   programa: obj.programa || obj["nombreDelPrograma"] || obj["Nombre del programa"] || "",
                   correo: obj.correo || obj["correoDeContacto"] || obj["Correo de contacto"] || "",
-                  motivoSalida: obj.motivoBaja || obj.motivoSalida || obj["principalMotivo"] || obj["Principal motivo"] || "",
-                  puntuacionFalla: obj.puntuacionFalla || obj["queFallo"] || obj["Qué falló"] || "",
+                  motivoSalida: obj.motivoBaja || obj.motivoSalida || "",
+                  puntuacionFalla: obj.puntuacionFalla || "",
                   puntuacionExperiencia: obj.experiencia || "",
                   puntuacionEjecutivo: obj.notaKam || "",
                   volveria: obj.volveria ? String(obj.volveria).toUpperCase().replace('Í', 'I').trim() : "",
