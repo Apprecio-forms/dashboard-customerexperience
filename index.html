@@ -26,10 +26,6 @@
     };
   </script>
 
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/17.0.2/umd/react.production.min.js" crossorigin></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/17.0.2/umd/react-dom.production.min.js" crossorigin></script>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
-
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     html, body { font-family: 'DM Sans', sans-serif; background: #F8F9FA; min-height: 100vh; color: #1F2937; }
@@ -181,6 +177,10 @@
       </div>
     </div>
   </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/17.0.2/umd/react.production.min.js" crossorigin></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/17.0.2/umd/react-dom.production.min.js" crossorigin></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
 
   <script>
     const e = React.createElement;
@@ -337,7 +337,7 @@ Responde en español, de forma ejecutiva, directa y profesional.`;
       }
     };
 
-    // --- GRÁFICO DONUT ---
+    // --- GRÁFICOS DONUT ---
     function ChartDonut({ id, promotores, neutrales, detractores, score, labelCenter }) {
       const canvasRef = useRef(null);
       const chartRef = useRef(null);
@@ -492,7 +492,7 @@ Responde en español, de forma ejecutiva, directa y profesional.`;
       return e('div', { className: 'w-full h-[240px]' }, e('canvas', { ref: canvasRef }));
     }
 
-    // ── GRÁFICO BARRAS HORIZONTALES PARA MOTIVOS DE SALIDA (ETIQUETAS ARRIBA ALINEADAS IZQUIERDA) ──
+    // ── GRÁFICO BARRAS HORIZONTALES CON ETIQUETAS FLOTANTES ARRIBA ALINEADAS IZQUIERDA ──
     function ChartHorizontalBars({ id, dataLabels, dataValues }) {
       const canvasRef = useRef(null);
       const chartRef = useRef(null);
@@ -524,17 +524,17 @@ Responde en español, de forma ejecutiva, directa y profesional.`;
               x: { beginAtZero: true, max: 100, grid: { display: false }, ticks: { color: '#9AA0B4', font: { family: 'DM Sans', size: 10 } } },
               y: { 
                 grid: { display: false }, 
-                ticks: { display: false } // Ocultamos el eje estándar lateral para evitar recortes
+                ticks: { display: false }
               }
             },
             layout: {
-              padding: { top: 20, left: 10, right: 20, bottom: 5 }
+              padding: { top: 24, left: 5, right: 20, bottom: 5 }
             }
           },
           plugins: [{
             id: 'labelsArribaIzquierda_' + id,
             afterDatasetsDraw: (chart) => {
-              const { ctx, scales: { x, y } } = chart;
+              const { ctx, scales: { x } } = chart;
               ctx.save();
               chart.data.labels.forEach((label, index) => {
                 const meta = chart.getDatasetMeta(0);
@@ -543,13 +543,11 @@ Responde en español, de forma ejecutiva, directa y profesional.`;
                 
                 const yPos = barElement.y;
                 
-                // Configuración tipográfica del letrero
                 ctx.font = '700 11.5px "DM Sans", sans-serif';
                 ctx.fillStyle = '#111827';
                 ctx.textAlign = 'left';
                 ctx.textBaseline = 'bottom';
                 
-                // Dibujamos la etiqueta exactamente arriba del inicio de la barra
                 ctx.fillText(label, x.left, yPos - 4);
               });
               ctx.restore();
@@ -570,8 +568,8 @@ Responde en español, de forma ejecutiva, directa y profesional.`;
         const estadoRespondido = r.estado ? r.estado.toUpperCase().trim() : '';
         if (estadoRespondido !== 'RESPONDIDO') return false;
 
-        const paisNormalizado = r.pais === 'Peru' ? 'Perú' : r.pais;
-        if (filtroPais !== 'Todos' && paisNormalizado !== filtroPais) return false;
+        const paisNormalized = r.pais === 'Peru' ? 'Perú' : r.pais;
+        if (filtroPais !== 'Todos' && paisNormalized !== filtroPais) return false;
         
         const fechaObj = r.fecha ? new Date(r.fecha) : null;
         if (fechaObj && !isNaN(fechaObj.getTime())) {
@@ -962,7 +960,7 @@ Responde en español, de forma ejecutiva, directa y profesional.`;
           criticosCSAT.length === 0 ? e('p', { className: 'text-xs text-gray-400 py-4 text-center' }, 'No hay alertas de insatisfacción críticas en este bloque.') :
           e('div', { className: 'space-y-2' }, criticosCSAT.map((c, i) => 
             e('div', { key: i, className: 'p-3 rounded-lg border border-red-100 bg-red-50/5 flex justify-between text-xs' },
-              e('div', {}, e('p', { className: 'font-bold' }, c.cliente || 'Empresa'), e('p', { className: 'text-gray-400 italic' }, c.comentario || 'Sin comentario de texto')),
+              e('div', {}, e('p', { className: 'font-bold' }, c.cliente || 'Empresa'), e('p', { className: 'text-gray-400 italic' }, c.razon || c.comentario || 'Sin comentario de texto')),
               e('span', { className: 'font-bold text-red-500' }, `Nota: ${c.puntuacion || '—'}`)
             )
           ))
@@ -1031,7 +1029,7 @@ Responde en español, de forma ejecutiva, directa y profesional.`;
                   programa: obj.programa || obj["nombreDelPrograma"] || obj["Nombre del programa"] || "",
                   correo: obj.correo || obj["correoDeContacto"] || obj["Correo de contacto"] || "",
                   motivoSalida: obj.motivoBaja || obj.motivoSalida || "",
-                  puntuacionFalla: obj.puntuacionFalla || "",
+                  puntuacionFalla: obj.puntuacionFalla || obj.puntuacionFalla || "",
                   puntuacionExperiencia: obj.experiencia || "",
                   puntuacionEjecutivo: obj.notaKam || "",
                   volveria: obj.volveria ? String(obj.volveria).toUpperCase().replace('Í', 'I').trim() : "",
