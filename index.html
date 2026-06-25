@@ -892,13 +892,14 @@ const qs=Array.from(new Set([...datosAbono.map(d=>d.q),...datosReunion.map(d=>d.
   // APP PRINCIPAL
   // ──────────────────────────────────────────
   function App() {
-    const [data,setData]=useState(null);
-    const [loading,setLoading]=useState(true);
-    const [error,setError]=useState(null);
-    const [tab,setTab]=useState(0);
-    const [filtroPais,setFiltroPais]=useState('Todos');
-    const [filtroAnio,setFiltroAnio]=useState('Todos');
-    const [filtroMes,setFiltroMes]=useState('Todos');
+  const [data,setData]=useState(null);
+  const [loading,setLoading]=useState(true);
+  const [error,setError]=useState(null);
+  const [tab,setTab]=useState(0);
+  // 👇 NUESTROS FILTROS GLOBALES DEFINITIVOS
+  const [filtroPais, setFiltroPais] = useState('Todos');
+const [filtroAnio, setFiltroAnio] = useState('Todos'); // 👈 Ahora empieza en Todos los años de forma dinámica
+const [filtroPeriodo, setFiltroPeriodo] = useState('Todos');
 
     const cargar=useCallback(()=>{
       setLoading(true); setError(null);
