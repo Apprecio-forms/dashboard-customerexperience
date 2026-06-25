@@ -540,7 +540,7 @@ TAREA: 1) Qué genera insatisfacción 2) Qué es indiferente 3) Qué valoran 4) 
     const [histAnio, setHistAnio] = useState('2026');
 
    // 1. Extraer el código limpio del Quarter (ej: "Trimestre 2 (Q2)" -> "Q2")
-    const keyQ = (filtroPeriodo && filtroPeriodo.includes('(')) 
+      const keyQ = (filtroPeriodo && filtroPeriodo.includes('(')) 
       ? filtroPeriodo.split('(')[1].replace(')', '').trim() 
       : filtroPeriodo;
 
@@ -549,15 +549,26 @@ TAREA: 1) Qué genera insatisfacción 2) Qué es indiferente 3) Qué valoran 4) 
     let textoBaseP2 = "¿Cómo calificarías la atención del KAM asignado a tu cuenta trimestralmente?";
     let textoBaseP3 = "¿Qué podríamos mejorar o agregar para entregarte más valor?";
 
-    // 3. Buscar en la configuración usando la clave limpia (ej: Q2, Q3, Q4)
-    const configQ = configPreguntas[keyQ] || configPreguntas[filtroPeriodo];
-    if (configQ) {
-      if (configQ.pregunta1) textoBaseP1 = configQ.pregunta1;
-      if (configQ.pregunta2) textoBaseP2 = configQ.pregunta2;
-      if (configQ.pregunta3) textoBaseP3 = configQ.pregunta3;
+    // 3. Buscar de forma inteligente en configPreguntas intentando variaciones (Q2, q2, Trimestre 2 (Q2))
+    let configQ = null;
+    if (configPreguntas) {
+      configQ = configPreguntas[keyQ] || configPreguntas[filtroPeriodo];
+      
+      if (!configQ) {
+        const targetKey = keyQ.toLowerCase();
+        const foundKey = Object.keys(configPreguntas).find(k => k.toLowerCase().trim() === targetKey);
+        if (foundKey) configQ = configPreguntas[foundKey];
+      }
     }
 
-    // 4. Armar los títulos finales dinámicos que van a los componentes
+    // 4. Extraer las preguntas mapeando variaciones de mayúsculas en los encabezados de tu Excel
+    if (configQ) {
+      if (configQ.pregunta1 || configQ.Pregunta1) textoBaseP1 = configQ.pregunta1 || configQ.Pregunta1;
+      if (configQ.pregunta2 || configQ.Pregunta2) textoBaseP2 = configQ.pregunta2 || configQ.Pregunta2;
+      if (configQ.pregunta3 || configQ.Pregunta3) textoBaseP3 = configQ.pregunta3 || configQ.Pregunta3;
+    }
+
+    // 5. Armar los títulos finales dinámicos que van a los componentes
     let tituloP1 = "Pregunta 1: " + textoBaseP1;
     let tituloP2 = "Pregunta 2: " + textoBaseP2;
     let tituloP3 = "Pregunta 3: " + textoBaseP3;
