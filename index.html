@@ -211,7 +211,6 @@ TAREA: 1) Temas críticos que se repiten 2) Sugerencias más frecuentes 3) Lo qu
       empresa: r.cliente||r.pais||'—', nota: parseFloat(r.puntuacion)||0, comentario: (r.comentario||'').trim()
     })).filter(r => r.comentario);
     const neg = items.filter(r=>r.nota<=3), neu = items.filter(r=>r.nota===3||r.nota===4), pos = items.filter(r=>r.nota>=4);
-    // CSAT escala 1-5: >=4 alto, 3 medio, <=2 bajo
     const neg2 = items.filter(r=>r.nota<=2), neu2 = items.filter(r=>r.nota===3), pos2 = items.filter(r=>r.nota>=4);
     const prompt = buildPromptCSAT(modulo, etiqueta, neg2, neu2, pos2);
     const ia = await llamarIA(prompt, `Reporte ${modulo} · ${etiqueta}`);
@@ -279,7 +278,7 @@ Responde en español, directo y ejecutivo.`;
     }
   }
 
-    // ─── HELPERS PROMPTS Y UI ───
+  // ─── HELPERS PROMPTS Y UI ───
   function buildPromptNPS(modulo, etiqueta, neg, neu, pos) {
     const score = neg.length+pos.length ? Math.round(((pos.length-neg.length)/(neg.length+neu.length+pos.length))*100) : 0;
     return `Eres analista CX senior de Apprecio (B2B beneficios LATAM). MÓDULO: ${modulo} | CORTE: ${etiqueta} | NPS: ${score>0?'+':''}${score} | Total comentarios: ${neg.length+neu.length+pos.length}
@@ -363,7 +362,7 @@ TAREA: 1) Qué genera insatisfacción 2) Qué es indiferente 3) Qué valoran 4) 
       if(!ref.current||typeof Chart==='undefined') return;
       if(chart.current) chart.current.destroy();
       const ordenMeses = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
-const qs=Array.from(new Set([...datosAbono.map(d=>d.q),...datosReunion.map(d=>d.q)])).sort((a,b) => ordenMeses.indexOf(a) - ordenMeses.indexOf(b));
+      const qs=Array.from(new Set([...datosAbono.map(d=>d.q),...datosReunion.map(d=>d.q)])).sort((a,b) => ordenMeses.indexOf(a) - ordenMeses.indexOf(b));
       chart.current=new Chart(ref.current.getContext('2d'),{
         type:'line',
         data:{ labels:qs, datasets:[
@@ -462,7 +461,7 @@ const qs=Array.from(new Set([...datosAbono.map(d=>d.q),...datosReunion.map(d=>d.
   function BloqueP3({ rawNps, listaPaises, listaMeses }) {
     const [pais,setPais]=useState('Todos');
     const [mes,setMes]=useState('Todos');
-    const [expandido,setExpandido]=useState(null); // 'neg'|'neu'|'pos'|null
+    const [expandido,setExpandido]=useState(null);
 
     const palabrasNeg=['mal','falla','error','demora','lento','difícil','problema','falta','nunca','malo','pésimo','complica','no funciona'];
     const palabrasPos=['bien','excelente','bueno','genial','perfecto','rápido','fácil','increíble','satisfecho','feliz','recomend','siempre'];
@@ -537,25 +536,21 @@ const qs=Array.from(new Set([...datosAbono.map(d=>d.q),...datosReunion.map(d=>d.
   // MÓDULO NPS
   // ──────────────────────────────────────────
   function ModuloNPS({ rawNps, filtroPais, filtroAnio, filtroPeriodo, configPreguntas }) {
-  // Eliminamos los filtros individuales de P1 y P2 ya que ahora usamos los globales.
-  const [histPais, setHistPais] = useState('Todos');
-  const [histAnio, setHistAnio] = useState('2026');
+    const [histPais, setHistPais] = useState('Todos');
+    const [histAnio, setHistAnio] = useState('2026');
 
-  // 1. Determinar los títulos dinámicos según el Quarter global seleccionado
-  let tituloP1 = "Pregunta 1: En una escala del 1 al 10, ¿Qué tanto recomiendas nuestra aplicación Apprecio?";
-  let tituloP2 = "Pregunta 2";
-  let tituloP3 = "Pregunta 3";
+    let tituloP1 = "Pregunta 1: En una escala del 1 al 10, ¿Qué tanto recomiendas nuestra aplicación Apprecio?";
+    let tituloP2 = "Pregunta 2";
+    let tituloP3 = "Pregunta 3";
 
-  // Buscamos en el mapa si el periodo seleccionado existe (ej: "Q1", "Q2")
-  if (filtroPeriodo !== 'Todos' && configPreguntas[filtroPeriodo]) {
-    tituloP1 = "Pregunta 1: " + (configPreguntas[filtroPeriodo].pregunta1 || tituloP1);
-    tituloP2 = "Pregunta 2: " + (configPreguntas[filtroPeriodo].pregunta2 || "Pregunta 2");
-    tituloP3 = "Pregunta 3: " + (configPreguntas[filtroPeriodo].pregunta3 || "Pregunta 3");
-  } else if (filtroPeriodo === 'Todos') {
-    // Si está en 'Todos los Quarters', dejamos los nombres base por defecto
-    tituloP2 = "Pregunta 2";
-    tituloP3 = "Pregunta 3";
-  }
+    if (filtroPeriodo !== 'Todos' && configPreguntas[filtroPeriodo]) {
+      tituloP1 = "Pregunta 1: " + (configPreguntas[filtroPeriodo].pregunta1 || tituloP1);
+      tituloP2 = "Pregunta 2: " + (configPreguntas[filtroPeriodo].pregunta2 || "Pregunta 2");
+      tituloP3 = "Pregunta 3: " + (configPreguntas[filtroPeriodo].pregunta3 || "Pregunta 3");
+    } else if (filtroPeriodo === 'Todos') {
+      tituloP2 = "Pregunta 2";
+      tituloP3 = "Pregunta 3";
+    }
 
     const {listaPaises,listaMeses,listaAnios}=useMemo(()=>{
       const p=new Set(),m=new Set(),a=new Set();
@@ -578,22 +573,15 @@ const qs=Array.from(new Set([...datosAbono.map(d=>d.q),...datosReunion.map(d=>d.
     };
 
     const p1f = useMemo(() => {
-  return rawNps.filter(r => {
-    // 1. Filtro de País
-    const pasaPais = (filtroPais === 'Todos' || r.pais === filtroPais);
-    // 2. Filtro de Año
-    const pasaAnio = (filtroAnio === 'Todos' || String(r.anio) === filtroAnio);
-    // 3. Filtro de Periodo (Quarter)
-    // El formato del periodo en el objeto r de la encuesta suele ser "Q1 2026", "Q2 2026", etc.
-    // Usamos .includes para verificar si contiene 'Q1', 'Q2', etc.
-    const pasaPeriodo = (filtroPeriodo === 'Todos' || (r.periodoQ && r.periodoQ.includes(filtroPeriodo)));
+      return rawNps.filter(r => {
+        const pasaPais = (filtroPais === 'Todos' || r.pais === filtroPais);
+        const pasaAnio = (filtroAnio === 'Todos' || String(r.anio) === filtroAnio);
+        const pasaPeriodo = (filtroPeriodo === 'Todos' || (r.periodoQ && r.periodoQ.includes(filtroPeriodo)));
+        return pasaPais && pasaAnio && pasaPeriodo;
+      });
+    }, [rawNps, filtroPais, filtroAnio, filtroPeriodo]);
 
-    return pasaPais && pasaAnio && pasaPeriodo;
-  });
-}, [rawNps, filtroPais, filtroAnio, filtroPeriodo]);
-
-// Como las preguntas 1 y 2 ahora comparten los mismos filtros globales, p2f usa los mismos datos filtrados que p1f
-const p2f = p1f;
+    const p2f = p1f;
     const m1=useMemo(()=>calcMetrica(p1f),[p1f]);
     const m2=useMemo(()=>calcMetricaP2(p2f),[p2f]);
 
@@ -609,7 +597,7 @@ const p2f = p1f;
 
     const criticos=useMemo(()=>rawNps.filter(r=>{const n=parseFloat(r.puntuacion);return !isNaN(n)&&n<=6;}),[rawNps]);
 
-   return e('div',{className:'space-y-6'},
+    return e('div',{className:'space-y-6'},
       e('div',{className:'grid grid-cols-1 xl:grid-cols-2 gap-6'},
         e(BloqueEspejo,{
           id:'nps_p1',
@@ -690,6 +678,7 @@ const p2f = p1f;
       )
     );
   }
+
   // ──────────────────────────────────────────
   // MÓDULO CSAT
   // ──────────────────────────────────────────
@@ -794,12 +783,11 @@ const p2f = p1f;
 
     const conteoPor=campo=>{const c={};filtrados.forEach(r=>{if(r[campo]){const val=String(r[campo]);val.split(/[,;|\n]+/).forEach(o=>{const t=o.trim().replace(/\s+/g,' ');if(t&&t!=='-'&&t.toLowerCase()!=='n/a')c[t]=(c[t]||0)+1;});}});return c;};
     const motivosC=conteoPor('motivoSalida');
-    const fallasC =conteoPor('fallaExperiencia');  // Col I
+    const fallasC =conteoPor('fallaExperiencia');
     const labMotivos=Object.keys(motivosC), valMotivos=Object.values(motivosC).map(v=>total?Math.round((v/total)*100):0);
     const labFallas =Object.keys(fallasC),  valFallas =Object.values(fallasC).map(v=>total?Math.round((v/total)*100):0);
 
     return e('div',{className:'space-y-6'},
-      // Filtros
       e('div',{className:'bg-white p-4 rounded-2xl border border-gray-100 flex flex-wrap gap-4 items-center justify-between shadow-sm'},
         e('div',{className:'text-sm font-bold text-gray-800'},'Cuentas que salieron'),
         e('div',{className:'flex gap-3'},
@@ -814,7 +802,6 @@ const p2f = p1f;
           )
         )
       ),
-      // KPIs
       e('div',{className:'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5'},
         e('div',{className:'bg-white p-5 rounded-2xl border border-gray-100 shadow-sm'},e('div',{className:'text-[11px] font-bold text-gray-400 uppercase tracking-wider'},'Total Cuentas Off'),e('div',{className:'text-2xl font-extrabold text-gray-900 mt-1'},total),e('div',{className:'text-[9px] text-gray-400 mt-0.5'},'Respuestas válidas')),
         e('div',{className:'bg-white p-5 rounded-2xl border border-gray-100 shadow-sm'},e('div',{className:'text-[11px] font-bold text-gray-400 uppercase tracking-wider'},'Promedio Experiencia'),e('div',{className:'text-2xl font-extrabold mt-1',style:{color:'#FA345E'}},promExp),e('div',{className:'text-[9px] text-gray-400 mt-0.5'},'Col J · Escala 1-10')),
@@ -830,7 +817,6 @@ const p2f = p1f;
           ):e('div',{className:'text-[9px] text-gray-400 mt-1'},'Esperando datos...')
         )
       ),
-      // Gráficos lado a lado: Motivos + Fallas
       e('div',{className:'grid grid-cols-1 md:grid-cols-2 gap-6'},
         labMotivos.length>0
           ? e('div',{className:'bg-white p-6 rounded-2xl border border-gray-100 shadow-sm'},
@@ -851,7 +837,6 @@ const p2f = p1f;
               e('p',{className:'text-xs text-gray-400'},'Sin datos de fallas registradas (Col I)')
             )
       ),
-      // Preguntas abiertas Col L y Col M con análisis IA
       e('div',{className:'grid grid-cols-1 md:grid-cols-2 gap-6'},
         e('div',{className:'bg-white p-5 rounded-2xl border border-gray-100 shadow-sm flex flex-col justify-between'},
           e('div',null,
@@ -888,7 +873,6 @@ const p2f = p1f;
           )
         )
       ),
-      // Tabla programas
       e('div',{className:'bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden'},
         e('div',{className:'p-5 border-b border-gray-50 bg-gray-50/50 flex justify-between items-center'},
           e('div',null,
@@ -921,27 +905,23 @@ const p2f = p1f;
   // APP PRINCIPAL
   // ──────────────────────────────────────────
   function App() {
-  const [data,setData]=useState(null);
-  const [loading,setLoading]=useState(true);
-  const [error,setError]=useState(null);
-  const [tab,setTab]=useState(0);
-  // 👇 NUESTROS FILTROS GLOBALES DEFINITIVOS
- const [filtroPais, setFiltroPais] = useState('Todos');
-  
-  // 1. Esto hará que el año empiece siempre en el año actual en curso (ej: '2026')
-  const [filtroAnio, setFiltroAnio] = useState(String(new Date().getFullYear()));
+    const [data,setData]=useState(null);
+    const [loading,setLoading]=useState(true);
+    const [error,setError]=useState(null);
+    const [tab,setTab]=useState(0);
+    
+    const [filtroPais, setFiltroPais] = useState('Todos');
+    const [filtroAnio, setFiltroAnio] = useState(String(new Date().getFullYear()));
 
-  // 2. Lógica para detectar el trimestre del calendario automáticamente
-  const obtenerQuarterActual = () => {
-    const mes = new Date().getMonth(); // Enero es 0, Diciembre es 11
-    if (mes <= 2) return 'Q1'; // Ene, Feb, Mar
-    if (mes <= 5) return 'Q2'; // Abr, May, Jun
-    if (mes <= 8) return 'Q3'; // Jul, Ago, Sep
-    return 'Q4';               // Oct, Nov, Dic
-  };
+    const obtenerQuarterActual = () => {
+      const mes = new Date().getMonth();
+      if (mes <= 2) return 'Q1';
+      if (mes <= 5) return 'Q2';
+      if (mes <= 8) return 'Q3';
+      return 'Q4';
+    };
 
-  // 3. Asignamos el Quarter detectado como valor inicial por defecto
-  const [filtroPeriodo, setFiltroPeriodo] = useState(obtenerQuarterActual());
+    const [filtroPeriodo, setFiltroPeriodo] = useState(obtenerQuarterActual());
 
     const cargar=useCallback(()=>{
       setLoading(true); setError(null);
@@ -954,21 +934,20 @@ const p2f = p1f;
 
     const tabs=[['NPS','fa-solid fa-chart-line'],['CSAT','fa-solid fa-star'],['Inactivos','fa-solid fa-user-clock'],['Salidas / Off','fa-solid fa-arrow-right-from-bracket']];
 
-    // Normalizar datos de salidas con mapeo exacto del GAS
     const salidasNorm=useMemo(()=>{
       if(!data||!Array.isArray(data.salidas)) return [];
       return data.salidas.map(o=>({
         pais:               o.pais||'',
         programa:           o.programa||'',
         correo:             o.correo||'',
-        motivoSalida:       o.motivoBaja||'',          // Col H
-        fallaExperiencia:   o.fallas||'',              // Col I – fallas detectadas
-        puntuacionExperiencia: o.experiencia||'',      // Col J
-        puntuacionEjecutivo:   o.notaKam||'',          // Col K
-        queHacerDif:        o.queHacerDif||'',         // Col L
-        adicional:          o.adicional||'',           // Col M
+        motivoSalida:       o.motivoBaja||'',
+        fallaExperiencia:   o.fallas||'',
+        puntuacionExperiencia: o.experiencia||'',
+        puntuacionEjecutivo:   o.notaKam||'',
+        queHacerDif:        o.queHacerDif||'',
+        adicional:          o.adicional||'',
         volveria:           o.volveria?String(o.volveria).toUpperCase().replace(/Í/g,'I').trim():'',
-        estado:             o.estado||'',              // Col O
+        estado:             o.estado||'',
         fecha:              o.fecha||null
       }));
     },[data]);
@@ -996,51 +975,47 @@ const p2f = p1f;
             ))
           )
         ),
-        ), // Cierre del header existente
-    
-    // 👇 NUEVO RECUADRO DE FILTROS GLOBALES (Pega este bloque aquí)
-    e('div',{className:'max-w-7xl mx-auto px-6 mt-6 w-full'},
-      e('div',{className:'bg-white p-4 rounded-2xl border border-gray-200 flex flex-wrap gap-4 items-center justify-between shadow-sm'},
-        e('div',{className:'text-xs font-bold text-gray-800 uppercase tracking-wider'},
-          e('i',{className:'fa-solid fa-filter text-brand mr-2', style:{color:'#FA345E'}}),
-          'Filtros Globales de Rendimiento'
-        ),
-        e('div',{className:'flex flex-wrap gap-3'},
-          // Selector de Año
-          e('select',{
-            value: filtroAnio,
-            onChange: ev => { setFiltroAnio(ev.target.value); if(ev.target.value === 'Todos') setFiltroPeriodo('Todos'); },
-            className:'p-2 bg-gray-50 border border-gray-200 rounded-xl text-xs font-semibold text-gray-700 outline-none'
-          },
-            e('option',{value:'Todos'},'Todos los Años'),
-            e('option',{value:'2025'},'Año 2025'),
-            e('option',{value:'2026'},'Año 2026'),
-            e('option',{value:'2027'},'Año 2027')
-          ),
-          // Selector de Periodo (Quarter)
-          e('select',{
-            value: filtroPeriodo,
-            onChange: ev => setFiltroPeriodo(ev.target.value),
-            className:'p-2 bg-gray-50 border border-gray-200 rounded-xl text-xs font-semibold text-gray-700 outline-none'
-          },
-            e('option',{value:'Q1'},'Trimestre 1 (Q1)'),
-            e('option',{value:'Q2'},'Trimestre 2 (Q2)'),
-            e('option',{value:'Q3'},'Trimestre 3 (Q3)'),
-            e('option',{value:'Q4'},'Trimestre 4 (Q4)')
-          ),
-          // Selector de País
-          e('select',{
-            value: filtroPais,
-            onChange: ev => setFiltroPais(ev.target.value),
-            className:'p-2 bg-gray-50 border border-gray-200 rounded-xl text-xs font-semibold text-gray-700 outline-none'
-          },
-            ['Todos','Perú','Chile','Colombia','Ecuador','México'].map(p => 
-              e('option',{key:p,value:p}, p === 'Todos' ? 'Todos los Países' : p)
+        
+        e('div',{className:'max-w-7xl mx-auto px-6 mt-6 w-full'},
+          e('div',{className:'bg-white p-4 rounded-2xl border border-gray-200 flex flex-wrap gap-4 items-center justify-between shadow-sm'},
+            e('div',{className:'text-xs font-bold text-gray-800 uppercase tracking-wider'},
+              e('i',{className:'fa-solid fa-filter text-brand mr-2', style:{color:'#FA345E'}}),
+              'Filtros Globales de Rendimiento'
+            ),
+            e('div',{className:'flex flex-wrap gap-3'},
+              e('select',{
+                value: filtroAnio,
+                onChange: ev => { setFiltroAnio(ev.target.value); if(ev.target.value === 'Todos') setFiltroPeriodo('Todos'); },
+                className:'p-2 bg-gray-50 border border-gray-200 rounded-xl text-xs font-semibold text-gray-700 outline-none'
+              },
+                e('option',{value:'Todos'},'Todos los Años'),
+                e('option',{value:'2025'},'Año 2025'),
+                e('option',{value:'2026'},'Año 2026'),
+                e('option',{value:'2027'},'Año 2027')
+              ),
+              e('select',{
+                value: filtroPeriodo,
+                onChange: ev => setFiltroPeriodo(ev.target.value),
+                className:'p-2 bg-gray-50 border border-gray-200 rounded-xl text-xs font-semibold text-gray-700 outline-none'
+              },
+                e('option',{value:'Q1'},'Trimestre 1 (Q1)'),
+                e('option',{value:'Q2'},'Trimestre 2 (Q2)'),
+                e('option',{value:'Q3'},'Trimestre 3 (Q3)'),
+                e('option',{value:'Q4'},'Trimestre 4 (Q4)')
+              ),
+              e('select',{
+                value: filtroPais,
+                onChange: ev => setFiltroPais(ev.target.value),
+                className:'p-2 bg-gray-50 border border-gray-200 rounded-xl text-xs font-semibold text-gray-700 outline-none'
+              },
+                ['Todos','Perú','Chile','Colombia','Ecuador','México'].map(p => 
+                  e('option',{key:p,value:p}, p === 'Todos' ? 'Todos los Países' : p)
+                )
+              )
             )
           )
-        )
-      )
-    ),
+        ),
+
         e('main',{className:'max-w-7xl mx-auto px-6 mt-6 pb-10'},
           loading && e('div',{className:'space-y-5'},
             e('div',{className:'skeleton h-20'}),
@@ -1055,13 +1030,12 @@ const p2f = p1f;
           ),
           !loading && !error && data && e('div',{},
             tab===0 && e(ModuloNPS,{
-  rawNps: Array.isArray(data.nps) ? data.nps : [],
-  // 👇 PASAMOS LAS NUEVAS PROPIEDADES AL MÓDULO
-  filtroPais,
-  filtroAnio,
-  filtroPeriodo,
-  configPreguntas: data.configPreguntas || {}
-}),
+              rawNps: Array.isArray(data.nps) ? data.nps : [],
+              filtroPais,
+              filtroAnio,
+              filtroPeriodo,
+              configPreguntas: data.configPreguntas || {}
+            }),
             tab===1 && e(ModuloCSAT,{abonoRaw:Array.isArray(data.csat_abono)?data.csat_abono:[],reunionRaw:Array.isArray(data.csat_reunion)?data.csat_reunion:[]}),
             tab===2 && e('div',{className:'card p-10 text-center text-gray-500 font-medium space-y-4 bg-white'},
               e('i',{className:'fa-solid fa-user-clock text-4xl block',style:{color:'#FA345E'}}),
