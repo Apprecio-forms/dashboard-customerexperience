@@ -577,8 +577,23 @@ const qs=Array.from(new Set([...datosAbono.map(d=>d.q),...datosReunion.map(d=>d.
       return {total,p:pr,n:ne,d:de,score:Math.round(((pr/total)*100)-((de/total)*100)),avg:(suma/total).toFixed(1),pPorc:((pr/total)*100).toFixed(0)};
     };
 
-    const p1f=useMemo(()=>rawNps.filter(r=>(p1Pais==='Todos'||r.pais===p1Pais)&&(p1Mes==='Todos'||r.mes===p1Mes)),[rawNps,p1Pais,p1Mes]);
-    const p2f=useMemo(()=>rawNps.filter(r=>(p2Pais==='Todos'||r.pais===p2Pais)&&(p2Mes==='Todos'||r.mes===p2Mes)),[rawNps,p2Pais,p2Mes]);
+    const p1f = useMemo(() => {
+  return rawNps.filter(r => {
+    // 1. Filtro de País
+    const pasaPais = (filtroPais === 'Todos' || r.pais === filtroPais);
+    // 2. Filtro de Año
+    const pasaAnio = (filtroAnio === 'Todos' || String(r.anio) === filtroAnio);
+    // 3. Filtro de Periodo (Quarter)
+    // El formato del periodo en el objeto r de la encuesta suele ser "Q1 2026", "Q2 2026", etc.
+    // Usamos .includes para verificar si contiene 'Q1', 'Q2', etc.
+    const pasaPeriodo = (filtroPeriodo === 'Todos' || (r.periodoQ && r.periodoQ.includes(filtroPeriodo)));
+
+    return pasaPais && pasaAnio && pasaPeriodo;
+  });
+}, [rawNps, filtroPais, filtroAnio, filtroPeriodo]);
+
+// Como las preguntas 1 y 2 ahora comparten los mismos filtros globales, p2f usa los mismos datos filtrados que p1f
+const p2f = p1f;
     const m1=useMemo(()=>calcMetrica(p1f),[p1f]);
     const m2=useMemo(()=>calcMetricaP2(p2f),[p2f]);
 
