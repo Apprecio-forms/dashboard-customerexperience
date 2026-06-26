@@ -706,7 +706,7 @@ TAREA: 1) Qué genera insatisfacción 2) Qué es indiferente 3) Qué valoran 4) 
   function ModuloCSAT({ abonoRaw, reunionRaw }) {
     const [c1Pais,setC1Pais]=useState('Todos'), [c1Mes,setC1Mes]=useState('Todos');
     const [c2Pais,setC2Pais]=useState('Todos'), [c2Mes,setC2Mes]=useState('Todos');
-    const listaPaises=['Todos','Colombia','México','Chile','Perú','Ecuador'];
+    const listaPaises=['Todos','Colombia','Mexico','Chile','Peru','Ecuador'];
     const listaMeses=['Todos','Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
 
     const calcCSAT=(arr)=>{
@@ -786,7 +786,7 @@ TAREA: 1) Qué genera insatisfacción 2) Qué es indiferente 3) Qué valoran 4) 
 
     const filtrados=useMemo(()=>datos.filter(r=>{
       if((r.estado||'').toUpperCase().trim()!=='RESPONDIDO') return false;
-      const pn=r.pais==='Peru'?'Perú':r.pais;
+      const pn=r.pais==='Peru'?'Peru':r.pais;
       if(filtroPais!=='Todos'&&pn!==filtroPais) return false;
       const f=r.fecha?new Date(r.fecha):null;
       if(f&&!isNaN(f)){
@@ -813,7 +813,7 @@ TAREA: 1) Qué genera insatisfacción 2) Qué es indiferente 3) Qué valoran 4) 
         e('div',{className:'text-sm font-bold text-gray-800'},'Cuentas que salieron'),
         e('div',{className:'flex gap-3'},
           e('select',{className:'p-2 bg-gray-50 border border-gray-200 rounded-xl text-xs font-semibold text-gray-700 outline-none',value:filtroPais,onChange:ev=>setFiltroPais(ev.target.value)},
-            ['Todos','Perú','Chile','Colombia','Ecuador','México'].map(p=>e('option',{key:p,value:p},p==='Todos'?'Todos los Países':p))
+            ['Todos','Peru','Chile','Colombia','Ecuador','Mexico'].map(p=>e('option',{key:p,value:p},p==='Todos'?'Todos los Países':p))
           ),
           e('select',{className:'p-2 bg-gray-50 border border-gray-200 rounded-xl text-xs font-semibold text-gray-700 outline-none',value:filtroAnio,onChange:ev=>setFiltroAnio(ev.target.value)},
             ['Todos','2025','2026'].map(a=>e('option',{key:a,value:a},a==='Todos'?'Todos los Años':`Año ${a}`))
@@ -1029,7 +1029,7 @@ TAREA: 1) Qué genera insatisfacción 2) Qué es indiferente 3) Qué valoran 4) 
                 onChange: ev => setFiltroPais(ev.target.value),
                 className:'p-2 bg-gray-50 border border-gray-200 rounded-xl text-xs font-semibold text-gray-700 outline-none'
               },
-                ['Todos','Perú','Chile','Colombia','Ecuador','México'].map(p => 
+                ['Todos','Peru','Chile','Colombia','Ecuador','Mexico'].map(p => 
                   e('option',{key:p,value:p}, p === 'Todos' ? 'Todos los Países' : p)
                 )
               )
